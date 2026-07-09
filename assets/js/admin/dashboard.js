@@ -39,11 +39,9 @@ document.querySelectorAll('.admin-sidebar-nav a[data-page]').forEach(link => {
         e.preventDefault();
         const page = link.dataset.page;
         
-        // Update active state
         document.querySelectorAll('.admin-sidebar-nav a').forEach(l => l.classList.remove('active'));
         link.classList.add('active');
         
-        // Load page
         loadPage(page);
     });
 });
@@ -116,7 +114,6 @@ async function loadDashboard() {
     `;
     
     try {
-        // Get counts
         const productsSnapshot = await getCountFromServer(collection(db, 'products'));
         const categoriesSnapshot = await getCountFromServer(collection(db, 'categories'));
         const ordersSnapshot = await getCountFromServer(collection(db, 'orders'));
@@ -125,7 +122,6 @@ async function loadDashboard() {
         document.getElementById('totalCategories').textContent = categoriesSnapshot.data().count;
         document.getElementById('totalOrders').textContent = ordersSnapshot.data().count;
         
-        // Get total sales
         const ordersQuery = query(collection(db, 'orders'), where('payment.status', '==', 'paid'));
         const ordersSnapshotPaid = await getDocs(ordersQuery);
         let totalSales = 0;
@@ -137,7 +133,6 @@ async function loadDashboard() {
         });
         document.getElementById('totalSales').textContent = `₦${totalSales.toLocaleString()}`;
         
-        // Get recent orders
         const recentQuery = query(
             collection(db, 'orders'),
             orderBy('createdAt', 'desc'),
@@ -188,26 +183,35 @@ async function loadDashboard() {
     }
 }
 
-// ===== Placeholder Functions =====
+// ============================================
+// CATEGORIES PAGE
+// ============================================
 function loadCategories() {
     pageContent.innerHTML = `
         <div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3 style="font-family: 'Cormorant Garamond', serif;">Categories</h3>
-                <button class="btn btn-primary btn-sm" id="addCategoryBtn">+ Add Category</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+                <h3 style="font-family: 'Cormorant Garamond', serif;">📂 Categories</h3>
+                <button class="btn btn-primary btn-sm" onclick="window.showCategoryForm()">+ Add Category</button>
             </div>
             <div id="categoriesList">
                 <p style="color: #9CA3AF;">Loading categories...</p>
             </div>
         </div>
     `;
+    
+    import('./categories.js').then(module => {
+        module.loadCategories();
+    });
 }
 
+// ============================================
+// PRODUCTS PAGE
+// ============================================
 function loadProducts() {
     pageContent.innerHTML = `
         <div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3 style="font-family: 'Cormorant Garamond', serif;">Products</h3>
+                <h3 style="font-family: 'Cormorant Garamond', serif;">📦 Products</h3>
                 <button class="btn btn-primary btn-sm" id="addProductBtn">+ Add Product</button>
             </div>
             <div id="productsList">
@@ -217,10 +221,13 @@ function loadProducts() {
     `;
 }
 
+// ============================================
+// ORDERS PAGE
+// ============================================
 function loadOrders() {
     pageContent.innerHTML = `
         <div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
-            <h3 style="font-family: 'Cormorant Garamond', serif; margin-bottom: 20px;">Orders</h3>
+            <h3 style="font-family: 'Cormorant Garamond', serif; margin-bottom: 20px;">📋 Orders</h3>
             <div id="ordersList">
                 <p style="color: #9CA3AF;">Loading orders...</p>
             </div>
@@ -228,10 +235,13 @@ function loadOrders() {
     `;
 }
 
+// ============================================
+// INVENTORY PAGE
+// ============================================
 function loadInventory() {
     pageContent.innerHTML = `
         <div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
-            <h3 style="font-family: 'Cormorant Garamond', serif; margin-bottom: 20px;">Inventory Management</h3>
+            <h3 style="font-family: 'Cormorant Garamond', serif; margin-bottom: 20px;">📊 Inventory Management</h3>
             <div id="inventoryList">
                 <p style="color: #9CA3AF;">Loading inventory...</p>
             </div>
@@ -239,15 +249,27 @@ function loadInventory() {
     `;
 }
 
+// ============================================
+// SETTINGS PAGE
+// ============================================
 function loadSettings() {
     pageContent.innerHTML = `
         <div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); max-width: 600px;">
-            <h3 style="font-family: 'Cormorant Garamond', serif; margin-bottom: 20px;">Store Settings</h3>
+            <h3 style="font-family: 'Cormorant Garamond', serif; margin-bottom: 20px;">⚙️ Store Settings</h3>
             <div id="settingsForm">
                 <p style="color: #9CA3AF;">Loading settings...</p>
             </div>
         </div>
     `;
 }
+
+// ============================================
+// GLOBAL FUNCTIONS
+// ============================================
+window.showCategoryForm = function(category = null) {
+    import('./categories.js').then(module => {
+        module.showCategoryForm(category);
+    });
+};
 
 console.log('✅ Admin Dashboard loaded successfully!');
