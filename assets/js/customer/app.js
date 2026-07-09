@@ -33,8 +33,6 @@ let settings = {};
 let cart = [];
 let currentCategory = 'all';
 let searchTerm = '';
-let discountCode = '';
-let discountApplied = 0;
 
 // ============================================
 // LOAD CART FROM STORAGE
@@ -72,7 +70,8 @@ async function loadData() {
         
         const settingsDoc = await db.collection('siteSettings').doc('settings').get();
         settings = settingsDoc.data() || {};
-        window.tadaaSettings = settings; // Make settings available globally
+        window.tadaaSettings = settings;
+        window.tadaaDb = db; // Make db available globally for checkout
         
         const categoriesSnap = await db.collection('categories').orderBy('order', 'asc').get();
         categories = [];
