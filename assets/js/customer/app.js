@@ -1,5 +1,5 @@
 // ============================================
-// TADAA! - CUSTOMER WEBSITE (FIXED CHECKOUT)
+// TADAA! - CUSTOMER WEBSITE (FULLY WORKING)
 // ============================================
 
 // ===== Firebase Config =====
@@ -574,13 +574,13 @@ function checkout() {
         return;
     }
     toggleCartSidebar();
-    loadCheckoutPage();
+    showCheckoutPage();
 }
 
 // ============================================
-// LOAD CHECKOUT PAGE
+// SHOW CHECKOUT PAGE
 // ============================================
-function loadCheckoutPage() {
+function showCheckoutPage() {
     console.log('📋 Loading checkout page...');
     
     if (cart.length === 0) {
@@ -858,7 +858,7 @@ window.removeFromCart = removeFromCart;
 window.updateQuantity = updateQuantity;
 window.clearCart = clearCart;
 window.checkout = checkout;
-window.loadCheckoutPage = loadCheckoutPage;
+window.showCheckoutPage = showCheckoutPage;
 window.showToast = showToast;
 
 // ============================================
@@ -868,4 +868,4 @@ document.addEventListener('DOMContentLoaded', () => {
     loadData();
 });
 
-console.log('✅ Tadaa! Website with fixed checkout ready!');
+console.log('✅ Tadaa! Website with working checkout ready!');
