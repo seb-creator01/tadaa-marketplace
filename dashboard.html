@@ -4,14 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Dashboard - Tadaa!</title>
-    
+
     <link rel="stylesheet" href="/tadaa-marketplace/assets/css/main.css" />
     <link rel="stylesheet" href="/tadaa-marketplace/assets/css/admin.css" />
-    
-    <!-- Load Firebase from CDN -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+    <!-- Firebase SDK (Correct Version) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 </head>
 <body>
     <div class="admin-wrapper">
@@ -30,7 +30,7 @@
                 <li class="logout-link"><a href="#" id="logoutBtn">🚪 Logout</a></li>
             </ul>
         </aside>
-        
+
         <main class="admin-content">
             <div class="admin-topnav">
                 <h1 id="pageTitle">Dashboard</h1>
@@ -44,12 +44,12 @@
             </div>
         </main>
     </div>
-    
+
     <script>
         // ============================================
-        // TADAA! - ADMIN DASHBOARD (STANDALONE)
+        // TADAA! - ADMIN DASHBOARD
         // ============================================
-        
+
         // ===== Firebase Config =====
         const firebaseConfig = {
             apiKey: "AIzaSyDCXnlAqyt2512HlvBOsSfMZ6O-xg0c94Y",
@@ -59,23 +59,23 @@
             messagingSenderId: "56983478470",
             appId: "1:56983478470:web:0efdf7f44b19e88a6237c7"
         };
-        
+
         // ===== Initialize Firebase =====
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
-        
+
         console.log('🔥 Firebase initialized');
-        
+
         // ===== DOM Elements =====
         const pageContent = document.getElementById('pageContent');
         const pageTitle = document.getElementById('pageTitle');
         const adminEmailDisplay = document.getElementById('adminEmailDisplay');
         const logoutBtn = document.getElementById('logoutBtn');
-        
+
         // ===== Check Auth =====
         auth.onAuthStateChanged((user) => {
-            console.log('🔐 Auth state:', user ? user.email : 'No user');
+            console.log('🔐 Auth:', user ? user.email : 'No user');
             if (!user) {
                 window.location.href = '/tadaa-marketplace/admin.html';
                 return;
@@ -85,7 +85,7 @@
             }
             loadPage('dashboard');
         });
-        
+
         // ===== Logout =====
         if (logoutBtn) {
             logoutBtn.addEventListener('click', (e) => {
@@ -95,22 +95,21 @@
                 });
             });
         }
-        
+
         // ============================================
         // PAGE LOADER
         // ============================================
         function loadPage(page) {
-            console.log('📄 Loading page:', page);
+            console.log('📄 Loading:', page);
             pageTitle.textContent = page.charAt(0).toUpperCase() + page.slice(1);
-            
-            // Update active state
+
             document.querySelectorAll('.admin-sidebar-nav a').forEach(l => l.classList.remove('active'));
             document.querySelectorAll('.admin-sidebar-nav a').forEach(l => {
                 if (l.textContent.toLowerCase().includes(page)) {
                     l.classList.add('active');
                 }
             });
-            
+
             switch(page) {
                 case 'dashboard': loadDashboard(); break;
                 case 'categories': loadCategories(); break;
@@ -121,7 +120,7 @@
                 default: loadDashboard();
             }
         }
-        
+
         // ============================================
         // DASHBOARD
         // ============================================
@@ -154,19 +153,19 @@
                     <div id="recentOrders">Loading...</div>
                 </div>
             `;
-            
+
             try {
                 const productsSnap = await db.collection('products').get();
                 const categoriesSnap = await db.collection('categories').get();
                 const ordersSnap = await db.collection('orders').get();
-                
+
                 document.getElementById('totalProducts').textContent = productsSnap.size;
                 document.getElementById('totalCategories').textContent = categoriesSnap.size;
                 document.getElementById('totalOrders').textContent = ordersSnap.size;
-                
+
                 const recentSnap = await db.collection('orders').orderBy('createdAt', 'desc').limit(5).get();
                 const container = document.getElementById('recentOrders');
-                
+
                 if (recentSnap.empty) {
                     container.innerHTML = '<p style="color: #9CA3AF;">No orders yet.</p>';
                 } else {
@@ -187,7 +186,7 @@
                 console.error('Dashboard error:', error);
             }
         }
-        
+
         // ============================================
         // CATEGORIES
         // ============================================
@@ -201,16 +200,16 @@
                     <div id="categoriesList">Loading...</div>
                 </div>
             `;
-            
+
             try {
                 const snap = await db.collection('categories').orderBy('order', 'asc').get();
                 const container = document.getElementById('categoriesList');
-                
+
                 if (snap.empty) {
                     container.innerHTML = '<p style="color: #9CA3AF;">No categories yet. Click "Add Category" to create one.</p>';
                     return;
                 }
-                
+
                 let html = `<table class="admin-table"><thead><tr><th>Name</th><th>Slug</th><th>Order</th><th>Featured</th><th>Actions</th></tr></thead><tbody>`;
                 snap.forEach(doc => {
                     const d = doc.data();
@@ -232,8 +231,10 @@
                 document.getElementById('categoriesList').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
             }
         }
-        
-        // ===== Add Category =====
+
+        // ============================================
+        // ADD CATEGORY
+        // ============================================
         window.showAddCategory = function() {
             const container = document.getElementById('categoriesList');
             container.innerHTML = `
@@ -254,17 +255,19 @@
                 </div>
             `;
         };
-        
-        // ===== Save Category =====
+
+        // ============================================
+        // SAVE CATEGORY
+        // ============================================
         window.saveCategory = async function() {
             const name = document.getElementById('catName').value.trim();
             const description = document.getElementById('catDesc').value.trim();
-            
+
             if (!name) {
                 alert('Category name is required!');
                 return;
             }
-            
+
             try {
                 await db.collection('categories').add({
                     name: name,
@@ -280,8 +283,10 @@
                 alert('❌ Error: ' + error.message);
             }
         };
-        
-        // ===== Delete Category =====
+
+        // ============================================
+        // DELETE CATEGORY
+        // ============================================
         window.deleteCategory = async function(id) {
             if (confirm('Are you sure you want to delete this category?')) {
                 try {
@@ -293,8 +298,10 @@
                 }
             }
         };
-        
-        // ===== Edit Category =====
+
+        // ============================================
+        // EDIT CATEGORY
+        // ============================================
         window.editCategory = async function(id) {
             const newName = prompt('Enter new category name:');
             if (newName && newName.trim()) {
@@ -310,7 +317,7 @@
                 }
             }
         };
-        
+
         // ============================================
         // PLACEHOLDER PAGES
         // ============================================
@@ -322,7 +329,7 @@
                 </div>
             `;
         }
-        
+
         function loadOrders() {
             pageContent.innerHTML = `
                 <div style="background:white; border-radius:16px; padding:24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
@@ -331,7 +338,7 @@
                 </div>
             `;
         }
-        
+
         function loadInventory() {
             pageContent.innerHTML = `
                 <div style="background:white; border-radius:16px; padding:24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
@@ -340,7 +347,7 @@
                 </div>
             `;
         }
-        
+
         function loadSettings() {
             pageContent.innerHTML = `
                 <div style="background:white; border-radius:16px; padding:24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
@@ -349,8 +356,8 @@
                 </div>
             `;
         }
-        
-        console.log('✅ Dashboard loaded! Click "Categories" in the sidebar to test.');
+
+        console.log('✅ Dashboard loaded! Click "Categories" to test.');
     </script>
 </body>
 </html>
