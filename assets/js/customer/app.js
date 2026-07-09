@@ -68,21 +68,18 @@ function saveCart() {
 // ============================================
 async function loadData() {
     try {
-        // Load cart first
         loadCart();
         
-        // Load settings
         const settingsDoc = await db.collection('siteSettings').doc('settings').get();
         settings = settingsDoc.data() || {};
+        window.tadaaSettings = settings; // Make settings available globally
         
-        // Load categories
         const categoriesSnap = await db.collection('categories').orderBy('order', 'asc').get();
         categories = [];
         categoriesSnap.forEach(doc => {
             categories.push({ id: doc.id, ...doc.data() });
         });
         
-        // Load products
         const productsSnap = await db.collection('products').orderBy('createdAt', 'desc').get();
         products = [];
         productsSnap.forEach(doc => {
@@ -101,13 +98,15 @@ async function loadData() {
         
     } catch (error) {
         console.error('❌ Error loading data:', error);
-        mainContent.innerHTML = `
-            <div style="text-align:center; padding:60px 20px;">
-                <h2>😅 Oops! Something went wrong</h2>
-                <p style="color:#6B7280;">We're having trouble loading the store. Please try again later.</p>
-                <button onclick="location.reload()" style="background:#FFD700; border:none; padding:12px 24px; border-radius:50px; margin-top:20px; cursor:pointer;">Refresh Page</button>
-            </div>
-        `;
+        if (mainContent) {
+            mainContent.innerHTML = `
+                <div style="text-align:center; padding:60px 20px;">
+                    <h2>😅 Oops! Something went wrong</h2>
+                    <p style="color:#6B7280;">We're having trouble loading the store. Please try again later.</p>
+                    <button onclick="location.reload()" style="background:#FFD700; border:none; padding:12px 24px; border-radius:50px; margin-top:20px; cursor:pointer;">Refresh Page</button>
+                </div>
+            `;
+        }
     }
 }
 
@@ -361,7 +360,6 @@ function viewProduct(productId) {
     const product = products.find(p => p.id === productId);
     if (!product) return;
     
-    // Show product details in a modal style
     const imageUrl = product.images && product.images.length > 0 ? product.images[0] : '';
     const discount = product.discount || 0;
     const discountedPrice = discount > 0 ? product.price * (1 - discount / 100) : product.price;
@@ -402,7 +400,6 @@ function viewProduct(productId) {
     
     document.body.appendChild(modal);
     
-    // Add animation styles
     const style = document.createElement('style');
     style.textContent = `
         @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
@@ -436,7 +433,6 @@ function showToast(productName) {
     
     document.body.appendChild(toast);
     
-    // Auto remove after 5 seconds
     setTimeout(() => {
         if (toast.parentNode) toast.remove();
     }, 5000);
@@ -459,8 +455,6 @@ function addToCart(productId) {
     saveCart();
     updateCartCount();
     renderCartSidebar();
-    
-    // Show toast
     showToast(product.name);
 }
 
@@ -512,7 +506,6 @@ function updateCartCount() {
 // CART SIDEBAR
 // ============================================
 function renderCartSidebar() {
-    // Check if sidebar exists, if not create it
     let sidebar = document.getElementById('cartSidebar');
     if (!sidebar) {
         sidebar = document.createElement('div');
@@ -524,7 +517,6 @@ function renderCartSidebar() {
         `;
         document.body.appendChild(sidebar);
         
-        // Overlay
         const overlay = document.createElement('div');
         overlay.id = 'cartOverlay';
         overlay.style.cssText = `
@@ -554,7 +546,6 @@ function renderCartSidebar() {
         return;
     }
     
-    // Calculate totals
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const deliveryFee = settings.deliveryFee || 500;
     const freeThreshold = settings.freeDeliveryThreshold || 5000;
@@ -644,32 +635,27 @@ function toggleCartSidebar() {
 }
 
 // ============================================
-// CHECKOUT (Placeholder)
+// CHECKOUT
 // ============================================
 function checkout() {
     if (cart.length === 0) {
         alert('🛒 Your cart is empty!');
         return;
     }
-    
-    // Close cart
     toggleCartSidebar();
-    
-    // Show checkout message
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const deliveryFee = settings.deliveryFee || 500;
-    const freeThreshold = settings.freeDeliveryThreshold || 5000;
-    const isFreeDelivery = freeThreshold > 0 && subtotal >= freeThreshold;
-    const total = subtotal + (isFreeDelivery ? 0 : deliveryFee);
-    
-    alert(`🛒 Checkout Summary:
-    
-Items: ${cart.reduce((sum, i) => sum + i.quantity, 0)}
-Subtotal: ₦${subtotal.toLocaleString()}
-Delivery: ${isFreeDelivery ? '🎉 FREE' : `₦${deliveryFee.toLocaleString()}`}
-Total: ₦${total.toLocaleString()}
+    loadCheckoutPage();
+}
 
-📝 Checkout page coming soon!`);
+// ============================================
+// LOAD CHECKOUT PAGE
+// ============================================
+function loadCheckoutPage() {
+    import('./checkout.js').then(module => {
+        module.loadCheckoutPage();
+    }).catch(err => {
+        console.error('Error loading checkout:', err);
+        alert('Error loading checkout page. Please try again.');
+    });
 }
 
 // ============================================
@@ -722,6 +708,7 @@ window.removeFromCart = removeFromCart;
 window.updateQuantity = updateQuantity;
 window.clearCart = clearCart;
 window.checkout = checkout;
+window.loadCheckoutPage = loadCheckoutPage;
 window.showToast = showToast;
 
 // ============================================
@@ -731,4 +718,4 @@ document.addEventListener('DOMContentLoaded', () => {
     loadData();
 });
 
-console.log('✅ Tadaa! Customer website with premium cart ready!');
+console.log('✅ Tadaa! Customer website with premium cart and checkout ready!');
