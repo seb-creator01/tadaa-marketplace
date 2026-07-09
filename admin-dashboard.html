@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tadaa! Admin</title>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; background: #f3f4f6; }
+        .sidebar { width: 220px; background: #000; color: #fff; position: fixed; height: 100%; padding: 20px 0; }
+        .sidebar h2 { color: #FFD700; padding: 0 20px; font-family: 'Cormorant Garamond', serif; }
+        .sidebar a { display: block; padding: 12px 20px; color: #9CA3AF; text-decoration: none; cursor: pointer; }
+        .sidebar a:hover, .sidebar a.active { background: #1a1a1a; color: #FFD700; }
+        .content { margin-left: 220px; padding: 20px; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 16px 24px; border-radius: 12px; margin-bottom: 20px; }
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+        .stat-card { background: #fff; padding: 20px; border-radius: 12px; text-align: center; }
+        .stat-card h3 { margin: 0; font-size: 28px; }
+        .stat-card p { margin: 4px 0 0; color: #6B7280; font-size: 14px; }
+        .card { background: #fff; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; }
+        .btn-primary { background: #FFD700; color: #000; }
+        .btn-danger { background: #EF4444; color: #fff; }
+        .btn-warning { background: #F59E0B; color: #fff; }
+        .btn-sm { padding: 4px 12px; font-size: 12px; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 4px; }
+        .form-group input { width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; }
+        .logout { color: #EF4444 !important; border-top: 1px solid #1a1a1a; margin-top: 20px; padding-top: 12px; }
+    </style>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>✨ Tadaa!</h2>
+    <a href="#" class="active" onclick="loadPage('dashboard')">📊 Dashboard</a>
+    <a href="#" onclick="loadPage('categories')">📂 Categories</a>
+    <a href="#" onclick="loadPage('products')">📦 Products</a>
+    <a href="#" onclick="loadPage('orders')">📋 Orders</a>
+    <a href="#" onclick="loadPage('inventory')">📊 Inventory</a>
+    <a href="#" onclick="loadPage('settings')">⚙️ Settings</a>
+    <a href="#" class="logout" id="logoutBtn">🚪 Logout</a>
+</div>
+
+<div class="content">
+    <div class="topbar">
+        <h2 id="pageTitle" style="margin:0;">Dashboard</h2>
+        <span id="adminEmail" style="color:#6B7280;">admin@tadaa.com</span>
+    </div>
+    <div id="pageContent">
+        <p>Loading...</p>
+    </div>
+</div>
+
+<script>
+    // ============================================
+    // FIREBASE SETUP
+    // ============================================
+    const firebaseConfig = {
+        apiKey: "AIzaSyDCXnlAqyt2512HlvBOsSfMZ6O-xg0c94Y",
+        authDomain: "tadaa-marketplace.firebaseapp.com",
+        projectId: "tadaa-marketplace",
+        storageBucket: "tadaa-marketplace.firebasestorage.app",
+        messagingSenderId: "56983478470",
+        appId: "1:56983478470:web:0efdf7f44b19e88a6237c7"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    console.log('🔥 Firebase ready');
+
+    // ============================================
+    // DOM ELEMENTS
+    // ============================================
+    const pageContent = document.getElementById('pageContent');
+    const pageTitle = document.getElementById('pageTitle');
+    const adminEmail = document.getElementById('adminEmail');
+
+    // ============================================
+    // AUTH CHECK
+    // ============================================
+    auth.onAuthStateChanged((user) => {
+        if (!user) {
+            window.location.href = '/tadaa-marketplace/admin.html';
+            return;
+        }
+        adminEmail.textContent = user.email;
+        loadPage('dashboard');
+    });
+
+    // ============================================
+    // LOGOUT
+    // ============================================
+    document.getElementById('logoutBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        auth.signOut().then(() => {
+            window.location.href = '/tadaa-marketplace/admin.html';
+        });
+    });
+
+    // ============================================
+    // PAGE LOADER
+    // ============================================
+    function loadPage(page) {
+        console.log('Loading:', page);
+        pageTitle.textContent = page.charAt(0).toUpperCase() + page.slice(1);
+        document.querySelectorAll('.sidebar a').forEach(l => l.classList.remove('active'));
+        document.querySelectorAll('.sidebar a').forEach(l => {
+            if (l.textContent.toLowerCase().includes(page)) {
+                l.classList.add('active');
+            }
+        });
+
+        switch(page) {
+            case 'dashboard': loadDashboard(); break;
+            case 'categories': loadCategories(); break;
+            default: loadDashboard();
+        }
+    }
+
+    // ============================================
+    // DASHBOARD
+    // ============================================
+    async function loadDashboard() {
+        pageContent.innerHTML = `
+            <div class="stats">
+                <div class="stat-card"><h3 id="prodCount">...</h3><p>📦 Products</p></div>
+                <div class="stat-card"><h3 id="catCount">...</h3><p>📂 Categories</p></div>
+                <div class="stat-card"><h3 id="ordCount">...</h3><p>📋 Orders</p></div>
+                <div class="stat-card"><h3 id="salesCount">₦0</h3><p>💰 Sales</p></div>
+            </div>
+            <div class="card">
+                <h3>📋 Recent Orders</h3>
+                <div id="recentOrders">Loading...</div>
+            </div>
+        `;
+
+        try {
+            const products = await db.collection('products').get();
+            const categories = await db.collection('categories').get();
+            const orders = await db.collection('orders').get();
+            document.getElementById('prodCount').textContent = products.size;
+            document.getElementById('catCount').textContent = categories.size;
+            document.getElementById('ordCount').textContent = orders.size;
+
+            const recent = await db.collection('orders').orderBy('createdAt', 'desc').limit(5).get();
+            const container = document.getElementById('recentOrders');
+            if (recent.empty) {
+                container.innerHTML = '<p>No orders yet.</p>';
+            } else {
+                let html = '<table><tr><th>Order</th><th>Customer</th><th>Total</th></tr>';
+                recent.forEach(d => {
+                    const data = d.data();
+                    html += `<tr>
+                        <td>${data.orderId || 'N/A'}</td>
+                        <td>${data.customer?.fullName || 'Unknown'}</td>
+                        <td>₦${data.totals?.grandTotal?.toLocaleString() || 0}</td>
+                    </tr>`;
+                });
+                html += '</table>';
+                container.innerHTML = html;
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    // ============================================
+    // CATEGORIES
+    // ============================================
+    async function loadCategories() {
+        pageContent.innerHTML = `
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                    <h3 style="margin:0;">📂 Categories</h3>
+                    <button class="btn btn-primary" onclick="showAddCategory()">+ Add Category</button>
+                </div>
+                <div id="categoriesList">Loading...</div>
+            </div>
+        `;
+
+        try {
+            const snap = await db.collection('categories').orderBy('order', 'asc').get();
+            const container = document.getElementById('categoriesList');
+            if (snap.empty) {
+                container.innerHTML = '<p>No categories yet.</p>';
+                return;
+            }
+            let html = '<table><tr><th>Name</th><th>Slug</th><th>Actions</th></tr>';
+            snap.forEach(doc => {
+                const data = doc.data();
+                html += `<tr>
+                    <td><strong>${data.name}</strong></td>
+                    <td>${data.slug || '-'}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editCategory('${doc.id}')">✏️</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteCategory('${doc.id}')">🗑️</button>
+                    </td>
+                </tr>`;
+            });
+            html += '</table>';
+            container.innerHTML = html;
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    // ============================================
+    // ADD CATEGORY
+    // ============================================
+    window.showAddCategory = function() {
+        const container = document.getElementById('categoriesList');
+        container.innerHTML = `
+            <div style="background:#f9fafb; padding:16px; border-radius:8px; margin-top:12px;">
+                <h4>Add New Category</h4>
+                <div class="form-group">
+                    <label>Category Name</label>
+                    <input type="text" id="catName" placeholder="e.g., Electronics">
+                </div>
+                <button class="btn btn-primary" onclick="saveCategory()">Save</button>
+                <button class="btn" style="background:#e5e7eb;" onclick="loadCategories()">Cancel</button>
+            </div>
+        `;
+    };
+
+    window.saveCategory = async function() {
+        const name = document.getElementById('catName').value.trim();
+        if (!name) { alert('Name is required!'); return; }
+        try {
+            await db.collection('categories').add({
+                name: name,
+                slug: name.toLowerCase().replace(/ /g, '-'),
+                order: 0,
+                featured: false,
+                createdAt: new Date().toISOString()
+            });
+            alert('✅ Category added!');
+            loadCategories();
+        } catch (e) {
+            alert('Error: ' + e.message);
+        }
+    };
+
+    window.deleteCategory = async function(id) {
+        if (confirm('Delete this category?')) {
+            try {
+                await db.collection('categories').doc(id).delete();
+                alert('✅ Deleted!');
+                loadCategories();
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+    };
+
+    window.editCategory = async function(id) {
+        const newName = prompt('Enter new category name:');
+        if (newName && newName.trim()) {
+            try {
+                await db.collection('categories').doc(id).update({
+                    name: newName.trim(),
+                    slug: newName.trim().toLowerCase().replace(/ /g, '-')
+                });
+                alert('✅ Updated!');
+                loadCategories();
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+    };
+
+    console.log('✅ Admin dashboard ready!');
+</script>
+
+</body>
+</html>
