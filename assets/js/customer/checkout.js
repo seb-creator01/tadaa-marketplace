@@ -12,10 +12,6 @@ function generateOrderId() {
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
     
-    // Get the count of orders today
-    const dateStr = `${year}-${month}-${day}`;
-    
-    // We'll use a counter stored in localStorage to generate sequential IDs
     let counter = parseInt(localStorage.getItem('tadaa_order_counter') || '0') + 1;
     localStorage.setItem('tadaa_order_counter', counter.toString());
     
@@ -43,7 +39,7 @@ function loadCheckoutPage() {
         return;
     }
     
-    // Get settings from window (set by app.js)
+    // Get settings from window
     const settings = window.tadaaSettings || {};
     const deliveryFee = settings.deliveryFee || 500;
     const freeThreshold = settings.freeDeliveryThreshold || 5000;
@@ -259,6 +255,9 @@ async function placeOrder(cart, settings) {
     };
     
     try {
+        // Get Firestore reference from window
+        const db = window.tadaaDb || firebase.firestore();
+        
         // Save to Firestore
         const docRef = await db.collection('orders').add(orderData);
         console.log('✅ Order saved! ID:', docRef.id, 'Order ID:', orderId);
@@ -317,5 +316,8 @@ function showOrderSuccess(docId, orderId, orderData) {
         </div>
     `;
 }
+
+// Make functions available globally
+window.loadCheckoutPage = loadCheckoutPage;
 
 console.log('✅ Checkout module loaded!');
