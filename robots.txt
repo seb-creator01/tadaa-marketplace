@@ -1,0 +1,5 @@
+# Robots.txt for Tadaa! Marketplace
+User-agent: *
+Allow: /
+
+Sitemap: https://seb-creator01.github.io/tadaa-marketplace/sitemap.xml
