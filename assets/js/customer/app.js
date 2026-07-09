@@ -1,5 +1,6 @@
 // ============================================
-// TADAA! - CUSTOMER WEBSITE WITH PREMIUM CART
+// TADAA! - CUSTOMER WEBSITE (ALL-IN-ONE)
+// Includes: Cart, Checkout, Order Placement
 // ============================================
 
 // ===== Firebase Config =====
@@ -33,6 +34,22 @@ let settings = {};
 let cart = [];
 let currentCategory = 'all';
 let searchTerm = '';
+
+// ============================================
+// GENERATE ORDER ID
+// ============================================
+function generateOrderId() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    
+    let counter = parseInt(localStorage.getItem('tadaa_order_counter') || '0') + 1;
+    localStorage.setItem('tadaa_order_counter', counter.toString());
+    
+    const orderNumber = String(counter).padStart(6, '0');
+    return `TAD-${year}${month}${day}-${orderNumber}`;
+}
 
 // ============================================
 // LOAD CART FROM STORAGE
@@ -71,7 +88,6 @@ async function loadData() {
         const settingsDoc = await db.collection('siteSettings').doc('settings').get();
         settings = settingsDoc.data() || {};
         window.tadaaSettings = settings;
-        window.tadaaDb = db; // Make db available globally for checkout
         
         const categoriesSnap = await db.collection('categories').orderBy('order', 'asc').get();
         categories = [];
@@ -85,13 +101,7 @@ async function loadData() {
             products.push({ id: doc.id, ...doc.data() });
         });
         
-        console.log('✅ Data loaded:', {
-            settings: settings.storeName,
-            categories: categories.length,
-            products: products.length,
-            cart: cart.length
-        });
-        
+        console.log('✅ Data loaded');
         renderWebsite();
         updateCartCount();
         
@@ -101,8 +111,8 @@ async function loadData() {
             mainContent.innerHTML = `
                 <div style="text-align:center; padding:60px 20px;">
                     <h2>😅 Oops! Something went wrong</h2>
-                    <p style="color:#6B7280;">We're having trouble loading the store. Please try again later.</p>
-                    <button onclick="location.reload()" style="background:#FFD700; border:none; padding:12px 24px; border-radius:50px; margin-top:20px; cursor:pointer;">Refresh Page</button>
+                    <p style="color:#6B7280;">Please refresh and try again.</p>
+                    <button onclick="location.reload()" style="background:#FFD700; border:none; padding:12px 24px; border-radius:50px; margin-top:20px; cursor:pointer;">Refresh</button>
                 </div>
             `;
         }
@@ -177,12 +187,8 @@ function renderHero() {
                     ${settings.announcementBanner || 'Your premium online marketplace'}
                 </p>
                 <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
-                    <button onclick="scrollToProducts()" style="background:#FFD700; color:#000; border:none; padding:14px 32px; border-radius:50px; font-size:16px; font-weight:600; cursor:pointer; transition:transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                        🛍️ Shop Now
-                    </button>
-                    <button onclick="scrollToCategories()" style="background:transparent; color:#FFD700; border:2px solid #FFD700; padding:14px 32px; border-radius:50px; font-size:16px; font-weight:600; cursor:pointer; transition:transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                        Browse Categories
-                    </button>
+                    <button onclick="scrollToProducts()" style="background:#FFD700; color:#000; border:none; padding:14px 32px; border-radius:50px; font-size:16px; font-weight:600; cursor:pointer;">🛍️ Shop Now</button>
+                    <button onclick="scrollToCategories()" style="background:transparent; color:#FFD700; border:2px solid #FFD700; padding:14px 32px; border-radius:50px; font-size:16px; font-weight:600; cursor:pointer;">Browse Categories</button>
                 </div>
             </div>
         </div>
@@ -215,18 +221,14 @@ function renderCategories() {
     if (!categoriesDiv) return;
     
     if (categories.length === 0) {
-        categoriesDiv.innerHTML = `
-            <div style="padding:20px; text-align:center; color:#6B7280;">
-                <p>No categories available yet.</p>
-            </div>
-        `;
+        categoriesDiv.innerHTML = `<div style="padding:20px; text-align:center; color:#6B7280;"><p>No categories available yet.</p></div>`;
         return;
     }
     
     let html = `
         <div style="max-width:1200px; margin:0 auto; padding:0 20px;">
             <h2 style="font-family:'Cormorant Garamond', serif; font-size:28px; color:#1F2937; margin-bottom:20px;">📂 Categories</h2>
-            <div style="display:flex; gap:12px; overflow-x:auto; padding-bottom:12px; scrollbar-width:none; -webkit-overflow-scrolling:touch;">
+            <div style="display:flex; gap:12px; overflow-x:auto; padding-bottom:12px; scrollbar-width:none;">
                 <button onclick="filterByCategory('all')" class="category-btn" style="padding:10px 20px; border-radius:50px; border:2px solid #FFD700; background:${currentCategory === 'all' ? '#FFD700' : 'transparent'}; color:${currentCategory === 'all' ? '#000' : '#1F2937'}; cursor:pointer; white-space:nowrap; font-weight:600; transition:all 0.3s; flex-shrink:0;">
                     All
                 </button>
@@ -270,7 +272,6 @@ function renderProducts() {
             <div style="max-width:1200px; margin:0 auto; padding:40px 20px; text-align:center; color:#6B7280;">
                 <p style="font-size:48px; margin-bottom:16px;">🛍️</p>
                 <p style="font-size:20px;">No products found</p>
-                <p>Try adjusting your search or filter</p>
                 <button onclick="filterByCategory('all'); searchTerm=''; document.getElementById('searchInput').value=''; filterProducts();" style="background:#FFD700; border:none; padding:10px 24px; border-radius:50px; margin-top:16px; cursor:pointer; font-weight:600;">Show All Products</button>
             </div>
         `;
@@ -321,9 +322,7 @@ function renderProducts() {
 // ============================================
 // FILTER PRODUCTS
 // ============================================
-function filterProducts() {
-    renderProducts();
-}
+function filterProducts() { renderProducts(); }
 
 function filterByCategory(categoryId) {
     currentCategory = categoryId;
@@ -334,13 +333,8 @@ function filterByCategory(categoryId) {
 // ============================================
 // SCROLL FUNCTIONS
 // ============================================
-function scrollToProducts() {
-    document.getElementById('products-section')?.scrollIntoView({ behavior: 'smooth' });
-}
-
-function scrollToCategories() {
-    document.getElementById('categories-section')?.scrollIntoView({ behavior: 'smooth' });
-}
+function scrollToProducts() { document.getElementById('products-section')?.scrollIntoView({ behavior: 'smooth' }); }
+function scrollToCategories() { document.getElementById('categories-section')?.scrollIntoView({ behavior: 'smooth' }); }
 
 function toggleSearch() {
     const searchBar = document.getElementById('searchBar');
@@ -365,46 +359,30 @@ function viewProduct(productId) {
     const inStock = product.inStock !== false && (product.stockCount || 0) > 0;
     
     const modal = document.createElement('div');
-    modal.style.cssText = `
-        position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px; animation:fadeIn 0.3s;
-    `;
+    modal.style.cssText = `position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px;`;
     modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
     
     modal.innerHTML = `
-        <div style="background:#fff; border-radius:24px; max-width:500px; width:100%; max-height:90vh; overflow-y:auto; padding:24px; position:relative; animation:slideUp 0.3s;">
+        <div style="background:#fff; border-radius:24px; max-width:500px; width:100%; max-height:90vh; overflow-y:auto; padding:24px; position:relative;">
             <button onclick="this.closest('div[style]').remove()" style="position:absolute; top:12px; right:16px; background:none; border:none; font-size:24px; cursor:pointer;">✕</button>
-            
             <div style="border-radius:16px; overflow:hidden; background:#f3f4f6; margin-bottom:16px;">
                 ${imageUrl ? `<img src="${imageUrl}" alt="${product.name}" style="width:100%; height:auto; max-height:300px; object-fit:cover;">` : '<div style="padding:60px; text-align:center; font-size:48px;">📷</div>'}
             </div>
-            
             <h2 style="font-family:'Cormorant Garamond', serif; font-size:24px; margin:0 0 8px;">${product.name}</h2>
             <p style="color:#6B7280; margin:0 0 12px;">${product.categoryName || 'Uncategorized'}</p>
-            
             <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
                 <span style="font-size:28px; font-weight:700; color:#000;">₦${Math.round(discountedPrice).toLocaleString()}</span>
                 ${discount > 0 ? `<span style="font-size:16px; color:#9CA3AF; text-decoration:line-through;">₦${product.price.toLocaleString()}</span>` : ''}
                 ${discount > 0 ? `<span style="background:#EF4444; color:#fff; padding:2px 12px; border-radius:50px; font-size:12px; font-weight:700;">${discount}% OFF</span>` : ''}
             </div>
-            
             <p style="color:#6B7280; margin:0 0 16px;">${product.description || 'No description available.'}</p>
-            
             <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
                 <span style="color:#6B7280; font-size:14px;">Stock: ${inStock ? `✅ ${product.stockCount || 0} available` : '❌ Out of Stock'}</span>
             </div>
-            
             ${inStock ? `<button onclick="event.stopPropagation(); addToCart('${product.id}'); this.closest('div[style]').remove();" style="width:100%; background:#FFD700; color:#000; border:none; padding:14px; border-radius:12px; font-size:18px; font-weight:600; cursor:pointer;">🛒 Add to Cart</button>` : `<button style="width:100%; background:#9CA3AF; color:#fff; border:none; padding:14px; border-radius:12px; font-size:18px; font-weight:600; cursor:not-allowed;">Out of Stock</button>`}
         </div>
     `;
-    
     document.body.appendChild(modal);
-    
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-        @keyframes slideUp { from { transform:translateY(30px); opacity:0; } to { transform:translateY(0); opacity:1; } }
-    `;
-    document.head.appendChild(style);
 }
 
 // ============================================
@@ -415,7 +393,6 @@ function showToast(productName) {
     toast.style.cssText = `
         position:fixed; bottom:20px; right:20px; background:#fff; color:#1F2937; padding:16px 20px; border-radius:16px; box-shadow:0 8px 32px rgba(0,0,0,0.2); z-index:2000; max-width:380px; width:100%; animation:slideUp 0.3s ease; border-left:4px solid #FFD700;
     `;
-    
     toast.innerHTML = `
         <div style="display:flex; align-items:center; gap:12px;">
             <span style="font-size:24px;">🛒</span>
@@ -429,12 +406,8 @@ function showToast(productName) {
             <button onclick="this.closest('div[style]').remove();" style="flex:1; background:#f3f4f6; color:#1F2937; border:none; padding:8px; border-radius:8px; font-weight:600; cursor:pointer;">Continue Shopping</button>
         </div>
     `;
-    
     document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        if (toast.parentNode) toast.remove();
-    }, 5000);
+    setTimeout(() => { if (toast.parentNode) toast.remove(); }, 5000);
 }
 
 // ============================================
@@ -509,19 +482,12 @@ function renderCartSidebar() {
     if (!sidebar) {
         sidebar = document.createElement('div');
         sidebar.id = 'cartSidebar';
-        sidebar.style.cssText = `
-            position:fixed; top:0; right:-400px; width:380px; height:100%; background:#fff; z-index:1500; 
-            transition:right 0.3s ease; box-shadow:-4px 0 24px rgba(0,0,0,0.15); 
-            display:flex; flex-direction:column;
-        `;
+        sidebar.style.cssText = `position:fixed; top:0; right:-400px; width:380px; height:100%; background:#fff; z-index:1500; transition:right 0.3s ease; box-shadow:-4px 0 24px rgba(0,0,0,0.15); display:flex; flex-direction:column;`;
         document.body.appendChild(sidebar);
         
         const overlay = document.createElement('div');
         overlay.id = 'cartOverlay';
-        overlay.style.cssText = `
-            position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:1400; 
-            display:none; cursor:pointer;
-        `;
+        overlay.style.cssText = `position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:1400; display:none; cursor:pointer;`;
         overlay.onclick = toggleCartSidebar;
         document.body.appendChild(overlay);
     }
@@ -537,7 +503,6 @@ function renderCartSidebar() {
             <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px; color:#9CA3AF; text-align:center;">
                 <p style="font-size:48px; margin:0 0 16px;">🛒</p>
                 <p style="font-size:18px; margin:0;">Your cart is empty</p>
-                <p style="font-size:14px;">Start shopping to add items!</p>
                 <button onclick="toggleCartSidebar()" style="background:#FFD700; color:#000; border:none; padding:12px 24px; border-radius:50px; margin-top:16px; cursor:pointer; font-weight:600;">Continue Shopping</button>
             </div>
         `;
@@ -567,14 +532,13 @@ function renderCartSidebar() {
     cart.forEach(item => {
         const itemTotal = item.price * item.quantity;
         const imageUrl = item.images && item.images.length > 0 ? item.images[0] : '';
-        
         cartHtml += `
             <div style="display:flex; gap:12px; padding:12px 0; border-bottom:1px solid #f3f4f6;">
                 <div style="width:60px; height:60px; border-radius:8px; overflow:hidden; background:#f3f4f6; flex-shrink:0;">
                     ${imageUrl ? `<img src="${imageUrl}" style="width:100%; height:100%; object-fit:cover;">` : '📷'}
                 </div>
                 <div style="flex:1; min-width:0;">
-                    <p style="margin:0; font-weight:600; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.name}</p>
+                    <p style="margin:0; font-weight:600; font-size:14px;">${item.name}</p>
                     <p style="margin:4px 0 0; font-size:14px; font-weight:700;">₦${item.price.toLocaleString()}</p>
                     <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
                         <button onclick="updateQuantity('${item.id}', -1)" style="background:#f3f4f6; border:none; width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:16px;">−</button>
@@ -605,12 +569,11 @@ function renderCartSidebar() {
                 <span>Total</span>
                 <span style="color:#FFD700; font-size:22px;">₦${total.toLocaleString()}</span>
             </div>
-            <button onclick="checkout()" style="width:100%; background:#FFD700; color:#000; border:none; padding:14px; border-radius:12px; font-size:18px; font-weight:700; cursor:pointer; margin-top:12px; transition:background 0.3s;" onmouseover="this.style.background='#E6C200'" onmouseout="this.style.background='#FFD700'">
+            <button onclick="checkout()" style="width:100%; background:#FFD700; color:#000; border:none; padding:14px; border-radius:12px; font-size:18px; font-weight:700; cursor:pointer; margin-top:12px;">
                 Proceed to Checkout →
             </button>
         </div>
     `;
-    
     sidebar.innerHTML = cartHtml;
     if (overlay) overlay.style.display = 'block';
 }
@@ -634,7 +597,7 @@ function toggleCartSidebar() {
 }
 
 // ============================================
-// CHECKOUT
+// CHECKOUT - LOAD CHECKOUT PAGE
 // ============================================
 function checkout() {
     if (cart.length === 0) {
@@ -646,15 +609,230 @@ function checkout() {
 }
 
 // ============================================
-// LOAD CHECKOUT PAGE
+// LOAD CHECKOUT PAGE (Built-in)
 // ============================================
 function loadCheckoutPage() {
-    import('./checkout.js').then(module => {
-        module.loadCheckoutPage();
-    }).catch(err => {
-        console.error('Error loading checkout:', err);
-        alert('Error loading checkout page. Please try again.');
+    if (cart.length === 0) {
+        window.location.href = '/tadaa-marketplace/';
+        return;
+    }
+    
+    const deliveryFee = settings.deliveryFee || 500;
+    const freeThreshold = settings.freeDeliveryThreshold || 5000;
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const isFreeDelivery = freeThreshold > 0 && subtotal >= freeThreshold;
+    const deliveryCharge = isFreeDelivery ? 0 : deliveryFee;
+    const total = subtotal + deliveryCharge;
+    
+    if (!mainContent) return;
+    
+    mainContent.innerHTML = `
+        <div style="max-width:900px; margin:0 auto; padding:20px;">
+            <h1 style="font-family:'Cormorant Garamond', serif; font-size:32px; color:#1F2937; margin-bottom:8px;">🛒 Checkout</h1>
+            <p style="color:#6B7280; margin-bottom:24px;">Enter your details to complete your order</p>
+            
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+                <div>
+                    <form id="checkoutForm" style="background:#fff; border-radius:16px; padding:24px; box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+                        <h3 style="font-family:'Cormorant Garamond', serif; font-size:20px; margin:0 0 16px;">📋 Your Details</h3>
+                        
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block; font-weight:600; margin-bottom:4px;">Full Name *</label>
+                            <input type="text" id="fullName" placeholder="e.g., John Doe" required style="width:100%; padding:12px; border:2px solid #E5E7EB; border-radius:10px; font-size:16px;">
+                        </div>
+                        
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block; font-weight:600; margin-bottom:4px;">Phone Number *</label>
+                            <input type="tel" id="phoneNumber" placeholder="e.g., 08012345678" required style="width:100%; padding:12px; border:2px solid #E5E7EB; border-radius:10px; font-size:16px;">
+                        </div>
+                        
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block; font-weight:600; margin-bottom:4px;">Email Address</label>
+                            <input type="email" id="emailAddress" placeholder="e.g., john@example.com" style="width:100%; padding:12px; border:2px solid #E5E7EB; border-radius:10px; font-size:16px;">
+                            <small style="color:#6B7280;">We'll send your order confirmation here (optional)</small>
+                        </div>
+                        
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block; font-weight:600; margin-bottom:4px;">Delivery Address *</label>
+                            <textarea id="deliveryAddress" placeholder="e.g., 12, Awolowo Road, Ikoyi, Lagos" required style="width:100%; padding:12px; border:2px solid #E5E7EB; border-radius:10px; font-size:16px; min-height:80px; resize:vertical;"></textarea>
+                        </div>
+                        
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block; font-weight:600; margin-bottom:4px;">Delivery Instructions</label>
+                            <input type="text" id="deliveryInstructions" placeholder="e.g., Call before arrival" style="width:100%; padding:12px; border:2px solid #E5E7EB; border-radius:10px; font-size:16px;">
+                        </div>
+                        
+                        <div id="formError" style="background:#FEE2E2; color:#DC2626; padding:12px; border-radius:10px; display:none; margin-bottom:16px;"></div>
+                        
+                        <button type="submit" style="width:100%; background:#FFD700; color:#000; border:none; padding:16px; border-radius:12px; font-size:18px; font-weight:700; cursor:pointer;">
+                            🛒 Place Order - ₦${total.toLocaleString()}
+                        </button>
+                    </form>
+                </div>
+                
+                <div>
+                    <div style="background:#fff; border-radius:16px; padding:24px; box-shadow:0 2px 12px rgba(0,0,0,0.08); position:sticky; top:20px;">
+                        <h3 style="font-family:'Cormorant Garamond', serif; font-size:20px; margin:0 0 16px;">📦 Order Summary</h3>
+                        
+                        <div style="max-height:300px; overflow-y:auto; margin-bottom:16px; border-bottom:1px solid #E5E7EB;">
+                            ${cart.map(item => `
+                                <div style="display:flex; gap:12px; padding:8px 0; border-bottom:1px solid #F3F4F6;">
+                                    <div style="width:50px; height:50px; border-radius:8px; overflow:hidden; background:#F3F4F6; flex-shrink:0;">
+                                        ${item.images && item.images.length > 0 ? `<img src="${item.images[0]}" style="width:100%; height:100%; object-fit:cover;">` : '📷'}
+                                    </div>
+                                    <div style="flex:1; min-width:0;">
+                                        <p style="margin:0; font-weight:600; font-size:14px;">${item.name}</p>
+                                        <p style="margin:0; font-size:12px; color:#6B7280;">Qty: ${item.quantity} × ₦${item.price.toLocaleString()}</p>
+                                    </div>
+                                    <div style="font-weight:600; font-size:14px;">₦${(item.price * item.quantity).toLocaleString()}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <div>
+                            <div style="display:flex; justify-content:space-between; padding:4px 0;">
+                                <span style="color:#6B7280;">Subtotal</span>
+                                <span style="font-weight:600;">₦${subtotal.toLocaleString()}</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; padding:4px 0;">
+                                <span style="color:#6B7280;">Delivery</span>
+                                <span style="font-weight:600; color:${isFreeDelivery ? '#10B981' : '#1F2937'};">${isFreeDelivery ? '🎉 FREE' : `₦${deliveryFee.toLocaleString()}`}</span>
+                            </div>
+                            ${isFreeDelivery ? `<div style="background:#D1FAE5; color:#065F46; padding:8px 12px; border-radius:8px; margin:8px 0; text-align:center; font-size:13px; font-weight:600;">🎉 You qualify for FREE delivery!</div>` : ''}
+                            <div style="display:flex; justify-content:space-between; border-top:2px solid #E5E7EB; padding-top:12px; margin-top:8px; font-size:20px; font-weight:700;">
+                                <span>Total</span>
+                                <span style="color:#FFD700;">₦${total.toLocaleString()}</span>
+                            </div>
+                        </div>
+                        
+                        <div style="background:#F9FAFB; border-radius:8px; padding:12px; font-size:13px; color:#6B7280; margin-top:12px;">
+                            <p style="margin:0;">🔒 Secure checkout. Your information is safe.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await placeOrder();
     });
+}
+
+// ============================================
+// PLACE ORDER
+// ============================================
+async function placeOrder() {
+    const fullName = document.getElementById('fullName').value.trim();
+    const phoneNumber = document.getElementById('phoneNumber').value.trim();
+    const emailAddress = document.getElementById('emailAddress').value.trim();
+    const deliveryAddress = document.getElementById('deliveryAddress').value.trim();
+    const deliveryInstructions = document.getElementById('deliveryInstructions').value.trim();
+    
+    const errorDiv = document.getElementById('formError');
+    if (!fullName) { errorDiv.textContent = '❌ Please enter your full name'; errorDiv.style.display = 'block'; return; }
+    if (!phoneNumber) { errorDiv.textContent = '❌ Please enter your phone number'; errorDiv.style.display = 'block'; return; }
+    if (!deliveryAddress) { errorDiv.textContent = '❌ Please enter your delivery address'; errorDiv.style.display = 'block'; return; }
+    errorDiv.style.display = 'none';
+    
+    const deliveryFee = settings.deliveryFee || 500;
+    const freeThreshold = settings.freeDeliveryThreshold || 5000;
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const isFreeDelivery = freeThreshold > 0 && subtotal >= freeThreshold;
+    const deliveryCharge = isFreeDelivery ? 0 : deliveryFee;
+    const total = subtotal + deliveryCharge;
+    
+    const orderId = generateOrderId();
+    
+    const orderData = {
+        orderId: orderId,
+        customer: {
+            fullName: fullName,
+            phoneNumber: phoneNumber,
+            emailAddress: emailAddress || '',
+            deliveryAddress: deliveryAddress,
+            deliveryInstructions: deliveryInstructions || ''
+        },
+        items: cart.map(item => ({
+            productId: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            image: item.images && item.images.length > 0 ? item.images[0] : '',
+            total: item.price * item.quantity
+        })),
+        totals: {
+            subtotal: subtotal,
+            deliveryFee: deliveryCharge,
+            discountAmount: 0,
+            grandTotal: total
+        },
+        delivery: {
+            fee: deliveryCharge,
+            isFree: isFreeDelivery,
+            threshold: freeThreshold
+        },
+        payment: {
+            status: 'pending',
+            method: 'moniepoint',
+            transactionRef: '',
+            amountPaid: 0,
+            paidAt: null
+        },
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
+    
+    try {
+        const docRef = await db.collection('orders').add(orderData);
+        await db.collection('orders').doc(docRef.id).update({ firestoreId: docRef.id });
+        
+        localStorage.removeItem('tadaa_cart');
+        localStorage.removeItem('tadaa_order_counter');
+        cart = [];
+        updateCartCount();
+        
+        showOrderSuccess(docRef.id, orderId, orderData);
+        
+    } catch (error) {
+        console.error('Error placing order:', error);
+        errorDiv.textContent = '❌ Error placing order: ' + error.message;
+        errorDiv.style.display = 'block';
+    }
+}
+
+// ============================================
+// SHOW ORDER SUCCESS
+// ============================================
+function showOrderSuccess(docId, orderId, orderData) {
+    if (!mainContent) return;
+    
+    mainContent.innerHTML = `
+        <div style="max-width:600px; margin:40px auto; padding:20px; text-align:center;">
+            <div style="background:#D1FAE5; color:#065F46; padding:60px 40px; border-radius:24px; box-shadow:0 8px 32px rgba(0,0,0,0.1);">
+                <p style="font-size:64px; margin:0 0 16px;">🎉</p>
+                <h1 style="font-family:'Cormorant Garamond', serif; font-size:32px; color:#065F46; margin:0 0 8px;">Order Placed Successfully!</h1>
+                <p style="color:#065F46; font-size:18px;">Thank you for your order!</p>
+                <div style="background:#fff; border-radius:12px; padding:20px; margin:20px 0;">
+                    <p style="color:#6B7280; margin:0; font-size:14px;">Order ID</p>
+                    <p style="font-size:28px; font-weight:700; color:#000; margin:4px 0 0; letter-spacing:1px;">${orderId}</p>
+                </div>
+                <div style="text-align:left; background:#fff; border-radius:12px; padding:16px; margin:16px 0; font-size:14px;">
+                    <p style="margin:4px 0;"><strong>Customer:</strong> ${orderData.customer.fullName}</p>
+                    <p style="margin:4px 0;"><strong>Phone:</strong> ${orderData.customer.phoneNumber}</p>
+                    <p style="margin:4px 0;"><strong>Address:</strong> ${orderData.customer.deliveryAddress}</p>
+                    <p style="margin:8px 0 0; border-top:1px solid #E5E7EB; padding-top:8px;"><strong>Total:</strong> ₦${orderData.totals.grandTotal.toLocaleString()}</p>
+                    <p style="margin:4px 0 0;"><strong>Payment:</strong> Pending</p>
+                </div>
+                <div style="background:#FEF3C7; color:#92400E; padding:12px; border-radius:8px; font-size:14px; margin:12px 0;">
+                    ⏳ Your order is pending payment confirmation.
+                </div>
+                <button onclick="window.location.href='/tadaa-marketplace/'" style="background:#FFD700; color:#000; border:none; padding:12px 24px; border-radius:50px; font-size:16px; font-weight:600; cursor:pointer; margin-top:12px;">🛍️ Continue Shopping</button>
+            </div>
+        </div>
+    `;
 }
 
 // ============================================
@@ -717,4 +895,4 @@ document.addEventListener('DOMContentLoaded', () => {
     loadData();
 });
 
-console.log('✅ Tadaa! Customer website with premium cart and checkout ready!');
+console.log('✅ Tadaa! Website with built-in checkout ready!');
