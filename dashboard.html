@@ -8,15 +8,10 @@
     <link rel="stylesheet" href="/tadaa-marketplace/assets/css/main.css" />
     <link rel="stylesheet" href="/tadaa-marketplace/assets/css/admin.css" />
     
-    <script type="importmap">
-    {
-        "imports": {
-            "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
-            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js",
-            "firebase/auth": "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"
-        }
-    }
-    </script>
+    <!-- Load Firebase from CDN -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 </head>
 <body>
     <div class="admin-wrapper">
@@ -45,19 +40,15 @@
                 </div>
             </div>
             <div id="pageContent">
-                <p>Loading...</p>
+                <p style="padding: 40px; text-align: center; color: #6B7280;">Loading...</p>
             </div>
         </main>
     </div>
     
-    <script type="module">
+    <script>
         // ============================================
-        // SIMPLIFIED ADMIN DASHBOARD
+        // TADAA! - ADMIN DASHBOARD (STANDALONE)
         // ============================================
-        
-        import { initializeApp } from 'firebase/app';
-        import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
-        import { getFirestore, collection, getDocs, getCountFromServer, query, orderBy, limit, where, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
         
         // ===== Firebase Config =====
         const firebaseConfig = {
@@ -69,9 +60,10 @@
             appId: "1:56983478470:web:0efdf7f44b19e88a6237c7"
         };
         
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        // ===== Initialize Firebase =====
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
         
         console.log('🔥 Firebase initialized');
         
@@ -82,7 +74,8 @@
         const logoutBtn = document.getElementById('logoutBtn');
         
         // ===== Check Auth =====
-        onAuthStateChanged(auth, (user) => {
+        auth.onAuthStateChanged((user) => {
+            console.log('🔐 Auth state:', user ? user.email : 'No user');
             if (!user) {
                 window.location.href = '/tadaa-marketplace/admin.html';
                 return;
@@ -97,16 +90,15 @@
         if (logoutBtn) {
             logoutBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                signOut(auth).then(() => {
+                auth.signOut().then(() => {
                     window.location.href = '/tadaa-marketplace/admin.html';
                 });
             });
         }
         
-        // ===== Make loadPage global =====
-        window.loadPage = loadPage;
-        
-        // ===== Load Page =====
+        // ============================================
+        // PAGE LOADER
+        // ============================================
         function loadPage(page) {
             console.log('📄 Loading page:', page);
             pageTitle.textContent = page.charAt(0).toUpperCase() + page.slice(1);
@@ -114,37 +106,25 @@
             // Update active state
             document.querySelectorAll('.admin-sidebar-nav a').forEach(l => l.classList.remove('active'));
             document.querySelectorAll('.admin-sidebar-nav a').forEach(l => {
-                if (l.textContent.includes(page.charAt(0).toUpperCase() + page.slice(1)) || 
-                    (page === 'dashboard' && l.textContent.includes('Dashboard'))) {
+                if (l.textContent.toLowerCase().includes(page)) {
                     l.classList.add('active');
                 }
             });
             
             switch(page) {
-                case 'dashboard':
-                    loadDashboard();
-                    break;
-                case 'categories':
-                    loadCategories();
-                    break;
-                case 'products':
-                    loadProducts();
-                    break;
-                case 'orders':
-                    loadOrders();
-                    break;
-                case 'inventory':
-                    loadInventory();
-                    break;
-                case 'settings':
-                    loadSettings();
-                    break;
-                default:
-                    loadDashboard();
+                case 'dashboard': loadDashboard(); break;
+                case 'categories': loadCategories(); break;
+                case 'products': loadProducts(); break;
+                case 'orders': loadOrders(); break;
+                case 'inventory': loadInventory(); break;
+                case 'settings': loadSettings(); break;
+                default: loadDashboard();
             }
         }
         
-        // ===== Dashboard =====
+        // ============================================
+        // DASHBOARD
+        // ============================================
         async function loadDashboard() {
             pageContent.innerHTML = `
                 <div class="stats-grid">
@@ -176,41 +156,41 @@
             `;
             
             try {
-                const productsCount = await getCountFromServer(collection(db, 'products'));
-                const categoriesCount = await getCountFromServer(collection(db, 'categories'));
-                const ordersCount = await getCountFromServer(collection(db, 'orders'));
+                const productsSnap = await db.collection('products').get();
+                const categoriesSnap = await db.collection('categories').get();
+                const ordersSnap = await db.collection('orders').get();
                 
-                document.getElementById('totalProducts').textContent = productsCount.data().count;
-                document.getElementById('totalCategories').textContent = categoriesCount.data().count;
-                document.getElementById('totalOrders').textContent = ordersCount.data().count;
+                document.getElementById('totalProducts').textContent = productsSnap.size;
+                document.getElementById('totalCategories').textContent = categoriesSnap.size;
+                document.getElementById('totalOrders').textContent = ordersSnap.size;
                 
-                const recentQuery = query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(5));
-                const recentSnapshot = await getDocs(recentQuery);
+                const recentSnap = await db.collection('orders').orderBy('createdAt', 'desc').limit(5).get();
+                const container = document.getElementById('recentOrders');
                 
-                const recentOrdersDiv = document.getElementById('recentOrders');
-                if (recentSnapshot.empty) {
-                    recentOrdersDiv.innerHTML = '<p style="color: #9CA3AF;">No orders yet.</p>';
+                if (recentSnap.empty) {
+                    container.innerHTML = '<p style="color: #9CA3AF;">No orders yet.</p>';
                 } else {
-                    let html = `<table class="admin-table"><thead><tr><th>Order ID</th><th>Customer</th><th>Total</th><th>Status</th></tr></thead><tbody>`;
-                    recentSnapshot.forEach(doc => {
-                        const data = doc.data();
+                    let html = `<table class="admin-table"><thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Status</th></tr></thead><tbody>`;
+                    recentSnap.forEach(doc => {
+                        const d = doc.data();
                         html += `<tr>
-                            <td><strong>${data.orderId || 'N/A'}</strong></td>
-                            <td>${data.customer?.fullName || 'Unknown'}</td>
-                            <td>₦${data.totals?.grandTotal?.toLocaleString() || 0}</td>
-                            <td><span style="background: #F59E0B; color: white; padding: 2px 12px; border-radius: 50px; font-size: 12px;">${data.status || 'pending'}</span></td>
+                            <td><strong>${d.orderId || 'N/A'}</strong></td>
+                            <td>${d.customer?.fullName || 'Unknown'}</td>
+                            <td>₦${d.totals?.grandTotal?.toLocaleString() || 0}</td>
+                            <td><span style="background:#F59E0B; color:white; padding:2px 12px; border-radius:50px; font-size:12px;">${d.status || 'pending'}</span></td>
                         </tr>`;
                     });
                     html += `</tbody></table>`;
-                    recentOrdersDiv.innerHTML = html;
+                    container.innerHTML = html;
                 }
             } catch (error) {
-                console.error('Error:', error);
-                pageContent.innerHTML += `<p style="color: red;">Error: ${error.message}</p>`;
+                console.error('Dashboard error:', error);
             }
         }
         
-        // ===== Categories =====
+        // ============================================
+        // CATEGORIES
+        // ============================================
         async function loadCategories() {
             pageContent.innerHTML = `
                 <div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
@@ -223,22 +203,22 @@
             `;
             
             try {
-                const snapshot = await getDocs(query(collection(db, 'categories'), orderBy('order', 'asc')));
+                const snap = await db.collection('categories').orderBy('order', 'asc').get();
                 const container = document.getElementById('categoriesList');
                 
-                if (snapshot.empty) {
-                    container.innerHTML = '<p style="color: #9CA3AF;">No categories yet.</p>';
+                if (snap.empty) {
+                    container.innerHTML = '<p style="color: #9CA3AF;">No categories yet. Click "Add Category" to create one.</p>';
                     return;
                 }
                 
                 let html = `<table class="admin-table"><thead><tr><th>Name</th><th>Slug</th><th>Order</th><th>Featured</th><th>Actions</th></tr></thead><tbody>`;
-                snapshot.forEach(doc => {
-                    const data = doc.data();
+                snap.forEach(doc => {
+                    const d = doc.data();
                     html += `<tr>
-                        <td><strong>${data.name}</strong></td>
-                        <td>${data.slug || '-'}</td>
-                        <td>${data.order || 0}</td>
-                        <td>${data.featured ? '✅' : '❌'}</td>
+                        <td><strong>${d.name}</strong></td>
+                        <td>${d.slug || '-'}</td>
+                        <td>${d.order || 0}</td>
+                        <td>${d.featured ? '✅' : '❌'}</td>
                         <td>
                             <button class="btn btn-warning btn-sm" onclick="editCategory('${doc.id}')">✏️</button>
                             <button class="btn btn-danger btn-sm" onclick="deleteCategory('${doc.id}')">🗑️</button>
@@ -248,27 +228,27 @@
                 html += `</tbody></table>`;
                 container.innerHTML = html;
             } catch (error) {
-                console.error('Error loading categories:', error);
+                console.error('Error:', error);
                 document.getElementById('categoriesList').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
             }
         }
         
-        // ===== Add Category Form =====
+        // ===== Add Category =====
         window.showAddCategory = function() {
             const container = document.getElementById('categoriesList');
             container.innerHTML = `
                 <div style="background: #F9FAFB; padding: 20px; border-radius: 12px;">
-                    <h4 style="margin-bottom: 16px;">Add New Category</h4>
-                    <div class="form-group">
-                        <label>Category Name</label>
-                        <input type="text" id="catName" placeholder="e.g., Electronics" style="width:100%; padding:10px; border:2px solid #E5E7EB; border-radius:10px;">
+                    <h4 style="font-family: 'Cormorant Garamond', serif; margin-bottom: 16px;">➕ Add New Category</h4>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display:block; font-weight:600; margin-bottom:4px;">Category Name *</label>
+                        <input type="text" id="catName" placeholder="e.g., Electronics" style="width:100%; padding:10px; border:2px solid #E5E7EB; border-radius:10px; font-size:16px;">
                     </div>
-                    <div class="form-group">
-                        <label>Description</label>
-                        <input type="text" id="catDesc" placeholder="Brief description" style="width:100%; padding:10px; border:2px solid #E5E7EB; border-radius:10px;">
+                    <div style="margin-bottom: 12px;">
+                        <label style="display:block; font-weight:600; margin-bottom:4px;">Description</label>
+                        <input type="text" id="catDesc" placeholder="Brief description" style="width:100%; padding:10px; border:2px solid #E5E7EB; border-radius:10px; font-size:16px;">
                     </div>
-                    <div style="display:flex; gap:12px; margin-top:12px;">
-                        <button class="btn btn-primary" onclick="saveCategory()">Save</button>
+                    <div style="display:flex; gap:12px; margin-top:16px;">
+                        <button class="btn btn-primary" onclick="saveCategory()">💾 Save Category</button>
                         <button class="btn btn-outline" onclick="loadCategories()">Cancel</button>
                     </div>
                 </div>
@@ -286,7 +266,7 @@
             }
             
             try {
-                await addDoc(collection(db, 'categories'), {
+                await db.collection('categories').add({
                     name: name,
                     slug: name.toLowerCase().replace(/ /g, '-'),
                     description: description,
@@ -294,22 +274,22 @@
                     featured: false,
                     createdAt: new Date().toISOString()
                 });
-                alert('✅ Category added!');
+                alert('✅ Category added successfully!');
                 loadCategories();
             } catch (error) {
-                alert('Error: ' + error.message);
+                alert('❌ Error: ' + error.message);
             }
         };
         
         // ===== Delete Category =====
         window.deleteCategory = async function(id) {
-            if (confirm('Delete this category?')) {
+            if (confirm('Are you sure you want to delete this category?')) {
                 try {
-                    await deleteDoc(doc(db, 'categories', id));
-                    alert('✅ Deleted!');
+                    await db.collection('categories').doc(id).delete();
+                    alert('✅ Category deleted!');
                     loadCategories();
                 } catch (error) {
-                    alert('Error: ' + error.message);
+                    alert('❌ Error: ' + error.message);
                 }
             }
         };
@@ -317,38 +297,60 @@
         // ===== Edit Category =====
         window.editCategory = async function(id) {
             const newName = prompt('Enter new category name:');
-            if (newName) {
+            if (newName && newName.trim()) {
                 try {
-                    await updateDoc(doc(db, 'categories', id), {
-                        name: newName,
-                        slug: newName.toLowerCase().replace(/ /g, '-')
+                    await db.collection('categories').doc(id).update({
+                        name: newName.trim(),
+                        slug: newName.trim().toLowerCase().replace(/ /g, '-')
                     });
-                    alert('✅ Updated!');
+                    alert('✅ Category updated!');
                     loadCategories();
                 } catch (error) {
-                    alert('Error: ' + error.message);
+                    alert('❌ Error: ' + error.message);
                 }
             }
         };
         
-        // ===== Placeholder Functions =====
+        // ============================================
+        // PLACEHOLDER PAGES
+        // ============================================
         function loadProducts() {
-            pageContent.innerHTML = `<div style="background:white; border-radius:16px; padding:24px;"><h3>📦 Products</h3><p>Product management coming soon...</p></div>`;
+            pageContent.innerHTML = `
+                <div style="background:white; border-radius:16px; padding:24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+                    <h3 style="font-family: 'Cormorant Garamond', serif;">📦 Products</h3>
+                    <p style="color: #9CA3AF; margin-top: 12px;">Product management coming soon...</p>
+                </div>
+            `;
         }
         
         function loadOrders() {
-            pageContent.innerHTML = `<div style="background:white; border-radius:16px; padding:24px;"><h3>📋 Orders</h3><p>Order management coming soon...</p></div>`;
+            pageContent.innerHTML = `
+                <div style="background:white; border-radius:16px; padding:24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+                    <h3 style="font-family: 'Cormorant Garamond', serif;">📋 Orders</h3>
+                    <p style="color: #9CA3AF; margin-top: 12px;">Order management coming soon...</p>
+                </div>
+            `;
         }
         
         function loadInventory() {
-            pageContent.innerHTML = `<div style="background:white; border-radius:16px; padding:24px;"><h3>📊 Inventory</h3><p>Inventory management coming soon...</p></div>`;
+            pageContent.innerHTML = `
+                <div style="background:white; border-radius:16px; padding:24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+                    <h3 style="font-family: 'Cormorant Garamond', serif;">📊 Inventory</h3>
+                    <p style="color: #9CA3AF; margin-top: 12px;">Inventory management coming soon...</p>
+                </div>
+            `;
         }
         
         function loadSettings() {
-            pageContent.innerHTML = `<div style="background:white; border-radius:16px; padding:24px;"><h3>⚙️ Settings</h3><p>Store settings coming soon...</p></div>`;
+            pageContent.innerHTML = `
+                <div style="background:white; border-radius:16px; padding:24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+                    <h3 style="font-family: 'Cormorant Garamond', serif;">⚙️ Settings</h3>
+                    <p style="color: #9CA3AF; margin-top: 12px;">Store settings coming soon...</p>
+                </div>
+            `;
         }
         
-        console.log('✅ Dashboard loaded! Click "Categories" to test.');
+        console.log('✅ Dashboard loaded! Click "Categories" in the sidebar to test.');
     </script>
 </body>
 </html>
