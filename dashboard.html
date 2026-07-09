@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard - Tadaa!</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/tadaa-marketplace/assets/css/main.css" />
+    <link rel="stylesheet" href="/tadaa-marketplace/assets/css/admin.css" />
+    
+    <!-- Firebase SDK -->
+    <script type="importmap">
+    {
+        "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js",
+            "firebase/auth": "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"
+        }
+    }
+    </script>
+</head>
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" id="adminSidebar">
+            <div class="admin-sidebar-brand">
+                <div class="brand-text">Tadaa!</div>
+                <div class="brand-sub">Admin Panel</div>
+            </div>
+            <ul class="admin-sidebar-nav">
+                <li><a href="#" class="active" data-page="dashboard">📊 Dashboard</a></li>
+                <li><a href="#" data-page="categories">📂 Categories</a></li>
+                <li><a href="#" data-page="products">📦 Products</a></li>
+                <li><a href="#" data-page="orders">📋 Orders</a></li>
+                <li><a href="#" data-page="inventory">📊 Inventory</a></li>
+                <li><a href="#" data-page="settings">⚙️ Settings</a></li>
+                <li class="logout-link"><a href="#" id="logoutBtn">🚪 Logout</a></li>
+            </ul>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="admin-content">
+            <!-- Top Navigation -->
+            <div class="admin-topnav">
+                <h1 id="pageTitle">Dashboard</h1>
+                <div class="admin-user">
+                    <span id="adminEmailDisplay">admin@tadaa.com</span>
+                    <div class="avatar">A</div>
+                </div>
+            </div>
+            
+            <!-- Page Content -->
+            <div id="pageContent">
+                <!-- Content will be loaded here -->
+            </div>
+        </main>
+    </div>
+    
+    <script type="module" src="/tadaa-marketplace/assets/js/admin/dashboard.js"></script>
+</body>
+</html>
