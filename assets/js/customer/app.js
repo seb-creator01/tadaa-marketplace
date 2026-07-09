@@ -1,6 +1,5 @@
 // ============================================
-// TADAA! - CUSTOMER WEBSITE (ALL-IN-ONE)
-// Includes: Cart, Checkout, Order Placement
+// TADAA! - CUSTOMER WEBSITE (FIXED CHECKOUT)
 // ============================================
 
 // ===== Firebase Config =====
@@ -43,23 +42,21 @@ function generateOrderId() {
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
-    
     let counter = parseInt(localStorage.getItem('tadaa_order_counter') || '0') + 1;
     localStorage.setItem('tadaa_order_counter', counter.toString());
-    
     const orderNumber = String(counter).padStart(6, '0');
     return `TAD-${year}${month}${day}-${orderNumber}`;
 }
 
 // ============================================
-// LOAD CART FROM STORAGE
+// LOAD CART
 // ============================================
 function loadCart() {
     try {
         const saved = localStorage.getItem('tadaa_cart');
         if (saved) {
             cart = JSON.parse(saved);
-            console.log('📦 Cart loaded from storage:', cart.length, 'items');
+            console.log('📦 Cart loaded:', cart.length, 'items');
         }
     } catch (e) {
         console.error('Error loading cart:', e);
@@ -67,9 +64,6 @@ function loadCart() {
     }
 }
 
-// ============================================
-// SAVE CART TO STORAGE
-// ============================================
 function saveCart() {
     try {
         localStorage.setItem('tadaa_cart', JSON.stringify(cart));
@@ -111,7 +105,6 @@ async function loadData() {
             mainContent.innerHTML = `
                 <div style="text-align:center; padding:60px 20px;">
                     <h2>😅 Oops! Something went wrong</h2>
-                    <p style="color:#6B7280;">Please refresh and try again.</p>
                     <button onclick="location.reload()" style="background:#FFD700; border:none; padding:12px 24px; border-radius:50px; margin-top:20px; cursor:pointer;">Refresh</button>
                 </div>
             `;
@@ -137,7 +130,6 @@ function renderWebsite() {
 // ============================================
 function renderHeader() {
     if (!mainHeader) return;
-    
     mainHeader.innerHTML = `
         <nav style="background:#000; color:#fff; padding:16px 20px; position:sticky; top:0; z-index:100;">
             <div style="max-width:1200px; margin:0 auto; display:flex; justify-content:space-between; align-items:center;">
@@ -158,7 +150,6 @@ function renderHeader() {
             </div>
         </nav>
     `;
-    
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
@@ -174,7 +165,6 @@ function renderHeader() {
 function renderHero() {
     const heroSection = document.getElementById('hero-section');
     if (!heroSection) return;
-    
     heroSection.innerHTML = `
         <div style="background:linear-gradient(135deg, #000 0%, #1a1a1a 100%); padding:60px 20px; text-align:center; position:relative; overflow:hidden; border-radius:0 0 40px 40px;">
             <div style="position:absolute; top:-100px; right:-100px; width:300px; height:300px; background:rgba(255,215,0,0.05); border-radius:50%;"></div>
@@ -201,7 +191,6 @@ function renderHero() {
 function renderAnnouncement() {
     const announcementDiv = document.getElementById('announcement-section');
     if (!announcementDiv) return;
-    
     if (settings.announcementBanner) {
         announcementDiv.innerHTML = `
             <div style="background:#FFD700; padding:12px 20px; text-align:center; color:#000; font-weight:600; border-radius:12px; margin:16px 20px;">
@@ -219,30 +208,26 @@ function renderAnnouncement() {
 function renderCategories() {
     const categoriesDiv = document.getElementById('categories-section');
     if (!categoriesDiv) return;
-    
     if (categories.length === 0) {
-        categoriesDiv.innerHTML = `<div style="padding:20px; text-align:center; color:#6B7280;"><p>No categories available yet.</p></div>`;
+        categoriesDiv.innerHTML = `<div style="padding:20px; text-align:center; color:#6B7280;"><p>No categories yet.</p></div>`;
         return;
     }
-    
     let html = `
         <div style="max-width:1200px; margin:0 auto; padding:0 20px;">
             <h2 style="font-family:'Cormorant Garamond', serif; font-size:28px; color:#1F2937; margin-bottom:20px;">📂 Categories</h2>
             <div style="display:flex; gap:12px; overflow-x:auto; padding-bottom:12px; scrollbar-width:none;">
-                <button onclick="filterByCategory('all')" class="category-btn" style="padding:10px 20px; border-radius:50px; border:2px solid #FFD700; background:${currentCategory === 'all' ? '#FFD700' : 'transparent'}; color:${currentCategory === 'all' ? '#000' : '#1F2937'}; cursor:pointer; white-space:nowrap; font-weight:600; transition:all 0.3s; flex-shrink:0;">
+                <button onclick="filterByCategory('all')" class="category-btn" style="padding:10px 20px; border-radius:50px; border:2px solid #FFD700; background:${currentCategory === 'all' ? '#FFD700' : 'transparent'}; color:${currentCategory === 'all' ? '#000' : '#1F2937'}; cursor:pointer; white-space:nowrap; font-weight:600; flex-shrink:0;">
                     All
                 </button>
     `;
-    
     categories.forEach(cat => {
         const isActive = currentCategory === cat.id;
         html += `
-            <button onclick="filterByCategory('${cat.id}')" class="category-btn" style="padding:10px 20px; border-radius:50px; border:2px solid ${isActive ? '#FFD700' : '#E5E7EB'}; background:${isActive ? '#FFD700' : 'transparent'}; color:${isActive ? '#000' : '#1F2937'}; cursor:pointer; white-space:nowrap; font-weight:${isActive ? '700' : '400'}; transition:all 0.3s; flex-shrink:0;">
+            <button onclick="filterByCategory('${cat.id}')" class="category-btn" style="padding:10px 20px; border-radius:50px; border:2px solid ${isActive ? '#FFD700' : '#E5E7EB'}; background:${isActive ? '#FFD700' : 'transparent'}; color:${isActive ? '#000' : '#1F2937'}; cursor:pointer; white-space:nowrap; font-weight:${isActive ? '700' : '400'}; flex-shrink:0;">
                 ${cat.icon || ''} ${cat.name}
             </button>
         `;
     });
-    
     html += `</div></div>`;
     categoriesDiv.innerHTML = html;
 }
@@ -255,11 +240,9 @@ function renderProducts() {
     if (!productsDiv) return;
     
     let filteredProducts = products;
-    
     if (currentCategory !== 'all') {
         filteredProducts = filteredProducts.filter(p => p.categoryId === currentCategory);
     }
-    
     if (searchTerm) {
         filteredProducts = filteredProducts.filter(p => 
             p.name.toLowerCase().includes(searchTerm) || 
@@ -309,12 +292,11 @@ function renderProducts() {
                         <span style="font-size:18px; font-weight:700; color:#000;">₦${Math.round(discountedPrice).toLocaleString()}</span>
                         ${discount > 0 ? `<span style="font-size:12px; color:#9CA3AF; text-decoration:line-through;">₦${product.price.toLocaleString()}</span>` : ''}
                     </div>
-                    ${inStock ? `<button onclick="event.stopPropagation(); addToCart('${product.id}')" style="width:100%; margin-top:8px; background:#FFD700; border:none; padding:8px; border-radius:8px; font-weight:600; font-size:13px; cursor:pointer; transition:background 0.3s;" onmouseover="this.style.background='#E6C200'" onmouseout="this.style.background='#FFD700'">${inCart ? '🔄 Add More' : 'Add to Cart'}</button>` : ''}
+                    ${inStock ? `<button onclick="event.stopPropagation(); addToCart('${product.id}')" style="width:100%; margin-top:8px; background:#FFD700; border:none; padding:8px; border-radius:8px; font-weight:600; font-size:13px; cursor:pointer;">${inCart ? '🔄 Add More' : 'Add to Cart'}</button>` : ''}
                 </div>
             </div>
         `;
     });
-    
     html += `</div></div>`;
     productsDiv.innerHTML = html;
 }
@@ -330,9 +312,6 @@ function filterByCategory(categoryId) {
     renderCategories();
 }
 
-// ============================================
-// SCROLL FUNCTIONS
-// ============================================
 function scrollToProducts() { document.getElementById('products-section')?.scrollIntoView({ behavior: 'smooth' }); }
 function scrollToCategories() { document.getElementById('categories-section')?.scrollIntoView({ behavior: 'smooth' }); }
 
@@ -352,7 +331,6 @@ function toggleSearch() {
 function viewProduct(productId) {
     const product = products.find(p => p.id === productId);
     if (!product) return;
-    
     const imageUrl = product.images && product.images.length > 0 ? product.images[0] : '';
     const discount = product.discount || 0;
     const discountedPrice = discount > 0 ? product.price * (1 - discount / 100) : product.price;
@@ -391,7 +369,7 @@ function viewProduct(productId) {
 function showToast(productName) {
     const toast = document.createElement('div');
     toast.style.cssText = `
-        position:fixed; bottom:20px; right:20px; background:#fff; color:#1F2937; padding:16px 20px; border-radius:16px; box-shadow:0 8px 32px rgba(0,0,0,0.2); z-index:2000; max-width:380px; width:100%; animation:slideUp 0.3s ease; border-left:4px solid #FFD700;
+        position:fixed; bottom:20px; right:20px; background:#fff; color:#1F2937; padding:16px 20px; border-radius:16px; box-shadow:0 8px 32px rgba(0,0,0,0.2); z-index:2000; max-width:380px; width:100%; border-left:4px solid #FFD700;
     `;
     toast.innerHTML = `
         <div style="display:flex; align-items:center; gap:12px;">
@@ -416,14 +394,12 @@ function showToast(productName) {
 function addToCart(productId) {
     const product = products.find(p => p.id === productId);
     if (!product) return;
-    
     const existing = cart.find(item => item.id === productId);
     if (existing) {
         existing.quantity += 1;
     } else {
         cart.push({ ...product, quantity: 1 });
     }
-    
     saveCart();
     updateCartCount();
     renderCartSidebar();
@@ -441,13 +417,11 @@ function removeFromCart(productId) {
 function updateQuantity(productId, change) {
     const item = cart.find(i => i.id === productId);
     if (!item) return;
-    
     const newQty = item.quantity + change;
     if (newQty <= 0) {
         removeFromCart(productId);
         return;
     }
-    
     item.quantity = newQty;
     saveCart();
     updateCartCount();
@@ -484,14 +458,12 @@ function renderCartSidebar() {
         sidebar.id = 'cartSidebar';
         sidebar.style.cssText = `position:fixed; top:0; right:-400px; width:380px; height:100%; background:#fff; z-index:1500; transition:right 0.3s ease; box-shadow:-4px 0 24px rgba(0,0,0,0.15); display:flex; flex-direction:column;`;
         document.body.appendChild(sidebar);
-        
         const overlay = document.createElement('div');
         overlay.id = 'cartOverlay';
         overlay.style.cssText = `position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:1400; display:none; cursor:pointer;`;
         overlay.onclick = toggleCartSidebar;
         document.body.appendChild(overlay);
     }
-    
     const overlay = document.getElementById('cartOverlay');
     
     if (cart.length === 0) {
@@ -528,7 +500,6 @@ function renderCartSidebar() {
         </div>
         <div style="flex:1; overflow-y:auto; padding:16px 20px;">
     `;
-    
     cart.forEach(item => {
         const itemTotal = item.price * item.quantity;
         const imageUrl = item.images && item.images.length > 0 ? item.images[0] : '';
@@ -551,7 +522,6 @@ function renderCartSidebar() {
             </div>
         `;
     });
-    
     cartHtml += `
         </div>
         <div style="padding:16px 20px; border-top:2px solid #e5e7eb; flex-shrink:0; background:#f9fafb; border-radius:0 0 16px 16px;">
@@ -585,7 +555,6 @@ function toggleCartSidebar() {
     const sidebar = document.getElementById('cartSidebar');
     const overlay = document.getElementById('cartOverlay');
     if (!sidebar) return;
-    
     if (sidebar.style.right === '0px') {
         sidebar.style.right = '-400px';
         if (overlay) overlay.style.display = 'none';
@@ -597,7 +566,7 @@ function toggleCartSidebar() {
 }
 
 // ============================================
-// CHECKOUT - LOAD CHECKOUT PAGE
+// CHECKOUT FUNCTIONS
 // ============================================
 function checkout() {
     if (cart.length === 0) {
@@ -609,9 +578,11 @@ function checkout() {
 }
 
 // ============================================
-// LOAD CHECKOUT PAGE (Built-in)
+// LOAD CHECKOUT PAGE
 // ============================================
 function loadCheckoutPage() {
+    console.log('📋 Loading checkout page...');
+    
     if (cart.length === 0) {
         window.location.href = '/tadaa-marketplace/';
         return;
@@ -624,7 +595,10 @@ function loadCheckoutPage() {
     const deliveryCharge = isFreeDelivery ? 0 : deliveryFee;
     const total = subtotal + deliveryCharge;
     
-    if (!mainContent) return;
+    if (!mainContent) {
+        console.error('❌ mainContent element not found!');
+        return;
+    }
     
     mainContent.innerHTML = `
         <div style="max-width:900px; margin:0 auto; padding:20px;">
@@ -840,7 +814,6 @@ function showOrderSuccess(docId, orderId, orderData) {
 // ============================================
 function renderFooter() {
     if (!mainFooter) return;
-    
     mainFooter.innerHTML = `
         <footer style="background:#000; color:#9CA3AF; padding:40px 20px; margin-top:40px; border-radius:40px 40px 0 0;">
             <div style="max-width:1200px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:32px;">
@@ -895,4 +868,4 @@ document.addEventListener('DOMContentLoaded', () => {
     loadData();
 });
 
-console.log('✅ Tadaa! Website with built-in checkout ready!');
+console.log('✅ Tadaa! Website with fixed checkout ready!');
