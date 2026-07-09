@@ -1,8 +1,0 @@
-# Robots.txt for Tadaa! Marketplace
-# Allow all search engines to crawl the site
-
-User-agent: *
-Allow: /
-
-# Sitemap location
-Sitemap: https://seb-creator01.github.io/tadaa-marketplace/sitemap.xml
