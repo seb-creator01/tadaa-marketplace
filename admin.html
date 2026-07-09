@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Login - Tadaa!</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/tadaa-marketplace/assets/css/main.css" />
+    <link rel="stylesheet" href="/tadaa-marketplace/assets/css/admin.css" />
+    
+    <!-- Firebase SDK -->
+    <script type="importmap">
+    {
+        "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js",
+            "firebase/auth": "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"
+        }
+    }
+    </script>
+</head>
+<body>
+    <div class="admin-login-container">
+        <div class="admin-login-card animate-fade-up">
+            <div class="admin-login-logo">
+                <span class="logo-text">Tadaa!</span>
+                <span class="logo-sub">Admin Panel</span>
+            </div>
+            
+            <form id="adminLoginForm" class="admin-login-form">
+                <div class="form-group">
+                    <label for="adminEmail">Email Address</label>
+                    <input type="email" id="adminEmail" placeholder="admin@tadaa.com" required />
+                </div>
+                
+                <div class="form-group">
+                    <label for="adminPassword">Password</label>
+                    <input type="password" id="adminPassword" placeholder="Enter your password" required />
+                </div>
+                
+                <div id="loginError" class="login-error hidden"></div>
+                
+                <button type="submit" class="btn btn-primary btn-full" id="loginBtn">
+                    Sign In
+                </button>
+            </form>
+            
+            <p class="login-footer">Secure admin access only</p>
+        </div>
+    </div>
+    
+    <script type="module" src="/tadaa-marketplace/assets/js/admin/auth.js"></script>
+</body>
+</html>
