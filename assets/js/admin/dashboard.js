@@ -1,10 +1,12 @@
 // ============================================
-// TADAA! - ADMIN DASHBOARD
+// TADAA! - ADMIN DASHBOARD (FIXED)
 // ============================================
 
-import { auth, db } from '../config/firebase.js';
-import { onAuthStateChanged } from 'firebase/auth';
+// Import Firebase directly (not from config)
+import { initializeApp } from 'firebase/app';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { 
+    getFirestore,
     collection, 
     getDocs, 
     getCountFromServer, 
@@ -13,7 +15,23 @@ import {
     orderBy,
     limit 
 } from 'firebase/firestore';
-import { adminLogout } from './auth.js';
+
+// ===== Firebase Config =====
+const firebaseConfig = {
+    apiKey: "AIzaSyDCXnlAqyt2512HlvBOsSfMZ6O-xg0c94Y",
+    authDomain: "tadaa-marketplace.firebaseapp.com",
+    projectId: "tadaa-marketplace",
+    storageBucket: "tadaa-marketplace.firebasestorage.app",
+    messagingSenderId: "56983478470",
+    appId: "1:56983478470:web:0efdf7f44b19e88a6237c7"
+};
+
+// ===== Initialize Firebase =====
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+console.log('🔥 Firebase initialized in dashboard');
 
 // ===== DOM Elements =====
 const pageContent = document.getElementById('pageContent');
@@ -38,6 +56,7 @@ document.querySelectorAll('.admin-sidebar-nav a[data-page]').forEach(link => {
     link.addEventListener('click', (e) => {
         e.preventDefault();
         const page = link.dataset.page;
+        console.log('📄 Navigating to:', page);
         
         document.querySelectorAll('.admin-sidebar-nav a').forEach(l => l.classList.remove('active'));
         link.classList.add('active');
@@ -50,7 +69,9 @@ document.querySelectorAll('.admin-sidebar-nav a[data-page]').forEach(link => {
 if (logoutBtn) {
     logoutBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        adminLogout();
+        import('./auth.js').then(module => {
+            module.adminLogout();
+        });
     });
 }
 
@@ -201,6 +222,9 @@ function loadCategories() {
     
     import('./categories.js').then(module => {
         module.loadCategories();
+    }).catch(err => {
+        console.error('Error loading categories module:', err);
+        document.getElementById('categoriesList').innerHTML = `<p style="color: #EF4444;">Error loading categories: ${err.message}</p>`;
     });
 }
 
@@ -269,7 +293,11 @@ function loadSettings() {
 window.showCategoryForm = function(category = null) {
     import('./categories.js').then(module => {
         module.showCategoryForm(category);
+    }).catch(err => {
+        console.error('Error loading categories module:', err);
+        alert('Error loading category form: ' + err.message);
     });
 };
 
 console.log('✅ Admin Dashboard loaded successfully!');
+console.log('📄 Click "Categories" in the sidebar to test category management.');
