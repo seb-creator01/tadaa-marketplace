@@ -374,7 +374,7 @@
                 <div class="form-group">
                     <label>Image URL (Cloudinary)</label>
                     <input type="text" id="prodImage" placeholder="Paste Cloudinary image URL">
-                    <small style="color:#6B7280;">Upload to Cloudinary first, then paste the URL here</small>
+                    <small style="color:#6B7280;">Click the button below to upload an image</small>
                 </div>
                 <div style="margin:12px 0;">
                     <button class="btn btn-primary" onclick="uploadToCloudinary()">📤 Upload Image to Cloudinary</button>
@@ -406,34 +406,48 @@
     }
 
     // ============================================
-    // UPLOAD TO CLOUDINARY
+    // UPLOAD TO CLOUDINARY - FIXED VERSION
     // ============================================
     window.uploadToCloudinary = function() {
+        console.log('📤 Upload button clicked');
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/*';
         input.onchange = async (e) => {
             const file = e.target.files[0];
-            if (!file) return;
+            if (!file) {
+                console.log('❌ No file selected');
+                return;
+            }
+            
+            console.log('📁 File selected:', file.name);
             
             const formData = new FormData();
             formData.append('file', file);
             formData.append('upload_preset', 'tadaa_products');
             
             try {
+                console.log('📤 Uploading to Cloudinary...');
                 const response = await fetch(`https://api.cloudinary.com/v1_1/cva6mpgc/image/upload`, {
                     method: 'POST',
                     body: formData
                 });
+                
+                console.log('📥 Response status:', response.status);
                 const data = await response.json();
+                console.log('📥 Response data:', data);
+                
                 if (data.secure_url) {
                     document.getElementById('prodImage').value = data.secure_url;
                     alert('✅ Image uploaded successfully! URL added to the image field.');
+                    console.log('✅ Image URL:', data.secure_url);
                 } else {
                     alert('❌ Upload failed: ' + (data.error?.message || 'Unknown error'));
+                    console.error('❌ Upload error:', data);
                 }
             } catch (error) {
                 alert('❌ Upload error: ' + error.message);
+                console.error('❌ Upload error:', error);
             }
         };
         input.click();
@@ -514,7 +528,6 @@
             
             const container = document.getElementById('productsList');
             
-            // Load categories for select
             const catSnap = await db.collection('categories').orderBy('name', 'asc').get();
             let catOptions = '<option value="">Select Category</option>';
             catSnap.forEach(d => {
@@ -647,7 +660,7 @@
         `;
     }
 
-    console.log('✅ Admin dashboard ready with Products!');
+    console.log('✅ Admin dashboard ready with Products and Cloudinary upload!');
 </script>
 
 </body>
