@@ -26,8 +26,9 @@
         .btn-sm { padding: 4px 12px; font-size: 12px; }
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; font-weight: 600; margin-bottom: 4px; }
-        .form-group input { width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; }
         .logout { color: #EF4444 !important; border-top: 1px solid #1a1a1a; margin-top: 20px; padding-top: 12px; }
+        img.product-img { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; }
     </style>
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -121,6 +122,10 @@
         switch(page) {
             case 'dashboard': loadDashboard(); break;
             case 'categories': loadCategories(); break;
+            case 'products': loadProducts(); break;
+            case 'orders': loadOrders(); break;
+            case 'inventory': loadInventory(); break;
+            case 'settings': loadSettings(); break;
             default: loadDashboard();
         }
     }
@@ -212,9 +217,6 @@
         }
     }
 
-    // ============================================
-    // ADD CATEGORY
-    // ============================================
     window.showAddCategory = function() {
         const container = document.getElementById('categoriesList');
         container.innerHTML = `
@@ -276,7 +278,376 @@
         }
     };
 
-    console.log('✅ Admin dashboard ready!');
+    // ============================================
+    // PRODUCTS
+    // ============================================
+    async function loadProducts() {
+        pageContent.innerHTML = `
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                    <h3 style="margin:0;">📦 Products</h3>
+                    <button class="btn btn-primary" onclick="showAddProduct()">+ Add Product</button>
+                </div>
+                <div id="productsList">Loading...</div>
+            </div>
+        `;
+
+        try {
+            const snap = await db.collection('products').orderBy('createdAt', 'desc').get();
+            const container = document.getElementById('productsList');
+            if (snap.empty) {
+                container.innerHTML = '<p>No products yet. Click "Add Product" to create one.</p>';
+                return;
+            }
+            let html = `<table>
+                <tr>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Actions</th>
+                </tr>`;
+            snap.forEach(doc => {
+                const data = doc.data();
+                const imageUrl = data.images && data.images.length > 0 ? data.images[0] : '';
+                html += `<tr>
+                    <td>${imageUrl ? `<img src="${imageUrl}" class="product-img">` : '📷'}</td>
+                    <td><strong>${data.name}</strong></td>
+                    <td>${data.categoryName || 'Uncategorized'}</td>
+                    <td>₦${data.price?.toLocaleString() || 0}</td>
+                    <td>${data.inStock ? '✅ In Stock' : '❌ Out of Stock'}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editProduct('${doc.id}')">✏️</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteProduct('${doc.id}')">🗑️</button>
+                    </td>
+                </tr>`;
+            });
+            html += '</table>';
+            container.innerHTML = html;
+        } catch (e) {
+            console.error(e);
+            document.getElementById('productsList').innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
+        }
+    }
+
+    // ============================================
+    // ADD PRODUCT FORM
+    // ============================================
+    window.showAddProduct = function() {
+        loadCategoriesForSelect();
+        
+        const container = document.getElementById('productsList');
+        container.innerHTML = `
+            <div style="background:#f9fafb; padding:20px; border-radius:12px; margin-top:12px;">
+                <h4>➕ Add New Product</h4>
+                <div class="form-group">
+                    <label>Product Name *</label>
+                    <input type="text" id="prodName" placeholder="e.g., Indomie Noodles 70g">
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <input type="text" id="prodDesc" placeholder="Brief product description">
+                </div>
+                <div class="form-group">
+                    <label>Price (₦) *</label>
+                    <input type="number" id="prodPrice" placeholder="e.g., 200">
+                </div>
+                <div class="form-group">
+                    <label>Compare Price (Original Price)</label>
+                    <input type="number" id="prodCompare" placeholder="e.g., 250">
+                </div>
+                <div class="form-group">
+                    <label>Category *</label>
+                    <select id="prodCategory" style="width:100%; padding:10px; border:2px solid #e5e7eb; border-radius:8px;">
+                        <option value="">Loading categories...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Stock Count</label>
+                    <input type="number" id="prodStock" placeholder="e.g., 45" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Discount (%)</label>
+                    <input type="number" id="prodDiscount" placeholder="e.g., 10" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Image URL (Cloudinary)</label>
+                    <input type="text" id="prodImage" placeholder="Paste Cloudinary image URL">
+                    <small style="color:#6B7280;">Upload to Cloudinary first, then paste the URL here</small>
+                </div>
+                <div style="margin:12px 0;">
+                    <button class="btn btn-primary" onclick="uploadToCloudinary()">📤 Upload Image to Cloudinary</button>
+                </div>
+                <button class="btn btn-primary" onclick="saveProduct()">💾 Save Product</button>
+                <button class="btn" style="background:#e5e7eb;" onclick="loadProducts()">Cancel</button>
+            </div>
+        `;
+    };
+
+    // ============================================
+    // LOAD CATEGORIES FOR SELECT
+    // ============================================
+    async function loadCategoriesForSelect() {
+        try {
+            const snap = await db.collection('categories').orderBy('name', 'asc').get();
+            const select = document.getElementById('prodCategory');
+            if (!select) return;
+            
+            let html = '<option value="">Select Category</option>';
+            snap.forEach(doc => {
+                const data = doc.data();
+                html += `<option value="${doc.id}">${data.name}</option>`;
+            });
+            select.innerHTML = html;
+        } catch (e) {
+            console.error('Error loading categories:', e);
+        }
+    }
+
+    // ============================================
+    // UPLOAD TO CLOUDINARY
+    // ============================================
+    window.uploadToCloudinary = function() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', 'tadaa_products');
+            
+            try {
+                const response = await fetch(`https://api.cloudinary.com/v1_1/cva6mpgc/image/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                if (data.secure_url) {
+                    document.getElementById('prodImage').value = data.secure_url;
+                    alert('✅ Image uploaded successfully! URL added to the image field.');
+                } else {
+                    alert('❌ Upload failed: ' + (data.error?.message || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('❌ Upload error: ' + error.message);
+            }
+        };
+        input.click();
+    };
+
+    // ============================================
+    // SAVE PRODUCT
+    // ============================================
+    window.saveProduct = async function() {
+        const name = document.getElementById('prodName').value.trim();
+        const description = document.getElementById('prodDesc').value.trim();
+        const price = parseFloat(document.getElementById('prodPrice').value);
+        const comparePrice = parseFloat(document.getElementById('prodCompare').value) || 0;
+        const categoryId = document.getElementById('prodCategory').value;
+        const stock = parseInt(document.getElementById('prodStock').value) || 0;
+        const discount = parseInt(document.getElementById('prodDiscount').value) || 0;
+        const imageUrl = document.getElementById('prodImage').value.trim();
+
+        if (!name) { alert('Product name is required!'); return; }
+        if (!price || price <= 0) { alert('Valid price is required!'); return; }
+        if (!categoryId) { alert('Please select a category!'); return; }
+
+        let categoryName = '';
+        try {
+            const catDoc = await db.collection('categories').doc(categoryId).get();
+            if (catDoc.exists) {
+                categoryName = catDoc.data().name;
+            }
+        } catch (e) {}
+
+        try {
+            await db.collection('products').add({
+                name: name,
+                slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+                description: description,
+                price: price,
+                comparePrice: comparePrice,
+                categoryId: categoryId,
+                categoryName: categoryName,
+                images: imageUrl ? [imageUrl] : [],
+                inStock: stock > 0,
+                stockCount: stock,
+                discount: discount,
+                isFeatured: false,
+                isBestSeller: false,
+                createdAt: new Date().toISOString()
+            });
+            alert('✅ Product added successfully!');
+            loadProducts();
+        } catch (e) {
+            alert('❌ Error: ' + e.message);
+        }
+    };
+
+    // ============================================
+    // DELETE PRODUCT
+    // ============================================
+    window.deleteProduct = async function(id) {
+        if (confirm('Delete this product?')) {
+            try {
+                await db.collection('products').doc(id).delete();
+                alert('✅ Product deleted!');
+                loadProducts();
+            } catch (e) {
+                alert('❌ Error: ' + e.message);
+            }
+        }
+    };
+
+    // ============================================
+    // EDIT PRODUCT
+    // ============================================
+    window.editProduct = async function(id) {
+        try {
+            const doc = await db.collection('products').doc(id).get();
+            if (!doc.exists) { alert('Product not found!'); return; }
+            const data = doc.data();
+            
+            const container = document.getElementById('productsList');
+            
+            // Load categories for select
+            const catSnap = await db.collection('categories').orderBy('name', 'asc').get();
+            let catOptions = '<option value="">Select Category</option>';
+            catSnap.forEach(d => {
+                const selected = d.id === data.categoryId ? 'selected' : '';
+                catOptions += `<option value="${d.id}" ${selected}>${d.data().name}</option>`;
+            });
+            
+            container.innerHTML = `
+                <div style="background:#f9fafb; padding:20px; border-radius:12px; margin-top:12px;">
+                    <h4>✏️ Edit Product</h4>
+                    <div class="form-group">
+                        <label>Product Name *</label>
+                        <input type="text" id="prodName" value="${data.name || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input type="text" id="prodDesc" value="${data.description || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label>Price (₦) *</label>
+                        <input type="number" id="prodPrice" value="${data.price || 0}">
+                    </div>
+                    <div class="form-group">
+                        <label>Compare Price (Original Price)</label>
+                        <input type="number" id="prodCompare" value="${data.comparePrice || 0}">
+                    </div>
+                    <div class="form-group">
+                        <label>Category *</label>
+                        <select id="prodCategory" style="width:100%; padding:10px; border:2px solid #e5e7eb; border-radius:8px;">
+                            ${catOptions}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Stock Count</label>
+                        <input type="number" id="prodStock" value="${data.stockCount || 0}">
+                    </div>
+                    <div class="form-group">
+                        <label>Discount (%)</label>
+                        <input type="number" id="prodDiscount" value="${data.discount || 0}">
+                    </div>
+                    <div class="form-group">
+                        <label>Image URL</label>
+                        <input type="text" id="prodImage" value="${data.images && data.images.length > 0 ? data.images[0] : ''}">
+                    </div>
+                    <div style="margin:12px 0;">
+                        <button class="btn btn-primary" onclick="uploadToCloudinary()">📤 Upload New Image</button>
+                    </div>
+                    <button class="btn btn-primary" onclick="updateProduct('${id}')">💾 Update Product</button>
+                    <button class="btn" style="background:#e5e7eb;" onclick="loadProducts()">Cancel</button>
+                </div>
+            `;
+        } catch (e) {
+            alert('Error: ' + e.message);
+        }
+    };
+
+    // ============================================
+    // UPDATE PRODUCT
+    // ============================================
+    window.updateProduct = async function(id) {
+        const name = document.getElementById('prodName').value.trim();
+        const description = document.getElementById('prodDesc').value.trim();
+        const price = parseFloat(document.getElementById('prodPrice').value);
+        const comparePrice = parseFloat(document.getElementById('prodCompare').value) || 0;
+        const categoryId = document.getElementById('prodCategory').value;
+        const stock = parseInt(document.getElementById('prodStock').value) || 0;
+        const discount = parseInt(document.getElementById('prodDiscount').value) || 0;
+        const imageUrl = document.getElementById('prodImage').value.trim();
+
+        if (!name) { alert('Product name is required!'); return; }
+        if (!price || price <= 0) { alert('Valid price is required!'); return; }
+        if (!categoryId) { alert('Please select a category!'); return; }
+
+        let categoryName = '';
+        try {
+            const catDoc = await db.collection('categories').doc(categoryId).get();
+            if (catDoc.exists) {
+                categoryName = catDoc.data().name;
+            }
+        } catch (e) {}
+
+        try {
+            await db.collection('products').doc(id).update({
+                name: name,
+                slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+                description: description,
+                price: price,
+                comparePrice: comparePrice,
+                categoryId: categoryId,
+                categoryName: categoryName,
+                images: imageUrl ? [imageUrl] : [],
+                inStock: stock > 0,
+                stockCount: stock,
+                discount: discount
+            });
+            alert('✅ Product updated!');
+            loadProducts();
+        } catch (e) {
+            alert('❌ Error: ' + e.message);
+        }
+    };
+
+    // ============================================
+    // PLACEHOLDER PAGES
+    // ============================================
+    function loadOrders() {
+        pageContent.innerHTML = `
+            <div class="card">
+                <h3>📋 Orders</h3>
+                <p>Order management coming soon...</p>
+            </div>
+        `;
+    }
+
+    function loadInventory() {
+        pageContent.innerHTML = `
+            <div class="card">
+                <h3>📊 Inventory</h3>
+                <p>Inventory management coming soon...</p>
+            </div>
+        `;
+    }
+
+    function loadSettings() {
+        pageContent.innerHTML = `
+            <div class="card">
+                <h3>⚙️ Settings</h3>
+                <p>Store settings coming soon...</p>
+            </div>
+        `;
+    }
+
+    console.log('✅ Admin dashboard ready with Products!');
 </script>
 
 </body>
