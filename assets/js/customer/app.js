@@ -1,5 +1,5 @@
 // ============================================
-// TADAA! - CUSTOMER WEBSITE (FULLY WORKING)
+// TADAA! - CUSTOMER WEBSITE (WORKING CHECKOUT)
 // ============================================
 
 // ===== Firebase Config =====
@@ -577,9 +577,6 @@ function checkout() {
     showCheckoutPage();
 }
 
-// ============================================
-// SHOW CHECKOUT PAGE
-// ============================================
 function showCheckoutPage() {
     console.log('📋 Loading checkout page...');
     
@@ -595,8 +592,10 @@ function showCheckoutPage() {
     const deliveryCharge = isFreeDelivery ? 0 : deliveryFee;
     const total = subtotal + deliveryCharge;
     
+    // Use the mainContent element
     if (!mainContent) {
-        console.error('❌ mainContent element not found!');
+        console.error('❌ mainContent not found!');
+        window.location.href = '/tadaa-marketplace/';
         return;
     }
     
