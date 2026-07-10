@@ -189,18 +189,23 @@ async function sendOrderEmail(orderData, orderId, total) {
     try {
         console.log('📧 Sending email...');
         
-        // CORRECT PUBLIC KEY
         emailjs.init('PCqK7ti8VM8XMGk6l');
         
         const emailParams = {
             customer_name: orderData.customer.fullName,
             order_id: orderId,
+            items: orderData.items.map(item => ({
+                name: item.name,
+                quantity: item.quantity,
+                price: item.price
+            })),
             subtotal: orderData.totals.subtotal,
             delivery_fee: orderData.totals.deliveryFee,
             total: total,
             delivery_address: orderData.customer.deliveryAddress,
             phone_number: orderData.customer.phoneNumber,
-            support_email: 'support@tadaa.com',
+            delivery_instructions: orderData.customer.deliveryInstructions || '',
+            support_email: 'tadaamarketplace@gmail.com',
             email: orderData.customer.emailAddress || 'tadaamarketplace@gmail.com'
         };
         
@@ -231,7 +236,6 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
     if (!deliveryAddress) { errorDiv.textContent = '❌ Please enter your delivery address'; errorDiv.style.display = 'block'; return; }
     errorDiv.style.display = 'none';
     
-    // Disable button and show loading
     const btn = document.getElementById('placeOrderBtn');
     btn.innerHTML = '<span class="loading-spinner"></span> Processing...';
     btn.disabled = true;
@@ -285,17 +289,14 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
     };
     
     try {
-        // Save order to Firestore
         const docRef = await db.collection('orders').add(orderData);
         await db.collection('orders').doc(docRef.id).update({ firestoreId: docRef.id });
         console.log('✅ Order saved:', orderId);
         
-        // Clear cart immediately
         localStorage.removeItem('tadaa_cart');
         localStorage.removeItem('tadaa_order_counter');
         cart = [];
         
-        // Show success page immediately
         document.body.innerHTML = `
             <div style="max-width:600px; margin:40px auto; padding:20px; text-align:center;">
                 <div style="background:#D1FAE5; color:#065F46; padding:60px 40px; border-radius:24px; box-shadow:0 8px 32px rgba(0,0,0,0.1);">
@@ -311,7 +312,6 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
             </div>
         `;
         
-        // Send email in the background
         sendOrderEmail(orderData, orderId, total);
         
     } catch (error) {
