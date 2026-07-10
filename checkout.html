@@ -22,6 +22,7 @@
         .form-group textarea { min-height:80px; resize:vertical; }
         .btn-primary { width:100%; background:#FFD700; color:#000; border:none; padding:16px; border-radius:12px; font-size:18px; font-weight:700; cursor:pointer; }
         .btn-primary:hover { background:#E6C200; }
+        .btn-primary:disabled { opacity:0.6; cursor:not-allowed; }
         .error { background:#FEE2E2; color:#DC2626; padding:12px; border-radius:10px; display:none; margin-bottom:16px; }
         .order-item { display:flex; gap:12px; padding:8px 0; border-bottom:1px solid #F3F4F6; }
         .order-item img { width:50px; height:50px; border-radius:8px; object-fit:cover; background:#f3f4f6; }
@@ -31,6 +32,8 @@
         .total-row { display:flex; justify-content:space-between; border-top:2px solid #E5E7EB; padding-top:12px; margin-top:8px; font-size:20px; font-weight:700; }
         .total-row span:last-child { color:#FFD700; }
         .free-badge { background:#D1FAE5; color:#065F46; padding:8px 12px; border-radius:8px; text-align:center; font-weight:600; margin:8px 0; }
+        .loading-spinner { display:inline-block; width:20px; height:20px; border:3px solid #f3f4f6; border-top:3px solid #FFD700; border-radius:50%; animation:spin 0.8s linear infinite; margin-right:10px; vertical-align:middle; }
+        @keyframes spin { 0% { transform:rotate(0deg); } 100% { transform:rotate(360deg); } }
         @media (max-width:768px) { .grid { grid-template-columns:1fr; } }
     </style>
 </head>
@@ -197,6 +200,11 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
     if (!deliveryAddress) { errorDiv.textContent = '❌ Please enter your delivery address'; errorDiv.style.display = 'block'; return; }
     errorDiv.style.display = 'none';
     
+    // Disable button and show loading
+    const btn = document.getElementById('placeOrderBtn');
+    btn.innerHTML = '<span class="loading-spinner"></span> Processing...';
+    btn.disabled = true;
+    
     const deliveryFee = settings.deliveryFee || 500;
     const freeThreshold = settings.freeDeliveryThreshold || 5000;
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -246,13 +254,18 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
     };
     
     try {
+        // Save order to Firestore
         const docRef = await db.collection('orders').add(orderData);
         await db.collection('orders').doc(docRef.id).update({ firestoreId: docRef.id });
+        console.log('✅ Order saved:', orderId);
         
         // ============================================
         // SEND EMAIL CONFIRMATION
         // ============================================
         try {
+            console.log('📧 Attempting to send email...');
+            
+            // Initialize EmailJS
             emailjs.init('PCqK7U8VM8XM6k6l');
             
             const emailParams = {
@@ -267,12 +280,17 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
                 email: emailAddress || 'tadaamarketplace@gmail.com'
             };
             
-            await emailjs.send('service_2n6wyni', 'template_ps9f6di', emailParams);
-            console.log('✅ Email sent successfully!');
+            console.log('📧 Email params:', emailParams);
+            
+            const result = await emailjs.send('service_2n6wyni', 'template_ps9f6di', emailParams);
+            console.log('✅ Email sent successfully!', result);
+            
         } catch (emailError) {
             console.error('❌ Error sending email:', emailError);
+            // Continue even if email fails
         }
         
+        // Clear cart
         localStorage.removeItem('tadaa_cart');
         localStorage.removeItem('tadaa_order_counter');
         cart = [];
@@ -297,6 +315,8 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
         console.error('Error placing order:', error);
         errorDiv.textContent = '❌ Error placing order: ' + error.message;
         errorDiv.style.display = 'block';
+        btn.innerHTML = '🛒 Place Order';
+        btn.disabled = false;
     }
 });
 
