@@ -183,13 +183,14 @@ function generateOrderId() {
 }
 
 // ============================================
-// SEND EMAIL (Async - runs in background)
+// SEND EMAIL
 // ============================================
 async function sendOrderEmail(orderData, orderId, total) {
     try {
         console.log('📧 Sending email...');
         
-        emailjs.init('PCqK7U8VM8XM6k6l');
+        // CORRECT PUBLIC KEY
+        emailjs.init('PCqK7ti8VM8XMGk6l');
         
         const emailParams = {
             customer_name: orderData.customer.fullName,
@@ -310,7 +311,7 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
             </div>
         `;
         
-        // Send email in the background (doesn't block the page)
+        // Send email in the background
         sendOrderEmail(orderData, orderId, total);
         
     } catch (error) {
