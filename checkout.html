@@ -34,12 +34,13 @@
         .free-badge { background:#D1FAE5; color:#065F46; padding:8px 12px; border-radius:8px; text-align:center; font-weight:600; margin:8px 0; }
         .loading-spinner { display:inline-block; width:20px; height:20px; border:3px solid #f3f4f6; border-top:3px solid #FFD700; border-radius:50%; animation:spin 0.8s linear infinite; margin-right:10px; vertical-align:middle; }
         @keyframes spin { 0% { transform:rotate(0deg); } 100% { transform:rotate(360deg); } }
+        .hidden { display:none !important; }
         @media (max-width:768px) { .grid { grid-template-columns:1fr; } }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="container" id="checkoutContainer">
     <button class="back-btn" onclick="window.location.href='/tadaa-marketplace/'">← Back to Shopping</button>
     <h1 style="font-size:32px; margin-bottom:8px;">🛒 Checkout</h1>
     <p style="color:#6B7280; margin-bottom:24px;">Enter your details to complete your order</p>
@@ -189,8 +190,10 @@ async function sendOrderEmail(orderData, orderId, total) {
     try {
         console.log('📧 Sending email...');
         
+        // Initialize EmailJS with your Public Key
         emailjs.init('PCqK7ti8VM8XMGk6l');
         
+        // Prepare email parameters including items
         const emailParams = {
             customer_name: orderData.customer.fullName,
             order_id: orderId,
@@ -204,10 +207,10 @@ async function sendOrderEmail(orderData, orderId, total) {
             total: total,
             delivery_address: orderData.customer.deliveryAddress,
             phone_number: orderData.customer.phoneNumber,
-            delivery_instructions: orderData.customer.deliveryInstructions || '',
-            support_email: 'tadaamarketplace@gmail.com',
             email: orderData.customer.emailAddress || 'tadaamarketplace@gmail.com'
         };
+        
+        console.log('📧 Sending email with params:', emailParams);
         
         const result = await emailjs.send('service_2n6wyni', 'template_ps9f6di', emailParams);
         console.log('✅ Email sent!', result);
@@ -297,6 +300,7 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
         localStorage.removeItem('tadaa_order_counter');
         cart = [];
         
+        // Show success page
         document.body.innerHTML = `
             <div style="max-width:600px; margin:40px auto; padding:20px; text-align:center;">
                 <div style="background:#D1FAE5; color:#065F46; padding:60px 40px; border-radius:24px; box-shadow:0 8px 32px rgba(0,0,0,0.1);">
@@ -312,6 +316,7 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
             </div>
         `;
         
+        // Send email in the background
         sendOrderEmail(orderData, orderId, total);
         
     } catch (error) {
