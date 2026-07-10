@@ -183,6 +183,36 @@ function generateOrderId() {
 }
 
 // ============================================
+// SEND EMAIL (Async - runs in background)
+// ============================================
+async function sendOrderEmail(orderData, orderId, total) {
+    try {
+        console.log('📧 Sending email...');
+        
+        emailjs.init('PCqK7U8VM8XM6k6l');
+        
+        const emailParams = {
+            customer_name: orderData.customer.fullName,
+            order_id: orderId,
+            subtotal: orderData.totals.subtotal,
+            delivery_fee: orderData.totals.deliveryFee,
+            total: total,
+            delivery_address: orderData.customer.deliveryAddress,
+            phone_number: orderData.customer.phoneNumber,
+            support_email: 'support@tadaa.com',
+            email: orderData.customer.emailAddress || 'tadaamarketplace@gmail.com'
+        };
+        
+        const result = await emailjs.send('service_2n6wyni', 'template_ps9f6di', emailParams);
+        console.log('✅ Email sent!', result);
+        return true;
+    } catch (error) {
+        console.error('❌ Email error:', error);
+        return false;
+    }
+}
+
+// ============================================
 // PLACE ORDER
 // ============================================
 document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
@@ -259,49 +289,18 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
         await db.collection('orders').doc(docRef.id).update({ firestoreId: docRef.id });
         console.log('✅ Order saved:', orderId);
         
-        // ============================================
-        // SEND EMAIL CONFIRMATION
-        // ============================================
-        try {
-            console.log('📧 Attempting to send email...');
-            
-            // Initialize EmailJS
-            emailjs.init('PCqK7U8VM8XM6k6l');
-            
-            const emailParams = {
-                customer_name: fullName,
-                order_id: orderId,
-                subtotal: subtotal,
-                delivery_fee: deliveryCharge,
-                total: total,
-                delivery_address: deliveryAddress,
-                phone_number: phoneNumber,
-                support_email: 'support@tadaa.com',
-                email: emailAddress || 'tadaamarketplace@gmail.com'
-            };
-            
-            console.log('📧 Email params:', emailParams);
-            
-            const result = await emailjs.send('service_2n6wyni', 'template_ps9f6di', emailParams);
-            console.log('✅ Email sent successfully!', result);
-            
-        } catch (emailError) {
-            console.error('❌ Error sending email:', emailError);
-            // Continue even if email fails
-        }
-        
-        // Clear cart
+        // Clear cart immediately
         localStorage.removeItem('tadaa_cart');
         localStorage.removeItem('tadaa_order_counter');
         cart = [];
         
-        // Show success
+        // Show success page immediately
         document.body.innerHTML = `
             <div style="max-width:600px; margin:40px auto; padding:20px; text-align:center;">
                 <div style="background:#D1FAE5; color:#065F46; padding:60px 40px; border-radius:24px; box-shadow:0 8px 32px rgba(0,0,0,0.1);">
                     <p style="font-size:64px; margin:0 0 16px;">🎉</p>
                     <h1 style="font-family:'Cormorant Garamond', serif; font-size:32px; color:#065F46; margin:0 0 8px;">Order Placed Successfully!</h1>
-                    <p style="color:#065F46; font-size:18px;">A confirmation email has been sent to ${emailAddress || 'your email'}.</p>
+                    <p style="color:#065F46; font-size:18px;">A confirmation email is on its way to ${emailAddress || 'your email'}.</p>
                     <div style="background:#fff; border-radius:12px; padding:20px; margin:20px 0;">
                         <p style="color:#6B7280; margin:0; font-size:14px;">Order ID</p>
                         <p style="font-size:28px; font-weight:700; color:#000; margin:4px 0 0;">${orderId}</p>
@@ -310,6 +309,9 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
                 </div>
             </div>
         `;
+        
+        // Send email in the background (doesn't block the page)
+        sendOrderEmail(orderData, orderId, total);
         
     } catch (error) {
         console.error('Error placing order:', error);
