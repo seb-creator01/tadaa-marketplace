@@ -1,0 +1,11 @@
+{
+  "name": "tadaa-functions",
+  "version": "1.0.0",
+  "description": "Firebase Cloud Functions for Tadaa! Marketplace",
+  "main": "index.js",
+  "dependencies": {
+    "firebase-admin": "^11.11.0",
+    "firebase-functions": "^4.5.0",
+    "axios": "^1.6.0"
+  }
+}
