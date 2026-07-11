@@ -1,14 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Tadaa!</title>
-
     <link rel="stylesheet" href="/tadaa-marketplace/assets/css/main.css" />
     <link rel="stylesheet" href="/tadaa-marketplace/assets/css/admin.css" />
-
-    <!-- Firebase SDK (Correct Version) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -27,10 +24,10 @@
                 <li><a href="#" onclick="loadPage('orders')">📋 Orders</a></li>
                 <li><a href="#" onclick="loadPage('inventory')">📊 Inventory</a></li>
                 <li><a href="#" onclick="loadPage('settings')">⚙️ Settings</a></li>
+                <li><a href="#" onclick="loadPage('payments')">💳 Payments</a></li>
                 <li class="logout-link"><a href="#" id="logoutBtn">🚪 Logout</a></li>
             </ul>
         </aside>
-
         <main class="admin-content">
             <div class="admin-topnav">
                 <h1 id="pageTitle">Dashboard</h1>
@@ -47,10 +44,8 @@
 
     <script>
         // ============================================
-        // TADAA! - ADMIN DASHBOARD
+        // FIREBASE SETUP
         // ============================================
-
-        // ===== Firebase Config =====
         const firebaseConfig = {
             apiKey: "AIzaSyDCXnlAqyt2512HlvBOsSfMZ6O-xg0c94Y",
             authDomain: "tadaa-marketplace.firebaseapp.com",
@@ -60,22 +55,24 @@
             appId: "1:56983478470:web:0efdf7f44b19e88a6237c7"
         };
 
-        // ===== Initialize Firebase =====
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        console.log('🔥 Firebase initialized');
+        console.log('🔥 Dashboard loaded');
 
-        // ===== DOM Elements =====
+        // ============================================
+        // DOM ELEMENTS
+        // ============================================
         const pageContent = document.getElementById('pageContent');
         const pageTitle = document.getElementById('pageTitle');
         const adminEmailDisplay = document.getElementById('adminEmailDisplay');
         const logoutBtn = document.getElementById('logoutBtn');
 
-        // ===== Check Auth =====
+        // ============================================
+        // AUTH CHECK
+        // ============================================
         auth.onAuthStateChanged((user) => {
-            console.log('🔐 Auth:', user ? user.email : 'No user');
             if (!user) {
                 window.location.href = '/tadaa-marketplace/admin.html';
                 return;
@@ -86,7 +83,9 @@
             loadPage('dashboard');
         });
 
-        // ===== Logout =====
+        // ============================================
+        // LOGOUT
+        // ============================================
         if (logoutBtn) {
             logoutBtn.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -100,9 +99,9 @@
         // PAGE LOADER
         // ============================================
         function loadPage(page) {
-            console.log('📄 Loading:', page);
+            console.log('📄 Loading page:', page);
             pageTitle.textContent = page.charAt(0).toUpperCase() + page.slice(1);
-
+            
             document.querySelectorAll('.admin-sidebar-nav a').forEach(l => l.classList.remove('active'));
             document.querySelectorAll('.admin-sidebar-nav a').forEach(l => {
                 if (l.textContent.toLowerCase().includes(page)) {
@@ -117,12 +116,13 @@
                 case 'orders': loadOrders(); break;
                 case 'inventory': loadInventory(); break;
                 case 'settings': loadSettings(); break;
+                case 'payments': loadPayments(); break;
                 default: loadDashboard();
             }
         }
 
         // ============================================
-        // DASHBOARD
+        // DASHBOARD - FIXED: Counts only PAID orders
         // ============================================
         async function loadDashboard() {
             pageContent.innerHTML = `
@@ -155,69 +155,150 @@
             `;
 
             try {
+                // Get all orders count
+                const allOrdersSnap = await db.collection('orders').get();
+                document.getElementById('totalOrders').textContent = allOrdersSnap.size;
+
+                // Get paid orders count
+                const paidOrdersSnap = await db.collection('orders').where('payment.status', '==', 'paid').get();
+                document.getElementById('totalSales').textContent = paidOrdersSnap.size;
+
+                // Get products count
                 const productsSnap = await db.collection('products').get();
-                const categoriesSnap = await db.collection('categories').get();
-                const ordersSnap = await db.collection('orders').get();
-
                 document.getElementById('totalProducts').textContent = productsSnap.size;
+
+                // Get categories count
+                const categoriesSnap = await db.collection('categories').get();
                 document.getElementById('totalCategories').textContent = categoriesSnap.size;
-                document.getElementById('totalOrders').textContent = ordersSnap.size;
 
-                const recentSnap = await db.collection('orders').orderBy('createdAt', 'desc').limit(5).get();
+                // Recent orders - show only paid or pending
+                const recentSnap = await db.collection('orders')
+                    .orderBy('createdAt', 'desc')
+                    .limit(10)
+                    .get();
+
                 const container = document.getElementById('recentOrders');
-
                 if (recentSnap.empty) {
-                    container.innerHTML = '<p style="color: #9CA3AF;">No orders yet.</p>';
+                    container.innerHTML = '<p style="color:#9CA3AF;">No orders yet.</p>';
                 } else {
-                    let html = `<table class="admin-table"><thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Status</th></tr></thead><tbody>`;
+                    let html = `<table class="admin-table"><thead><tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Total</th>
+                        <th>Payment Status</th>
+                        <th>Order Status</th>
+                    </tr></thead><tbody>`;
+                    
                     recentSnap.forEach(doc => {
-                        const d = doc.data();
+                        const data = doc.data();
+                        const payStatus = data.payment?.status || 'pending';
+                        const payColor = payStatus === 'paid' ? '#10B981' : payStatus === 'failed' ? '#EF4444' : '#F59E0B';
+                        const orderStatus = data.status || 'pending';
+                        const orderColor = orderStatus === 'delivered' ? '#10B981' : orderStatus === 'cancelled' ? '#EF4444' : '#3B82F6';
+                        
                         html += `<tr>
-                            <td><strong>${d.orderId || 'N/A'}</strong></td>
-                            <td>${d.customer?.fullName || 'Unknown'}</td>
-                            <td>₦${d.totals?.grandTotal?.toLocaleString() || 0}</td>
-                            <td><span style="background:#F59E0B; color:white; padding:2px 12px; border-radius:50px; font-size:12px;">${d.status || 'pending'}</span></td>
+                            <td><strong>${data.orderId || 'N/A'}</strong></td>
+                            <td>${data.customer?.fullName || 'Unknown'}</td>
+                            <td>₦${data.totals?.grandTotal?.toLocaleString() || 0}</td>
+                            <td><span style="background:${payColor}; color:white; padding:2px 12px; border-radius:50px; font-size:12px;">${payStatus}</span></td>
+                            <td><span style="background:${orderColor}; color:white; padding:2px 12px; border-radius:50px; font-size:12px;">${orderStatus}</span></td>
                         </tr>`;
                     });
                     html += `</tbody></table>`;
                     container.innerHTML = html;
                 }
+
             } catch (error) {
-                console.error('Dashboard error:', error);
+                console.error('Error loading dashboard:', error);
+                pageContent.innerHTML += `<p style="color:#EF4444;">Error: ${error.message}</p>`;
             }
         }
 
         // ============================================
-        // CATEGORIES
+        // PAYMENTS - Payment History
+        // ============================================
+        async function loadPayments() {
+            pageContent.innerHTML = `
+                <div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+                    <h3 style="font-family: 'Cormorant Garamond', serif; margin-bottom: 20px;">💳 Payment History</h3>
+                    <div id="paymentsList">Loading...</div>
+                </div>
+            `;
+
+            try {
+                const snap = await db.collection('orders')
+                    .where('payment.status', 'in', ['paid', 'pending', 'failed'])
+                    .orderBy('createdAt', 'desc')
+                    .get();
+
+                const container = document.getElementById('paymentsList');
+                if (snap.empty) {
+                    container.innerHTML = '<p style="color:#9CA3AF;">No payments yet.</p>';
+                    return;
+                }
+
+                let html = `<table class="admin-table"><thead><tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Amount</th>
+                    <th>Payment Status</th>
+                    <th>Transaction Ref</th>
+                    <th>Payment Date</th>
+                    <th>Order Status</th>
+                </tr></thead><tbody>`;
+
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    const payStatus = data.payment?.status || 'pending';
+                    const payColor = payStatus === 'paid' ? '#10B981' : payStatus === 'failed' ? '#EF4444' : '#F59E0B';
+                    
+                    html += `<tr>
+                        <td><strong>${data.orderId || 'N/A'}</strong></td>
+                        <td>${data.customer?.fullName || 'Unknown'}</td>
+                        <td>₦${data.totals?.grandTotal?.toLocaleString() || 0}</td>
+                        <td><span style="background:${payColor}; color:white; padding:2px 12px; border-radius:50px; font-size:12px;">${payStatus}</span></td>
+                        <td>${data.payment?.transactionRef || '-'}</td>
+                        <td>${data.payment?.paidAt ? new Date(data.payment.paidAt).toLocaleDateString() : '-'}</td>
+                        <td>${data.status || 'pending'}</td>
+                    </tr>`;
+                });
+                html += `</tbody></table>`;
+                container.innerHTML = html;
+
+            } catch (error) {
+                console.error('Error loading payments:', error);
+                document.getElementById('paymentsList').innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+            }
+        }
+
+        // ============================================
+        // OTHER PAGE FUNCTIONS
         // ============================================
         async function loadCategories() {
             pageContent.innerHTML = `
                 <div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
-                        <h3 style="font-family: 'Cormorant Garamond', serif;">📂 Categories</h3>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                        <h3 style="font-family: 'Cormorant Garamond', serif; margin:0;">📂 Categories</h3>
                         <button class="btn btn-primary btn-sm" onclick="showAddCategory()">+ Add Category</button>
                     </div>
                     <div id="categoriesList">Loading...</div>
                 </div>
             `;
-
             try {
                 const snap = await db.collection('categories').orderBy('order', 'asc').get();
                 const container = document.getElementById('categoriesList');
-
                 if (snap.empty) {
-                    container.innerHTML = '<p style="color: #9CA3AF;">No categories yet. Click "Add Category" to create one.</p>';
+                    container.innerHTML = '<p style="color:#9CA3AF;">No categories yet.</p>';
                     return;
                 }
-
                 let html = `<table class="admin-table"><thead><tr><th>Name</th><th>Slug</th><th>Order</th><th>Featured</th><th>Actions</th></tr></thead><tbody>`;
                 snap.forEach(doc => {
-                    const d = doc.data();
+                    const data = doc.data();
                     html += `<tr>
-                        <td><strong>${d.name}</strong></td>
-                        <td>${d.slug || '-'}</td>
-                        <td>${d.order || 0}</td>
-                        <td>${d.featured ? '✅' : '❌'}</td>
+                        <td><strong>${data.name}</strong></td>
+                        <td>${data.slug || '-'}</td>
+                        <td>${data.order || 0}</td>
+                        <td>${data.featured ? '✅' : '❌'}</td>
                         <td>
                             <button class="btn btn-warning btn-sm" onclick="editCategory('${doc.id}')">✏️</button>
                             <button class="btn btn-danger btn-sm" onclick="deleteCategory('${doc.id}')">🗑️</button>
@@ -226,82 +307,50 @@
                 });
                 html += `</tbody></table>`;
                 container.innerHTML = html;
-            } catch (error) {
-                console.error('Error:', error);
-                document.getElementById('categoriesList').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
-            }
+            } catch (e) { console.error(e); }
         }
 
-        // ============================================
-        // ADD CATEGORY
-        // ============================================
         window.showAddCategory = function() {
             const container = document.getElementById('categoriesList');
             container.innerHTML = `
-                <div style="background: #F9FAFB; padding: 20px; border-radius: 12px;">
-                    <h4 style="font-family: 'Cormorant Garamond', serif; margin-bottom: 16px;">➕ Add New Category</h4>
-                    <div style="margin-bottom: 12px;">
-                        <label style="display:block; font-weight:600; margin-bottom:4px;">Category Name *</label>
-                        <input type="text" id="catName" placeholder="e.g., Electronics" style="width:100%; padding:10px; border:2px solid #E5E7EB; border-radius:10px; font-size:16px;">
+                <div style="background:#f9fafb; padding:16px; border-radius:8px; margin-top:12px;">
+                    <h4>Add New Category</h4>
+                    <div class="form-group">
+                        <label>Category Name</label>
+                        <input type="text" id="catName" placeholder="e.g., Electronics">
                     </div>
-                    <div style="margin-bottom: 12px;">
-                        <label style="display:block; font-weight:600; margin-bottom:4px;">Description</label>
-                        <input type="text" id="catDesc" placeholder="Brief description" style="width:100%; padding:10px; border:2px solid #E5E7EB; border-radius:10px; font-size:16px;">
-                    </div>
-                    <div style="display:flex; gap:12px; margin-top:16px;">
-                        <button class="btn btn-primary" onclick="saveCategory()">💾 Save Category</button>
-                        <button class="btn btn-outline" onclick="loadCategories()">Cancel</button>
-                    </div>
+                    <button class="btn btn-primary" onclick="saveCategory()">Save</button>
+                    <button class="btn" style="background:#e5e7eb;" onclick="loadCategories()">Cancel</button>
                 </div>
             `;
         };
 
-        // ============================================
-        // SAVE CATEGORY
-        // ============================================
         window.saveCategory = async function() {
             const name = document.getElementById('catName').value.trim();
-            const description = document.getElementById('catDesc').value.trim();
-
-            if (!name) {
-                alert('Category name is required!');
-                return;
-            }
-
+            if (!name) { alert('Name is required!'); return; }
             try {
                 await db.collection('categories').add({
                     name: name,
                     slug: name.toLowerCase().replace(/ /g, '-'),
-                    description: description,
                     order: 0,
                     featured: false,
                     createdAt: new Date().toISOString()
                 });
-                alert('✅ Category added successfully!');
+                alert('✅ Category added!');
                 loadCategories();
-            } catch (error) {
-                alert('❌ Error: ' + error.message);
-            }
+            } catch (e) { alert('Error: ' + e.message); }
         };
 
-        // ============================================
-        // DELETE CATEGORY
-        // ============================================
         window.deleteCategory = async function(id) {
-            if (confirm('Are you sure you want to delete this category?')) {
+            if (confirm('Delete this category?')) {
                 try {
                     await db.collection('categories').doc(id).delete();
-                    alert('✅ Category deleted!');
+                    alert('✅ Deleted!');
                     loadCategories();
-                } catch (error) {
-                    alert('❌ Error: ' + error.message);
-                }
+                } catch (e) { alert('Error: ' + e.message); }
             }
         };
 
-        // ============================================
-        // EDIT CATEGORY
-        // ============================================
         window.editCategory = async function(id) {
             const newName = prompt('Enter new category name:');
             if (newName && newName.trim()) {
@@ -310,54 +359,104 @@
                         name: newName.trim(),
                         slug: newName.trim().toLowerCase().replace(/ /g, '-')
                     });
-                    alert('✅ Category updated!');
+                    alert('✅ Updated!');
                     loadCategories();
-                } catch (error) {
-                    alert('❌ Error: ' + error.message);
-                }
+                } catch (e) { alert('Error: ' + e.message); }
             }
         };
 
-        // ============================================
-        // PLACEHOLDER PAGES
-        // ============================================
-        function loadProducts() {
+        async function loadProducts() {
             pageContent.innerHTML = `
-                <div style="background:white; border-radius:16px; padding:24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
-                    <h3 style="font-family: 'Cormorant Garamond', serif;">📦 Products</h3>
-                    <p style="color: #9CA3AF; margin-top: 12px;">Product management coming soon...</p>
+                <div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                        <h3 style="font-family: 'Cormorant Garamond', serif; margin:0;">📦 Products</h3>
+                        <button class="btn btn-primary btn-sm" onclick="alert('Add product in admin-dashboard.html')">+ Add Product</button>
+                    </div>
+                    <div id="productsList">Loading...</div>
                 </div>
             `;
+            try {
+                const snap = await db.collection('products').orderBy('createdAt', 'desc').get();
+                const container = document.getElementById('productsList');
+                if (snap.empty) {
+                    container.innerHTML = '<p style="color:#9CA3AF;">No products yet.</p>';
+                    return;
+                }
+                let html = `<table class="admin-table"><thead><tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead><tbody>`;
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    const img = data.images && data.images.length > 0 ? data.images[0] : '';
+                    html += `<tr>
+                        <td>${img ? `<img src="${img}" style="width:40px;height:40px;object-fit:cover;border-radius:8px;">` : '📷'}</td>
+                        <td><strong>${data.name}</strong></td>
+                        <td>${data.categoryName || 'Uncategorized'}</td>
+                        <td>₦${data.price?.toLocaleString() || 0}</td>
+                        <td>${data.inStock ? '✅ In Stock' : '❌ Out of Stock'}</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm">✏️</button>
+                            <button class="btn btn-danger btn-sm">🗑️</button>
+                        </td>
+                    </tr>`;
+                });
+                html += `</tbody></table>`;
+                container.innerHTML = html;
+            } catch (e) { console.error(e); }
         }
 
-        function loadOrders() {
+        async function loadOrders() {
             pageContent.innerHTML = `
-                <div style="background:white; border-radius:16px; padding:24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
-                    <h3 style="font-family: 'Cormorant Garamond', serif;">📋 Orders</h3>
-                    <p style="color: #9CA3AF; margin-top: 12px;">Order management coming soon...</p>
+                <div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+                    <h3 style="font-family: 'Cormorant Garamond', serif; margin-bottom:20px;">📋 All Orders</h3>
+                    <div id="ordersList">Loading...</div>
                 </div>
             `;
+            try {
+                const snap = await db.collection('orders').orderBy('createdAt', 'desc').get();
+                const container = document.getElementById('ordersList');
+                if (snap.empty) {
+                    container.innerHTML = '<p style="color:#9CA3AF;">No orders yet.</p>';
+                    return;
+                }
+                let html = `<table class="admin-table"><thead><tr><th>Order ID</th><th>Customer</th><th>Total</th><th>Payment</th><th>Status</th></tr></thead><tbody>`;
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    const payStatus = data.payment?.status || 'pending';
+                    const payColor = payStatus === 'paid' ? '#10B981' : '#F59E0B';
+                    html += `<tr>
+                        <td><strong>${data.orderId || 'N/A'}</strong></td>
+                        <td>${data.customer?.fullName || 'Unknown'}</td>
+                        <td>₦${data.totals?.grandTotal?.toLocaleString() || 0}</td>
+                        <td><span style="background:${payColor}; color:white; padding:2px 12px; border-radius:50px; font-size:12px;">${payStatus}</span></td>
+                        <td>${data.status || 'pending'}</td>
+                    </tr>`;
+                });
+                html += `</tbody></table>`;
+                container.innerHTML = html;
+            } catch (e) { console.error(e); }
         }
 
         function loadInventory() {
-            pageContent.innerHTML = `
-                <div style="background:white; border-radius:16px; padding:24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
-                    <h3 style="font-family: 'Cormorant Garamond', serif;">📊 Inventory</h3>
-                    <p style="color: #9CA3AF; margin-top: 12px;">Inventory management coming soon...</p>
-                </div>
-            `;
+            pageContent.innerHTML = `<div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+                <h3 style="font-family: 'Cormorant Garamond', serif;">📊 Inventory Management</h3>
+                <p style="color:#9CA3AF; margin-top:12px;">Inventory management coming soon...</p>
+            </div>`;
         }
 
         function loadSettings() {
-            pageContent.innerHTML = `
-                <div style="background:white; border-radius:16px; padding:24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
-                    <h3 style="font-family: 'Cormorant Garamond', serif;">⚙️ Settings</h3>
-                    <p style="color: #9CA3AF; margin-top: 12px;">Store settings coming soon...</p>
-                </div>
-            `;
+            pageContent.innerHTML = `<div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+                <h3 style="font-family: 'Cormorant Garamond', serif;">⚙️ Store Settings</h3>
+                <p style="color:#9CA3AF; margin-top:12px;">Store settings in admin-dashboard.html</p>
+            </div>`;
         }
 
-        console.log('✅ Dashboard loaded! Click "Categories" to test.');
+        // Make functions global
+        window.loadPage = loadPage;
+        window.showAddCategory = showAddCategory;
+        window.saveCategory = saveCategory;
+        window.deleteCategory = deleteCategory;
+        window.editCategory = editCategory;
+
+        console.log('✅ Admin dashboard loaded!');
     </script>
 </body>
 </html>
