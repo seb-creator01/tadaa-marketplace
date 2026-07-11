@@ -134,7 +134,13 @@ async function loadCheckoutData() {
 }
 
 function displayOrderSummary() {
-    const deliveryFee = settings.deliveryFee || 500;
+    // ============================================
+    // DELIVERY: Based on quantity (per item)
+    // ============================================
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const perItemDelivery = settings.deliveryFee || 100;
+    const deliveryFee = perItemDelivery * totalItems;
+    
     const freeThreshold = settings.freeDeliveryThreshold || 5000;
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const isFreeDelivery = freeThreshold > 0 && subtotal >= freeThreshold;
@@ -153,7 +159,7 @@ function displayOrderSummary() {
     `).join('');
     
     document.getElementById('subtotalDisplay').textContent = `₦${subtotal.toLocaleString()}`;
-    document.getElementById('deliveryDisplay').textContent = isFreeDelivery ? '🎉 FREE' : `₦${deliveryFee.toLocaleString()}`;
+    document.getElementById('deliveryDisplay').textContent = isFreeDelivery ? '🎉 FREE' : `₦${deliveryCharge.toLocaleString()} (${totalItems} items × ₦${perItemDelivery})`;
     document.getElementById('totalDisplay').textContent = `₦${total.toLocaleString()}`;
     document.getElementById('freeDeliveryBadge').style.display = isFreeDelivery ? 'block' : 'none';
     document.getElementById('placeOrderBtn').textContent = `🛒 Place Order - ₦${total.toLocaleString()}`;
@@ -242,11 +248,15 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
     btn.innerHTML = '<span class="loading-spinner"></span> Processing...';
     btn.disabled = true;
     
-    const deliveryFee = settings.deliveryFee || 500;
+    // ============================================
+    // DELIVERY: Based on quantity (per item)
+    // ============================================
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const perItemDelivery = settings.deliveryFee || 100;
     const freeThreshold = settings.freeDeliveryThreshold || 5000;
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const isFreeDelivery = freeThreshold > 0 && subtotal >= freeThreshold;
-    const deliveryCharge = isFreeDelivery ? 0 : deliveryFee;
+    const deliveryCharge = isFreeDelivery ? 0 : (perItemDelivery * totalItems);
     const total = subtotal + deliveryCharge;
     const orderId = generateOrderId();
     
@@ -276,7 +286,9 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
         delivery: {
             fee: deliveryCharge,
             isFree: isFreeDelivery,
-            threshold: freeThreshold
+            threshold: freeThreshold,
+            perItem: perItemDelivery,
+            totalItems: totalItems
         },
         payment: {
             status: 'pending',
@@ -301,17 +313,9 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
         
         sendOrderEmail(orderData, orderId, total);
         
-        // INITIATE PAYSTACK PAYMENT - FIXED DUPLICATE REFERENCE
+        // INITIATE PAYSTACK PAYMENT
         const email = orderData.customer.emailAddress || 'tadaamarketplace@gmail.com';
         const amount = Math.round(total * 100);
-        
-        console.log('💳 Initiating Paystack payment:', {
-            orderId: orderId,
-            amount: amount,
-            email: email
-        });
-
-        // Generate a unique transaction reference
         const uniqueRef = orderId + '-' + Date.now();
 
         const handler = PaystackPop.setup({
@@ -319,19 +323,11 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
             email: email,
             amount: amount,
             currency: 'NGN',
-            ref: uniqueRef,  // FIXED: Unique reference to avoid duplicate error
+            ref: uniqueRef,
             metadata: {
                 custom_fields: [
-                    {
-                        display_name: "Order ID",
-                        variable_name: "order_id",
-                        value: orderId
-                    },
-                    {
-                        display_name: "Customer Name",
-                        variable_name: "customer_name",
-                        value: orderData.customer.fullName
-                    }
+                    { display_name: "Order ID", variable_name: "order_id", value: orderId },
+                    { display_name: "Customer Name", variable_name: "customer_name", value: orderData.customer.fullName }
                 ]
             },
             callback: function(response) {
