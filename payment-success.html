@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Success - Tadaa!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: 'Cormorant Garamond', serif; background: #f3f4f6; padding:20px; min-height:100vh; display:flex; align-items:center; justify-content:center; }
+        .container { max-width:600px; margin:0 auto; width:100%; }
+        .card { background:#fff; border-radius:24px; padding:48px 40px; box-shadow:0 8px 32px rgba(0,0,0,0.1); text-align:center; }
+        .icon { font-size:64px; margin-bottom:16px; }
+        .title { font-family: 'Cormorant Garamond', serif; font-size:32px; color:#065F46; margin-bottom:8px; }
+        .subtitle { color:#6B7280; font-size:18px; margin-bottom:24px; }
+        .order-box { background:#F9FAFB; border-radius:12px; padding:20px; margin:16px 0; }
+        .order-box p { margin:4px 0; }
+        .order-box .label { color:#6B7280; font-size:14px; }
+        .order-box .value { font-size:24px; font-weight:700; color:#1F2937; }
+        .details { text-align:left; background:#F9FAFB; border-radius:12px; padding:16px; margin:16px 0; font-size:14px; }
+        .details p { margin:4px 0; color:#4B5563; }
+        .delivery-badge { background:#D1FAE5; color:#065F46; padding:8px 12px; border-radius:8px; font-weight:600; margin:12px 0; }
+        .btn { display:inline-block; background:#FFD700; color:#000; border:none; padding:12px 32px; border-radius:50px; font-size:16px; font-weight:600; cursor:pointer; text-decoration:none; margin-top:12px; }
+        .btn:hover { background:#E6C200; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="icon">✅</div>
+            <h1 class="title">Payment Successful!</h1>
+            <p class="subtitle">Your order has been confirmed.</p>
+
+            <div class="order-box">
+                <p class="label">Order ID</p>
+                <p class="value" id="orderId">TAD-20260710-000001</p>
+            </div>
+
+            <div class="delivery-badge">🚚 Estimated Delivery: 2-3 business days</div>
+
+            <div class="details">
+                <p><strong>Payment Reference:</strong> <span id="paymentRef">PAYSTACK-REF-001</span></p>
+                <p><strong>Amount Paid:</strong> <span id="amountPaid">₦20,000</span></p>
+                <p><strong>Payment Method:</strong> Paystack</p>
+            </div>
+
+            <p style="color:#6B7280; font-size:14px; margin:16px 0;">
+                📧 A confirmation email has been sent to your email address.
+            </p>
+
+            <a href="/tadaa-marketplace/" class="btn">🛍️ Continue Shopping</a>
+        </div>
+    </div>
+
+    <script>
+        // Get order details from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('order') || 'TAD-20260710-000001';
+        const reference = urlParams.get('reference') || 'PAYSTACK-REF-001';
+        const amount = urlParams.get('amount') || '20000';
+
+        document.getElementById('orderId').textContent = orderId;
+        document.getElementById('paymentRef').textContent = reference;
+        document.getElementById('amountPaid').textContent = `₦${parseInt(amount).toLocaleString()}`;
+    </script>
+</body>
+</html>
