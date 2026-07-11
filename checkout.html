@@ -301,7 +301,7 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
         
         sendOrderEmail(orderData, orderId, total);
         
-        // INITIATE PAYSTACK PAYMENT
+        // INITIATE PAYSTACK PAYMENT - FIXED DUPLICATE REFERENCE
         const email = orderData.customer.emailAddress || 'tadaamarketplace@gmail.com';
         const amount = Math.round(total * 100);
         
@@ -311,12 +311,15 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
             email: email
         });
 
+        // Generate a unique transaction reference
+        const uniqueRef = orderId + '-' + Date.now();
+
         const handler = PaystackPop.setup({
             key: 'pk_live_d3d75897f95466e18cf2aceef5657fe392674331',
             email: email,
             amount: amount,
             currency: 'NGN',
-            ref: orderId,
+            ref: uniqueRef,  // FIXED: Unique reference to avoid duplicate error
             metadata: {
                 custom_fields: [
                     {
