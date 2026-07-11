@@ -8,7 +8,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    <!-- Paystack SDK -->
     <script src="https://js.paystack.co/v1/inline.js"></script>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -111,42 +110,29 @@ const db = firebase.firestore();
 
 console.log('🔥 Checkout page loaded');
 
-// ============================================
-// STATE
-// ============================================
 let cart = [];
 let settings = {};
 let orderData = null;
 let orderId = null;
 
-// ============================================
-// LOAD DATA
-// ============================================
 async function loadCheckoutData() {
     try {
         const saved = localStorage.getItem('tadaa_cart');
         if (saved) {
             cart = JSON.parse(saved);
         }
-        
         if (cart.length === 0) {
             window.location.href = '/tadaa-marketplace/';
             return;
         }
-        
         const settingsDoc = await db.collection('siteSettings').doc('settings').get();
         settings = settingsDoc.data() || {};
-        
         displayOrderSummary();
-        
     } catch (error) {
         console.error('Error loading checkout data:', error);
     }
 }
 
-// ============================================
-// DISPLAY ORDER SUMMARY
-// ============================================
 function displayOrderSummary() {
     const deliveryFee = settings.deliveryFee || 500;
     const freeThreshold = settings.freeDeliveryThreshold || 5000;
@@ -173,9 +159,6 @@ function displayOrderSummary() {
     document.getElementById('placeOrderBtn').textContent = `🛒 Place Order - ₦${total.toLocaleString()}`;
 }
 
-// ============================================
-// GENERATE ORDER ID
-// ============================================
 function generateOrderId() {
     const now = new Date();
     const year = now.getFullYear();
@@ -186,15 +169,10 @@ function generateOrderId() {
     return `TAD-${year}${month}${day}-${String(counter).padStart(6, '0')}`;
 }
 
-// ============================================
-// SEND EMAIL
-// ============================================
 async function sendOrderEmail(orderData, orderId, total) {
     try {
         console.log('📧 Sending email...');
-        
         emailjs.init('PCqK7ti8VM8XMGk6l');
-        
         let itemsHtml = '';
         orderData.items.forEach(item => {
             itemsHtml += `
@@ -205,7 +183,6 @@ async function sendOrderEmail(orderData, orderId, total) {
                 </tr>
             `;
         });
-        
         const emailParams = {
             customer_name: orderData.customer.fullName,
             order_id: orderId,
@@ -217,7 +194,6 @@ async function sendOrderEmail(orderData, orderId, total) {
             phone_number: orderData.customer.phoneNumber,
             email: orderData.customer.emailAddress || 'tadaamarketplace@gmail.com'
         };
-        
         const result = await emailjs.send('service_2n6wyni', 'template_ps9f6di', emailParams);
         console.log('✅ Email sent!', result);
         return true;
@@ -227,85 +203,6 @@ async function sendOrderEmail(orderData, orderId, total) {
     }
 }
 
-// ============================================
-// INITIATE PAYSTACK PAYMENT
-// ============================================
-function initiatePaystackPayment(orderId, orderData, total) {
-    const email = orderData.customer.emailAddress || 'tadaamarketplace@gmail.com';
-    const amount = Math.round(total * 100); // Convert to kobo
-    
-    console.log('💳 Initiating Paystack payment:', {
-        orderId: orderId,
-        amount: amount,
-        email: email
-    });
-
-    const handler = PaystackPop.setup({
-        key: 'pk_live_d3d75897f95466e18cf2aceef5657fe392674331',
-        email: email,
-        amount: amount,
-        currency: 'NGN',
-        ref: orderId, // Use Order ID as reference
-        metadata: {
-            custom_fields: [
-                {
-                    display_name: "Order ID",
-                    variable_name: "order_id",
-                    value: orderId
-                },
-                {
-                    display_name: "Customer Name",
-                    variable_name: "customer_name",
-                    value: orderData.customer.fullName
-                }
-            ]
-        },
-        callback: async function(response) {
-            console.log('✅ Payment success:', response);
-            
-            // Payment was successful
-            // Webhook will confirm and update order
-            // Show success page
-            showPaymentSuccess(orderId, response.reference, total);
-        },
-        onClose: function() {
-            console.log('❌ Payment window closed');
-            // Show payment cancelled message
-            showPaymentCancelled(orderId);
-        }
-    });
-    
-    handler.openIframe();
-}
-
-// ============================================
-// SHOW PAYMENT SUCCESS
-// ============================================
-function showPaymentSuccess(orderId, reference, total) {
-    document.body.innerHTML = `
-        <div style="max-width:600px; margin:40px auto; padding:20px; text-align:center;">
-            <div style="background:#D1FAE5; color:#065F46; padding:60px 40px; border-radius:24px; box-shadow:0 8px 32px rgba(0,0,0,0.1);">
-                <p style="font-size:64px; margin:0 0 16px;">✅</p>
-                <h1 style="font-family:'Cormorant Garamond', serif; font-size:32px; color:#065F46; margin:0 0 8px;">Payment Successful!</h1>
-                <p style="color:#065F46; font-size:18px;">Your order has been confirmed.</p>
-                <div style="background:#fff; border-radius:12px; padding:20px; margin:20px 0;">
-                    <p style="color:#6B7280; margin:0; font-size:14px;">Order ID</p>
-                    <p style="font-size:28px; font-weight:700; color:#000; margin:4px 0 0;">${orderId}</p>
-                    <p style="color:#6B7280; margin:8px 0 0; font-size:14px;">Payment Reference</p>
-                    <p style="font-size:18px; font-weight:600; color:#000; margin:4px 0 0;">${reference}</p>
-                </div>
-                <div style="background:#FEF3C7; color:#92400E; padding:12px; border-radius:8px; font-size:14px; margin:12px 0;">
-                    🚚 Estimated Delivery: 2-3 business days
-                </div>
-                <button onclick="window.location.href='/tadaa-marketplace/'" style="background:#FFD700; color:#000; border:none; padding:12px 32px; border-radius:50px; font-size:16px; font-weight:600; cursor:pointer; margin-top:12px;">🛍️ Continue Shopping</button>
-            </div>
-        </div>
-    `;
-}
-
-// ============================================
-// SHOW PAYMENT CANCELLED
-// ============================================
 function showPaymentCancelled(orderId) {
     document.body.innerHTML = `
         <div style="max-width:600px; margin:40px auto; padding:20px; text-align:center;">
@@ -326,9 +223,6 @@ function showPaymentCancelled(orderId) {
     `;
 }
 
-// ============================================
-// PLACE ORDER
-// ============================================
 document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -397,21 +291,57 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
     };
     
     try {
-        // Save order to Firestore
         const docRef = await db.collection('orders').add(orderData);
         await db.collection('orders').doc(docRef.id).update({ firestoreId: docRef.id });
         console.log('✅ Order saved:', orderId);
         
-        // Clear cart immediately
         localStorage.removeItem('tadaa_cart');
         localStorage.removeItem('tadaa_order_counter');
         cart = [];
         
-        // Send email in background
         sendOrderEmail(orderData, orderId, total);
         
-        // Initiate Paystack payment
-        initiatePaystackPayment(orderId, orderData, total);
+        // INITIATE PAYSTACK PAYMENT
+        const email = orderData.customer.emailAddress || 'tadaamarketplace@gmail.com';
+        const amount = Math.round(total * 100);
+        
+        console.log('💳 Initiating Paystack payment:', {
+            orderId: orderId,
+            amount: amount,
+            email: email
+        });
+
+        const handler = PaystackPop.setup({
+            key: 'pk_live_d3d75897f95466e18cf2aceef5657fe392674331',
+            email: email,
+            amount: amount,
+            currency: 'NGN',
+            ref: orderId,
+            metadata: {
+                custom_fields: [
+                    {
+                        display_name: "Order ID",
+                        variable_name: "order_id",
+                        value: orderId
+                    },
+                    {
+                        display_name: "Customer Name",
+                        variable_name: "customer_name",
+                        value: orderData.customer.fullName
+                    }
+                ]
+            },
+            callback: function(response) {
+                console.log('✅ Payment success:', response);
+                window.location.href = `/tadaa-marketplace/payment-success.html?order=${orderId}&reference=${response.reference}&amount=${total}`;
+            },
+            onClose: function() {
+                console.log('❌ Payment window closed');
+                showPaymentCancelled(orderId);
+            }
+        });
+        
+        handler.openIframe();
         
     } catch (error) {
         console.error('Error placing order:', error);
@@ -422,9 +352,6 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
     }
 });
 
-// ============================================
-// INITIALIZE
-// ============================================
 loadCheckoutData();
 </script>
 
