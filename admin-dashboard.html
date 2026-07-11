@@ -615,7 +615,61 @@
     };
 
     // ============================================
-    // SETTINGS
+    // ORDERS
+    // ============================================
+    async function loadOrders() {
+        pageContent.innerHTML = `
+            <div class="card">
+                <h3 style="margin-bottom:20px;">📋 Orders</h3>
+                <div id="ordersList">Loading...</div>
+            </div>
+        `;
+
+        try {
+            const snap = await db.collection('orders').orderBy('createdAt', 'desc').get();
+            const container = document.getElementById('ordersList');
+            if (snap.empty) {
+                container.innerHTML = '<p>No orders yet.</p>';
+                return;
+            }
+            let html = `<table>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Total</th>
+                    <th>Payment</th>
+                    <th>Status</th>
+                </tr>`;
+            snap.forEach(doc => {
+                const data = doc.data();
+                const payStatus = data.payment?.status || 'pending';
+                const payColor = payStatus === 'paid' ? '#10B981' : '#F59E0B';
+                html += `<tr>
+                    <td><strong>${data.orderId || 'N/A'}</strong></td>
+                    <td>${data.customer?.fullName || 'Unknown'}</td>
+                    <td>₦${data.totals?.grandTotal?.toLocaleString() || 0}</td>
+                    <td><span style="background:${payColor}; color:white; padding:2px 12px; border-radius:50px; font-size:12px;">${payStatus}</span></td>
+                    <td>${data.status || 'pending'}</td>
+                </tr>`;
+            });
+            html += '</table>';
+            container.innerHTML = html;
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function loadInventory() {
+        pageContent.innerHTML = `
+            <div class="card">
+                <h3>📊 Inventory</h3>
+                <p>Inventory management coming soon...</p>
+            </div>
+        `;
+    }
+
+    // ============================================
+    // SETTINGS - FIXED VERSION WITH PROPER SAVE
     // ============================================
     function loadSettings() {
         pageContent.innerHTML = `
@@ -645,7 +699,7 @@
                     storeAddress: 'Lagos, Nigeria',
                     currency: '₦',
                     currencyCode: 'NGN',
-                    deliveryFee: 500,
+                    deliveryFee: 100,
                     freeDeliveryThreshold: 5000,
                     freeDeliveryEnabled: false,
                     deliveryLocations: ['Lagos', 'Abuja', 'Port Harcourt'],
@@ -704,8 +758,9 @@
                     <div class="settings-full"><h4 style="border-bottom:2px solid #FFD700; padding-bottom:8px; margin-top:20px;">🚚 Delivery Settings</h4></div>
                     
                     <div class="form-group">
-                        <label>Delivery Fee (₦)</label>
-                        <input type="number" id="setDeliveryFee" value="${settings.deliveryFee || 500}">
+                        <label>Delivery Fee (₦ per item)</label>
+                        <input type="number" id="setDeliveryFee" value="${settings.deliveryFee || 100}">
+                        <small style="color:#6B7280;">This will be multiplied by the number of items in cart</small>
                     </div>
                     <div class="form-group">
                         <label>Free Delivery Threshold (₦)</label>
@@ -763,6 +818,9 @@
         }
     }
 
+    // ============================================
+    // SAVE SETTINGS - FIXED VERSION
+    // ============================================
     window.saveSettings = async function() {
         try {
             const settings = {
@@ -774,7 +832,7 @@
                 storeAddress: document.getElementById('setStoreAddress').value.trim(),
                 currency: document.getElementById('setCurrency').value.trim(),
                 currencyCode: document.getElementById('setCurrencyCode').value.trim(),
-                deliveryFee: parseInt(document.getElementById('setDeliveryFee').value) || 0,
+                deliveryFee: parseInt(document.getElementById('setDeliveryFee').value) || 100,
                 freeDeliveryThreshold: parseInt(document.getElementById('setFreeThreshold').value) || 0,
                 freeDeliveryEnabled: document.getElementById('setFreeDelivery').checked,
                 deliveryLocations: document.getElementById('setDeliveryLocations').value.split(',').map(s => s.trim()).filter(s => s),
@@ -794,28 +852,7 @@
         }
     };
 
-    // ============================================
-    // PLACEHOLDER PAGES
-    // ============================================
-    function loadOrders() {
-        pageContent.innerHTML = `
-            <div class="card">
-                <h3>📋 Orders</h3>
-                <p>Order management coming soon...</p>
-            </div>
-        `;
-    }
-
-    function loadInventory() {
-        pageContent.innerHTML = `
-            <div class="card">
-                <h3>📊 Inventory</h3>
-                <p>Inventory management coming soon...</p>
-            </div>
-        `;
-    }
-
-    console.log('✅ Admin dashboard with full Store Settings!');
+    console.log('✅ Admin dashboard with full settings ready!');
 </script>
 
 </body>
