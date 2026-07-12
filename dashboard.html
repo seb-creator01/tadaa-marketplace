@@ -24,7 +24,6 @@
         .filter-bar button { padding: 8px 16px; background: #FFD700; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
         .order-row { cursor: pointer; }
         .order-row:hover { background: #f3f4f6; }
-        .inventory-summary { margin-top: 16px; padding: 12px; background: #f9fafb; border-radius: 8px; display: flex; gap: 24px; flex-wrap: wrap; }
         .btn-sm { padding: 4px 12px; font-size: 12px; border: none; border-radius: 6px; cursor: pointer; }
         .btn-primary { background: #FFD700; color: #000; }
         .btn-secondary { background: #e5e7eb; color: #000; }
@@ -420,12 +419,13 @@
         }
 
         // ============================================
-        // INVENTORY - FULLY WORKING
+        // INVENTORY - FIXED VERSION
         // ============================================
         let inventoryData = [];
         let filteredInventory = [];
 
         async function loadInventory() {
+            console.log('📊 Loading inventory...');
             pageContent.innerHTML = `
                 <div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
@@ -450,13 +450,18 @@
 
         async function fetchInventory() {
             try {
+                console.log('📊 Fetching inventory data...');
                 const snap = await db.collection('products').orderBy('name', 'asc').get();
                 inventoryData = [];
-                snap.forEach(doc => { inventoryData.push({ id: doc.id, ...doc.data() }); });
+                snap.forEach(doc => {
+                    inventoryData.push({ id: doc.id, ...doc.data() });
+                });
                 filteredInventory = [...inventoryData];
                 document.getElementById('totalInventoryCount').textContent = inventoryData.length;
+                console.log('✅ Inventory loaded:', inventoryData.length, 'products');
                 renderInventory();
             } catch (e) {
+                console.error('Error loading inventory:', e);
                 document.getElementById('inventoryList').innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
             }
         }
