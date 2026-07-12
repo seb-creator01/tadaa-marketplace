@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Status - Tadaa!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: 'Cormorant Garamond', serif; background: #f3f4f6; padding:20px; min-height:100vh; }
+        .container { max-width:700px; margin:0 auto; }
+        .header { text-align:center; padding:20px 0; }
+        .header h1 { font-size:32px; color:#FFD700; }
+        .header h1 span { color:#000; }
+        .card { background:#fff; border-radius:24px; padding:32px; box-shadow:0 4px 16px rgba(0,0,0,0.08); margin-bottom:20px; }
+        .search-box { display:flex; gap:12px; flex-wrap:wrap; }
+        .search-box input { flex:1; padding:14px 18px; border:2px solid #e5e7eb; border-radius:12px; font-size:16px; min-width:200px; font-family: 'Cormorant Garamond', serif; }
+        .search-box input:focus { outline:none; border-color:#FFD700; }
+        .search-box button { padding:14px 32px; background:#FFD700; color:#000; border:none; border-radius:12px; font-size:16px; font-weight:700; cursor:pointer; font-family: 'Cormorant Garamond', serif; }
+        .search-box button:hover { background:#E6C200; }
+        .error { background:#FEE2E2; color:#DC2626; padding:16px; border-radius:12px; display:none; margin-top:16px; font-size:16px; }
+        .order-info { display:none; }
+        .status-bar { margin:20px 0 30px; }
+        .status-steps { display:flex; justify-content:space-between; position:relative; padding:0 10px; }
+        .status-steps::before { content:''; position:absolute; top:20px; left:10%; right:10%; height:3px; background:#e5e7eb; z-index:0; }
+        .status-step { display:flex; flex-direction:column; align-items:center; z-index:1; flex:1; }
+        .status-step .dot { width:40px; height:40px; border-radius:50%; background:#e5e7eb; display:flex; align-items:center; justify-content:center; font-size:18px; transition:all 0.5s; border:3px solid #e5e7eb; }
+        .status-step .dot.active { background:#FFD700; border-color:#FFD700; color:#000; }
+        .status-step .dot.completed { background:#10B981; border-color:#10B981; color:#fff; }
+        .status-step .label { margin-top:8px; font-size:12px; color:#6B7280; text-align:center; font-weight:600; }
+        .status-step .label.active { color:#000; font-weight:700; }
+        .order-details { margin-top:20px; padding-top:20px; border-top:2px solid #e5e7eb; }
+        .order-details p { margin:6px 0; color:#4B5563; font-size:16px; }
+        .order-details strong { color:#1F2937; }
+        .items-list { margin-top:12px; }
+        .items-list .item { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f3f4f6; }
+        .back-link { display:inline-block; margin-top:16px; color:#FFD700; text-decoration:none; font-weight:600; }
+        .back-link:hover { text-decoration:underline; }
+        .status-badge { display:inline-block; padding:4px 16px; border-radius:50px; font-weight:600; font-size:14px; color:#fff; }
+        .status-badge.pending { background:#F59E0B; }
+        .status-badge.processing { background:#3B82F6; }
+        .status-badge.shipped { background:#8B5CF6; }
+        .status-badge.delivered { background:#10B981; }
+        .status-badge.cancelled { background:#EF4444; }
+        .loading { text-align:center; padding:40px; color:#6B7280; font-size:18px; }
+        .loading::after { content:''; display:inline-block; width:20px; height:20px; border:3px solid #f3f4f6; border-top:3px solid #FFD700; border-radius:50%; animation:spin 0.8s linear infinite; margin-left:12px; vertical-align:middle; }
+        @keyframes spin { 0% { transform:rotate(0deg); } 100% { transform:rotate(360deg); } }
+        @media (max-width:600px) {
+            .status-steps { flex-wrap:nowrap; overflow-x:auto; gap:8px; }
+            .status-step .label { font-size:10px; }
+            .status-step .dot { width:32px; height:32px; font-size:14px; }
+            .card { padding:20px; }
+            .search-box input { font-size:14px; }
+        }
+        .step-line { flex:1; height:3px; background:#e5e7eb; align-self:center; margin:0 4px; }
+        .step-line.active { background:#FFD700; }
+        .step-line.completed { background:#10B981; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Tadaa<span>!</span></h1>
+        <p style="color:#6B7280; font-size:18px;">Track Your Order</p>
+    </div>
+
+    <div class="card">
+        <p style="color:#6B7280; margin-bottom:12px;">Enter your Order ID to check status</p>
+        <div class="search-box">
+            <input type="text" id="orderInput" placeholder="e.g., TAD-20260710-000001" />
+            <button onclick="trackOrder()">🔍 Track Order</button>
+        </div>
+        <div id="errorMsg" class="error"></div>
+        <div id="loadingMsg" class="loading" style="display:none;">Checking order</div>
+    </div>
+
+    <div id="orderResult" class="order-info">
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                <h2 style="font-family:'Cormorant Garamond', serif; font-size:22px;">Order #<span id="displayOrderId"></span></h2>
+                <span id="statusBadge" class="status-badge pending">Pending</span>
+            </div>
+            <div class="status-bar" id="statusBar"></div>
+            <div class="order-details" id="orderDetails"></div>
+        </div>
+        <a href="/tadaa-marketplace/" class="back-link">← Back to Shopping</a>
+    </div>
+</div>
+
+<script>
+    // ============================================
+    // FIREBASE SETUP
+    // ============================================
+    const firebaseConfig = {
+        apiKey: "AIzaSyDCXnlAqyt2512HlvBOsSfMZ6O-xg0c94Y",
+        authDomain: "tadaa-marketplace.firebaseapp.com",
+        projectId: "tadaa-marketplace",
+        storageBucket: "tadaa-marketplace.firebasestorage.app",
+        messagingSenderId: "56983478470",
+        appId: "1:56983478470:web:0efdf7f44b19e88a6237c7"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    console.log('🔥 Order Status page loaded');
+
+    // ============================================
+    // TRACK ORDER
+    // ============================================
+    function trackOrder() {
+        const orderId = document.getElementById('orderInput').value.trim().toUpperCase();
+        const errorDiv = document.getElementById('errorMsg');
+        const resultDiv = document.getElementById('orderResult');
+        const loadingDiv = document.getElementById('loadingMsg');
+
+        // Validate
+        if (!orderId) {
+            errorDiv.textContent = '❌ Please enter your Order ID';
+            errorDiv.style.display = 'block';
+            resultDiv.style.display = 'none';
+            return;
+        }
+
+        if (!orderId.startsWith('TAD-')) {
+            errorDiv.textContent = '❌ Invalid Order ID. It should start with "TAD-"';
+            errorDiv.style.display = 'block';
+            resultDiv.style.display = 'none';
+            return;
+        }
+
+        errorDiv.style.display = 'none';
+        loadingDiv.style.display = 'block';
+        resultDiv.style.display = 'none';
+
+        // Search for order
+        db.collection('orders')
+            .where('orderId', '==', orderId)
+            .get()
+            .then((snapshot) => {
+                loadingDiv.style.display = 'none';
+                
+                if (snapshot.empty) {
+                    errorDiv.textContent = '❌ Order not found. Please check your Order ID and try again.';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+
+                let orderData = null;
+                let orderDocId = null;
+                snapshot.forEach(doc => {
+                    orderData = doc.data();
+                    orderDocId = doc.id;
+                });
+
+                displayOrder(orderData, orderId);
+                resultDiv.style.display = 'block';
+
+            })
+            .catch((error) => {
+                loadingDiv.style.display = 'none';
+                errorDiv.textContent = '❌ Error finding order: ' + error.message;
+                errorDiv.style.display = 'block';
+                console.error(error);
+            });
+    }
+
+    // ============================================
+    // DISPLAY ORDER
+    // ============================================
+    function displayOrder(order, orderId) {
+        // Status badge
+        const status = order.status || 'pending';
+        const badge = document.getElementById('statusBadge');
+        badge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+        badge.className = 'status-badge ' + status;
+
+        document.getElementById('displayOrderId').textContent = orderId;
+
+        // Status timeline
+        const statuses = ['pending', 'processing', 'shipped', 'delivered'];
+        const currentIndex = statuses.indexOf(status);
+        const statusLabels = ['⏳ Pending', '⚙️ Processing', '🚚 Shipped', '✅ Delivered'];
+        const statusColors = ['#F59E0B', '#3B82F6', '#8B5CF6', '#10B981'];
+
+        let statusHtml = `<div class="status-steps">`;
+        statuses.forEach((s, index) => {
+            const isActive = index <= currentIndex;
+            const isCompleted = index < currentIndex;
+            let dotClass = '';
+            if (isCompleted) dotClass = 'completed';
+            else if (isActive) dotClass = 'active';
+            
+            statusHtml += `
+                <div class="status-step">
+                    <div class="dot ${dotClass}">${index <= currentIndex ? '✅' : index + 1}</div>
+                    <div class="label ${isActive ? 'active' : ''}">${statusLabels[index]}</div>
+                </div>
+            `;
+            if (index < statuses.length - 1) {
+                statusHtml += `<div class="step-line ${isActive ? 'active' : ''}"></div>`;
+            }
+        });
+        statusHtml += `</div>`;
+        document.getElementById('statusBar').innerHTML = statusHtml;
+
+        // Order details
+        const deliveryFee = order.delivery?.fee || 0;
+        const subtotal = order.totals?.subtotal || 0;
+        const total = order.totals?.grandTotal || 0;
+        const createdAt = order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        }) : 'N/A';
+
+        let itemsHtml = `<div class="items-list">`;
+        if (order.items && order.items.length > 0) {
+            order.items.forEach(item => {
+                itemsHtml += `
+                    <div class="item">
+                        <span>${item.name} × ${item.quantity}</span>
+                        <span>₦${(item.price * item.quantity).toLocaleString()}</span>
+                    </div>
+                `;
+            });
+        }
+        itemsHtml += `</div>`;
+
+        const customer = order.customer || {};
+        document.getElementById('orderDetails').innerHTML = `
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                <div>
+                    <p><strong>Customer:</strong> ${customer.fullName || 'N/A'}</p>
+                    <p><strong>Phone:</strong> ${customer.phoneNumber || 'N/A'}</p>
+                </div>
+                <div>
+                    <p><strong>Payment:</strong> ${order.payment?.status || 'pending'}</p>
+                    <p><strong>Order Date:</strong> ${createdAt}</p>
+                </div>
+            </div>
+            <p><strong>Delivery Address:</strong> ${customer.deliveryAddress || 'N/A'}</p>
+            ${customer.deliveryInstructions ? `<p><strong>Instructions:</strong> ${customer.deliveryInstructions}</p>` : ''}
+            
+            <div style="margin-top:16px; padding-top:16px; border-top:2px solid #e5e7eb;">
+                <p style="font-weight:700; margin-bottom:8px;">Items:</p>
+                ${itemsHtml}
+            </div>
+            
+            <div style="margin-top:16px; padding-top:16px; border-top:2px solid #e5e7eb;">
+                <p><strong>Subtotal:</strong> ₦${subtotal.toLocaleString()}</p>
+                <p><strong>Delivery Fee:</strong> ₦${deliveryFee.toLocaleString()}</p>
+                <p style="font-size:22px; font-weight:700; color:#FFD700;"><strong>Total:</strong> ₦${total.toLocaleString()}</p>
+            </div>
+        `;
+    }
+
+    // ============================================
+    // ENTER KEY SUPPORT
+    // ============================================
+    document.getElementById('orderInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            trackOrder();
+        }
+    });
+
+    console.log('✅ Order Status page ready!');
+</script>
+
+</body>
+</html>
