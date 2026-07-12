@@ -1,5 +1,5 @@
 // ============================================
-// TADAA! - CUSTOMER WEBSITE (QUANTITY INPUT + BUTTONS)
+// TADAA! - CUSTOMER WEBSITE (QUANTITY BUTTONS)
 // ============================================
 
 // ===== Firebase Config =====
@@ -257,7 +257,7 @@ function renderCategories() {
 }
 
 // ============================================
-// RENDER PRODUCTS - WITH QUANTITY INPUT
+// RENDER PRODUCTS - WITH CLEAR QUANTITY BUTTON
 // ============================================
 function renderProducts() {
     const productsDiv = document.getElementById('products-section');
@@ -304,7 +304,6 @@ function renderProducts() {
         const cartItem = cart.find(item => item.id === product.id);
         const qty = cartItem ? cartItem.quantity : 0;
         const deliveryDisplay = perItemDelivery > 0 ? `Delivery: ₦${perItemDelivery}/item` : 'Free Delivery';
-        const maxStock = product.stockCount || 999;
         
         html += `
             <div style="background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06); transition:transform 0.3s, box-shadow 0.3s; cursor:pointer;" onclick="viewProduct('${product.id}')" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.12)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)'">
@@ -329,17 +328,15 @@ function renderProducts() {
                     </div>
                     
                     ${inStock ? `
-                    <div style="font-size:12px; color:#6B7280; margin-top:4px; margin-bottom:2px; font-weight:600;">📦 Quantity</div>
+                    <div style="font-size:12px; color:#6B7280; margin-top:6px; margin-bottom:4px; font-weight:600;">📦 Quantity</div>
                     <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                        <button onclick="event.stopPropagation(); updateProductQuantity('${product.id}', -1)" style="background:#f3f4f6; border:2px solid #e5e7eb; width:36px; height:36px; border-radius:8px; cursor:pointer; font-size:20px; font-weight:700; ${qty === 0 ? 'opacity:0.4; cursor:not-allowed;' : ''}" ${qty === 0 ? 'disabled' : ''}>−</button>
+                        <button onclick="event.stopPropagation(); updateProductQuantity('${product.id}', -1)" style="background:#f3f4f6; border:2px solid #d1d5db; padding:6px 14px; border-radius:8px; cursor:pointer; font-size:18px; font-weight:700; ${qty === 0 ? 'opacity:0.4; cursor:not-allowed;' : ''}" ${qty === 0 ? 'disabled' : ''}>−</button>
                         
-                        <input type="number" id="qty-input-${product.id}" value="${qty}" min="0" max="${maxStock}" 
-                               style="width:55px; height:36px; text-align:center; border:2px solid #e5e7eb; border-radius:8px; font-size:18px; font-weight:600; padding:0 4px;" 
-                               onchange="event.stopPropagation(); setProductQuantity('${product.id}', this.value)">
+                        <span style="min-width:32px; text-align:center; font-size:18px; font-weight:700; padding:0 4px;">${qty}</span>
                         
-                        <button onclick="event.stopPropagation(); updateProductQuantity('${product.id}', 1)" style="background:#f3f4f6; border:2px solid #e5e7eb; width:36px; height:36px; border-radius:8px; cursor:pointer; font-size:20px; font-weight:700;">+</button>
+                        <button onclick="event.stopPropagation(); updateProductQuantity('${product.id}', 1)" style="background:#f3f4f6; border:2px solid #d1d5db; padding:6px 14px; border-radius:8px; cursor:pointer; font-size:18px; font-weight:700;">+</button>
                         
-                        <button onclick="event.stopPropagation(); addToCart('${product.id}')" style="flex:1; background:#FFD700; color:#000; border:none; padding:8px 10px; border-radius:8px; font-weight:600; font-size:12px; cursor:pointer; transition:background 0.3s; white-space:nowrap; min-width:60px;" onmouseover="this.style.background='#E6C200'" onmouseout="this.style.background='#FFD700'">
+                        <button onclick="event.stopPropagation(); addToCart('${product.id}')" style="flex:1; background:#FFD700; color:#000; border:none; padding:8px 12px; border-radius:8px; font-weight:600; font-size:13px; cursor:pointer; transition:background 0.3s; min-width:65px;" onmouseover="this.style.background='#E6C200'" onmouseout="this.style.background='#FFD700'">
                             ${qty > 0 ? '🔄 Update' : 'Add +'}
                         </button>
                     </div>
@@ -374,7 +371,6 @@ function updateProductQuantity(productId, change) {
         return;
     }
     
-    // Check stock limit
     const maxStock = product.stockCount || 999;
     if (newQty > maxStock) {
         alert(`Only ${maxStock} items available.`);
@@ -386,86 +382,6 @@ function updateProductQuantity(productId, change) {
     updateCartCount();
     renderCartSidebarContent();
     renderProducts();
-}
-
-// ============================================
-// SET PRODUCT QUANTITY (from input field)
-// ============================================
-function setProductQuantity(productId, value) {
-    const product = products.find(p => p.id === productId);
-    if (!product) return;
-    
-    let newQty = parseInt(value);
-    if (isNaN(newQty) || newQty < 0) {
-        newQty = 0;
-    }
-    
-    const maxStock = product.stockCount || 999;
-    if (newQty > maxStock) {
-        newQty = maxStock;
-        alert(`Only ${maxStock} items available in stock.`);
-        document.getElementById(`qty-input-${productId}`).value = maxStock;
-    }
-    
-    const existing = cart.find(item => item.id === productId);
-    if (newQty === 0) {
-        if (existing) {
-            removeFromCart(productId);
-        }
-        return;
-    }
-    
-    if (existing) {
-        existing.quantity = newQty;
-    } else {
-        cart.push({ ...product, quantity: newQty });
-    }
-    saveCart();
-    updateCartCount();
-    renderCartSidebarContent();
-    renderProducts();
-}
-
-// ============================================
-// MODAL QUANTITY CONTROLS
-// ============================================
-function changeModalQty(productId, change) {
-    const input = document.getElementById(`modal-qty-${productId}`);
-    if (!input) return;
-    let val = parseInt(input.value) || 1;
-    val = val + change;
-    const product = products.find(p => p.id === productId);
-    const maxStock = product?.stockCount || 999;
-    if (val < 1) val = 1;
-    if (val > maxStock) val = maxStock;
-    input.value = val;
-}
-
-function addModalToCart(productId) {
-    const input = document.getElementById(`modal-qty-${productId}`);
-    const qty = parseInt(input?.value) || 1;
-    
-    const product = products.find(p => p.id === productId);
-    if (!product) return;
-    
-    const maxStock = product.stockCount || 999;
-    if (qty > maxStock) {
-        alert(`Only ${maxStock} items available.`);
-        return;
-    }
-    
-    const existing = cart.find(item => item.id === productId);
-    if (existing) {
-        existing.quantity = qty;
-    } else {
-        cart.push({ ...product, quantity: qty });
-    }
-    saveCart();
-    updateCartCount();
-    renderCartSidebarContent();
-    renderProducts();
-    closeModal();
-    showToast(product.name);
 }
 
 // ============================================
@@ -493,7 +409,7 @@ function toggleSearch() {
 }
 
 // ============================================
-// VIEW PRODUCT - WITH MODAL QUANTITY INPUT
+// VIEW PRODUCT - WITH CLEAR QUANTITY BUTTONS
 // ============================================
 function viewProduct(productId) {
     const product = products.find(p => p.id === productId);
@@ -533,12 +449,13 @@ function viewProduct(productId) {
                 <span style="color:#6B7280; font-size:14px;">Stock: ${inStock ? `✅ ${product.stockCount || 0} available` : '❌ Out of Stock'}</span>
             </div>
             ${inStock ? `
-            <div style="display:flex; align-items:center; gap:12px; margin:12px 0;">
-                <span style="font-weight:600; font-size:16px;">Quantity:</span>
-                <button onclick="changeModalQty('${product.id}', -1)" style="background:#f3f4f6; border:2px solid #e5e7eb; width:36px; height:36px; border-radius:8px; cursor:pointer; font-size:20px; font-weight:700;">−</button>
-                <input type="number" id="modal-qty-${product.id}" value="1" min="1" max="${maxStock}" 
-                       style="width:60px; height:36px; text-align:center; border:2px solid #e5e7eb; border-radius:8px; font-size:18px; font-weight:600; padding:0 4px;">
-                <button onclick="changeModalQty('${product.id}', 1)" style="background:#f3f4f6; border:2px solid #e5e7eb; width:36px; height:36px; border-radius:8px; cursor:pointer; font-size:20px; font-weight:700;">+</button>
+            <div style="margin:16px 0;">
+                <div style="font-size:14px; font-weight:600; margin-bottom:8px;">Quantity</div>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <button onclick="changeModalQty('${product.id}', -1)" style="background:#f3f4f6; border:2px solid #d1d5db; padding:8px 18px; border-radius:8px; cursor:pointer; font-size:22px; font-weight:700;">−</button>
+                    <span id="modal-qty-display-${product.id}" style="min-width:40px; text-align:center; font-size:22px; font-weight:700;">1</span>
+                    <button onclick="changeModalQty('${product.id}', 1)" style="background:#f3f4f6; border:2px solid #d1d5db; padding:8px 18px; border-radius:8px; cursor:pointer; font-size:22px; font-weight:700;">+</button>
+                </div>
             </div>
             <button onclick="addModalToCart('${product.id}')" style="width:100%; background:#FFD700; color:#000; border:none; padding:14px; border-radius:12px; font-size:18px; font-weight:600; cursor:pointer;">🛒 Add to Cart</button>
             ` : `<button style="width:100%; background:#9CA3AF; color:#fff; border:none; padding:14px; border-radius:12px; font-size:18px; font-weight:600; cursor:not-allowed;">Out of Stock</button>`}
@@ -546,6 +463,51 @@ function viewProduct(productId) {
     `;
     
     document.body.appendChild(modal);
+}
+
+// ============================================
+// MODAL QUANTITY CONTROLS
+// ============================================
+let modalQtyValue = {};
+
+function changeModalQty(productId, change) {
+    const display = document.getElementById(`modal-qty-display-${productId}`);
+    if (!display) return;
+    let val = parseInt(display.textContent) || 1;
+    val = val + change;
+    const product = products.find(p => p.id === productId);
+    const maxStock = product?.stockCount || 999;
+    if (val < 1) val = 1;
+    if (val > maxStock) val = maxStock;
+    display.textContent = val;
+    modalQtyValue[productId] = val;
+}
+
+function addModalToCart(productId) {
+    const display = document.getElementById(`modal-qty-display-${productId}`);
+    const qty = parseInt(display?.textContent) || 1;
+    
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+    
+    const maxStock = product.stockCount || 999;
+    if (qty > maxStock) {
+        alert(`Only ${maxStock} items available.`);
+        return;
+    }
+    
+    const existing = cart.find(item => item.id === productId);
+    if (existing) {
+        existing.quantity = qty;
+    } else {
+        cart.push({ ...product, quantity: qty });
+    }
+    saveCart();
+    updateCartCount();
+    renderCartSidebarContent();
+    renderProducts();
+    closeModal();
+    showToast(product.name);
 }
 
 // ============================================
@@ -597,19 +559,11 @@ function addToCart(productId) {
     const product = products.find(p => p.id === productId);
     if (!product) return;
     
-    // Get quantity from input field if it exists
-    const input = document.getElementById(`qty-input-${productId}`);
-    let qtyToAdd = 1;
-    if (input) {
-        qtyToAdd = parseInt(input.value) || 1;
-        if (qtyToAdd <= 0) qtyToAdd = 1;
-    }
-    
     const existing = cart.find(item => item.id === productId);
     if (existing) {
-        existing.quantity += qtyToAdd;
+        existing.quantity += 1;
     } else {
-        cart.push({ ...product, quantity: qtyToAdd });
+        cart.push({ ...product, quantity: 1 });
     }
     saveCart();
     updateCartCount();
@@ -729,9 +683,9 @@ function renderCartSidebarContent() {
                     <p style="margin:0; font-weight:600; font-size:14px;">${item.name}</p>
                     <p style="margin:4px 0 0; font-size:14px; font-weight:700;">₦${item.price.toLocaleString()}</p>
                     <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
-                        <button onclick="updateQuantity('${item.id}', -1)" style="background:#f3f4f6; border:none; width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:16px;">−</button>
+                        <button onclick="updateQuantity('${item.id}', -1)" style="background:#f3f4f6; border:1px solid #d1d5db; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:16px; font-weight:700;">−</button>
                         <span style="font-weight:600; min-width:24px; text-align:center;">${item.quantity}</span>
-                        <button onclick="updateQuantity('${item.id}', 1)" style="background:#f3f4f6; border:none; width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:16px;">+</button>
+                        <button onclick="updateQuantity('${item.id}', 1)" style="background:#f3f4f6; border:1px solid #d1d5db; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:16px; font-weight:700;">+</button>
                         <span style="margin-left:auto; font-weight:600;">₦${itemTotal.toLocaleString()}</span>
                         <button onclick="removeFromCart('${item.id}')" style="background:none; border:none; color:#EF4444; cursor:pointer; font-size:18px; margin-left:4px;">✕</button>
                     </div>
@@ -859,7 +813,6 @@ window.clearCart = clearCart;
 window.checkout = checkout;
 window.showToast = showToast;
 window.updateProductQuantity = updateProductQuantity;
-window.setProductQuantity = setProductQuantity;
 window.changeModalQty = changeModalQty;
 window.addModalToCart = addModalToCart;
 window.closeModal = closeModal;
@@ -872,4 +825,4 @@ document.addEventListener('DOMContentLoaded', () => {
     loadData();
 });
 
-console.log('✅ Tadaa! Website with quantity input ready!');
+console.log('✅ Tadaa! Website with clear quantity buttons ready!');
