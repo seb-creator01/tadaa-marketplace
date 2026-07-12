@@ -1,5 +1,5 @@
 // ============================================
-// TADAA! - CUSTOMER WEBSITE (FINAL FIX)
+// TADAA! - CUSTOMER WEBSITE (FIXED - NO AUTO OVERLAY)
 // ============================================
 
 // ===== Firebase Config =====
@@ -33,7 +33,6 @@ let settings = {};
 let cart = [];
 let currentCategory = 'all';
 let searchTerm = '';
-let isModalOpen = false;
 
 // ============================================
 // LOAD CART
@@ -147,7 +146,8 @@ function renderWebsite() {
     renderCategories();
     renderProducts();
     renderFooter();
-    renderCartSidebar();
+    // Only render cart sidebar content, NOT open it
+    renderCartSidebarContent();
 }
 
 // ============================================
@@ -370,7 +370,7 @@ function updateProductQuantity(productId, change) {
     existing.quantity = newQty;
     saveCart();
     updateCartCount();
-    renderCartSidebar();
+    renderCartSidebarContent();
     renderProducts();
 }
 
@@ -443,7 +443,6 @@ function viewProduct(productId) {
     `;
     
     document.body.appendChild(modal);
-    isModalOpen = true;
 }
 
 // ============================================
@@ -454,7 +453,6 @@ function closeModal() {
     if (modal) {
         modal.remove();
     }
-    isModalOpen = false;
 }
 
 // ============================================
@@ -473,7 +471,7 @@ function addToCartAndCloseModal(productId) {
     }
     saveCart();
     updateCartCount();
-    renderCartSidebar();
+    renderCartSidebarContent();
     renderProducts();
     
     // Close modal
@@ -530,7 +528,7 @@ function addToCart(productId) {
     }
     saveCart();
     updateCartCount();
-    renderCartSidebar();
+    renderCartSidebarContent();
     renderProducts();
     showToast(product.name);
 }
@@ -539,7 +537,7 @@ function removeFromCart(productId) {
     cart = cart.filter(item => item.id !== productId);
     saveCart();
     updateCartCount();
-    renderCartSidebar();
+    renderCartSidebarContent();
     renderProducts();
 }
 
@@ -554,7 +552,7 @@ function updateQuantity(productId, change) {
     item.quantity = newQty;
     saveCart();
     updateCartCount();
-    renderCartSidebar();
+    renderCartSidebarContent();
     renderProducts();
 }
 
@@ -564,7 +562,7 @@ function clearCart() {
         cart = [];
         saveCart();
         updateCartCount();
-        renderCartSidebar();
+        renderCartSidebarContent();
         renderProducts();
     }
 }
@@ -579,29 +577,18 @@ function updateCartCount() {
 }
 
 // ============================================
-// CLOSE CART SIDEBAR AND OVERLAY
+// RENDER CART SIDEBAR CONTENT (ONLY UPDATES HTML, DOES NOT OPEN)
 // ============================================
-function closeCartSidebar() {
-    const sidebar = document.getElementById('cartSidebar');
-    const overlay = document.getElementById('cartOverlay');
-    if (sidebar) {
-        sidebar.style.right = '-400px';
-    }
-    if (overlay) {
-        overlay.style.display = 'none';
-    }
-}
-
-// ============================================
-// CART SIDEBAR
-// ============================================
-function renderCartSidebar() {
+function renderCartSidebarContent() {
     let sidebar = document.getElementById('cartSidebar');
     if (!sidebar) {
+        // Create sidebar if it doesn't exist
         sidebar = document.createElement('div');
         sidebar.id = 'cartSidebar';
         sidebar.style.cssText = `position:fixed; top:0; right:-400px; width:380px; height:100%; background:#fff; z-index:1500; transition:right 0.3s ease; box-shadow:-4px 0 24px rgba(0,0,0,0.15); display:flex; flex-direction:column;`;
         document.body.appendChild(sidebar);
+        
+        // Create overlay (hidden by default)
         const overlay = document.createElement('div');
         overlay.id = 'cartOverlay';
         overlay.style.cssText = `position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:1400; display:none; cursor:pointer;`;
@@ -610,8 +597,8 @@ function renderCartSidebar() {
         };
         document.body.appendChild(overlay);
     }
-    const overlay = document.getElementById('cartOverlay');
     
+    // If cart is empty, show empty state
     if (cart.length === 0) {
         sidebar.innerHTML = `
             <div style="padding:20px; border-bottom:1px solid #e5e7eb; display:flex; justify-content:space-between; align-items:center;">
@@ -624,10 +611,10 @@ function renderCartSidebar() {
                 <button onclick="closeCartSidebar()" style="background:#FFD700; color:#000; border:none; padding:12px 24px; border-radius:50px; margin-top:16px; cursor:pointer; font-weight:600;">Continue Shopping</button>
             </div>
         `;
-        overlay.style.display = 'none';
         return;
     }
     
+    // Calculate totals
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
     const perItemDelivery = settings.deliveryFee || 100;
@@ -695,23 +682,38 @@ function renderCartSidebar() {
         </div>
     `;
     sidebar.innerHTML = cartHtml;
-    overlay.style.display = 'block';
 }
 
 // ============================================
-// TOGGLE CART SIDEBAR
+// TOGGLE CART SIDEBAR - ONLY OPENS WHEN CLICKED
 // ============================================
 function toggleCartSidebar() {
     const sidebar = document.getElementById('cartSidebar');
     const overlay = document.getElementById('cartOverlay');
     if (!sidebar) return;
     
+    // Check if sidebar is open
     if (sidebar.style.right === '0px') {
         closeCartSidebar();
     } else {
-        renderCartSidebar();
+        // Update content before opening
+        renderCartSidebarContent();
         sidebar.style.right = '0px';
-        overlay.style.display = 'block';
+        if (overlay) overlay.style.display = 'block';
+    }
+}
+
+// ============================================
+// CLOSE CART SIDEBAR
+// ============================================
+function closeCartSidebar() {
+    const sidebar = document.getElementById('cartSidebar');
+    const overlay = document.getElementById('cartOverlay');
+    if (sidebar) {
+        sidebar.style.right = '-400px';
+    }
+    if (overlay) {
+        overlay.style.display = 'none';
     }
 }
 
@@ -790,4 +792,4 @@ document.addEventListener('DOMContentLoaded', () => {
     loadData();
 });
 
-console.log('✅ Tadaa! Website final fix ready!');
+console.log('✅ Tadaa! Website with ChatGPT fix ready!');
