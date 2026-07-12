@@ -38,6 +38,8 @@
         .btn-sm { padding: 4px 12px; font-size: 12px; border: none; border-radius: 6px; cursor: pointer; }
         .btn-primary { background: #FFD700; color: #000; }
         .btn-secondary { background: #e5e7eb; color: #000; }
+        .btn-warning { background: #F59E0B; color: #fff; }
+        .btn-danger { background: #EF4444; color: #fff; }
         .admin-sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 220px; background: #000; color: #fff; padding: 20px 0; overflow-y: auto; }
         .admin-sidebar-brand { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 16px; }
         .admin-sidebar-brand .brand-text { font-size: 24px; color: #FFD700; font-weight: 700; font-family: 'Cormorant Garamond', serif; }
@@ -65,7 +67,13 @@
         th { background: #f9fafb; }
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; font-weight: 600; margin-bottom: 4px; }
-        .form-group input { width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; }
+        .product-img { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; }
+        .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .settings-full { grid-column: span 2; }
+        .settings-check { display: flex; align-items: center; gap: 12px; }
+        .settings-check label { margin: 0; }
+        .settings-check input { width: auto; }
     </style>
 </head>
 <body>
@@ -294,14 +302,14 @@
         };
 
         // ============================================
-        // PRODUCTS
+        // PRODUCTS - FULLY WORKING
         // ============================================
         async function loadProducts() {
             pageContent.innerHTML = `
                 <div class="card">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
                         <h3>📦 Products</h3>
-                        <button class="btn btn-primary" onclick="alert('Add product in admin-dashboard.html')">+ Add Product</button>
+                        <button class="btn btn-primary" onclick="showAddProduct()">+ Add Product</button>
                     </div>
                     <div id="productsList">Loading...</div>
                 </div>
@@ -310,17 +318,28 @@
                 const snap = await db.collection('products').orderBy('createdAt', 'desc').get();
                 const container = document.getElementById('productsList');
                 if (snap.empty) { container.innerHTML = '<p>No products yet.</p>'; return; }
-                let html = '<table><tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Actions</th></tr>';
+                let html = `<table>
+                    <tr>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Actions</th>
+                    </tr>`;
                 snap.forEach(doc => {
                     const data = doc.data();
                     const img = data.images && data.images.length > 0 ? data.images[0] : '';
                     html += `<tr>
-                        <td>${img ? `<img src="${img}" style="width:40px;height:40px;object-fit:cover;border-radius:8px;">` : '📷'}</td>
+                        <td>${img ? `<img src="${img}" class="product-img">` : '📷'}</td>
                         <td><strong>${data.name}</strong></td>
                         <td>${data.categoryName || 'Uncategorized'}</td>
                         <td>₦${data.price?.toLocaleString() || 0}</td>
                         <td>${data.inStock ? '✅ In Stock' : '❌ Out of Stock'}</td>
-                        <td><button class="btn btn-warning btn-sm">✏️</button><button class="btn btn-danger btn-sm">🗑️</button></td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="editProduct('${doc.id}')">✏️ Edit</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteProduct('${doc.id}')">🗑️ Delete</button>
+                        </td>
                     </tr>`;
                 });
                 html += '</table>';
@@ -329,7 +348,193 @@
         }
 
         // ============================================
-        // ORDERS WITH DELETE FUNCTION
+        // ADD PRODUCT
+        // ============================================
+        window.showAddProduct = function() {
+            loadCategoriesForSelect();
+            const container = document.getElementById('productsList');
+            container.innerHTML = `
+                <div style="background:#f9fafb; padding:20px; border-radius:12px; margin-top:12px;">
+                    <h4>➕ Add New Product</h4>
+                    <div class="form-group"><label>Product Name *</label><input type="text" id="prodName" placeholder="e.g., Rice"></div>
+                    <div class="form-group"><label>Description</label><input type="text" id="prodDesc" placeholder="Brief description"></div>
+                    <div class="form-group"><label>Price (₦) *</label><input type="number" id="prodPrice" placeholder="e.g., 2000"></div>
+                    <div class="form-group"><label>Compare Price</label><input type="number" id="prodCompare" placeholder="e.g., 2500"></div>
+                    <div class="form-group"><label>Category *</label><select id="prodCategory" style="width:100%; padding:10px; border:2px solid #e5e7eb; border-radius:8px;"></select></div>
+                    <div class="form-group"><label>Stock Count</label><input type="number" id="prodStock" value="0"></div>
+                    <div class="form-group"><label>Discount (%)</label><input type="number" id="prodDiscount" value="0"></div>
+                    <div class="form-group"><label>Image URL</label><input type="text" id="prodImage" placeholder="Cloudinary image URL"></div>
+                    <div style="margin:12px 0;"><button class="btn btn-primary" onclick="uploadToCloudinary()">📤 Upload Image</button></div>
+                    <button class="btn btn-primary" onclick="saveProduct()">💾 Save Product</button>
+                    <button class="btn" style="background:#e5e7eb;" onclick="loadProducts()">Cancel</button>
+                </div>
+            `;
+        };
+
+        async function loadCategoriesForSelect() {
+            try {
+                const snap = await db.collection('categories').orderBy('name', 'asc').get();
+                const select = document.getElementById('prodCategory');
+                if (!select) return;
+                let html = '<option value="">Select Category</option>';
+                snap.forEach(doc => {
+                    html += `<option value="${doc.id}">${doc.data().name}</option>`;
+                });
+                select.innerHTML = html;
+            } catch (e) {}
+        }
+
+        // ============================================
+        // CLOUDINARY UPLOAD
+        // ============================================
+        window.uploadToCloudinary = function() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = async function() {
+                const file = this.files[0];
+                if (!file) return;
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', 'tadaa_products');
+                try {
+                    const res = await fetch('https://api.cloudinary.com/v1_1/cva6mpgc/image/upload', {
+                        method: 'POST', body: formData
+                    });
+                    const data = await res.json();
+                    if (data.secure_url) {
+                        document.getElementById('prodImage').value = data.secure_url;
+                        alert('✅ Image uploaded! URL added.');
+                    }
+                } catch(e) { alert('❌ Upload failed: ' + e.message); }
+            };
+            input.click();
+        };
+
+        // ============================================
+        // SAVE PRODUCT
+        // ============================================
+        window.saveProduct = async function() {
+            const name = document.getElementById('prodName').value.trim();
+            const desc = document.getElementById('prodDesc').value.trim();
+            const price = parseFloat(document.getElementById('prodPrice').value);
+            const compare = parseFloat(document.getElementById('prodCompare').value) || 0;
+            const cat = document.getElementById('prodCategory').value;
+            const stock = parseInt(document.getElementById('prodStock').value) || 0;
+            const discount = parseInt(document.getElementById('prodDiscount').value) || 0;
+            const image = document.getElementById('prodImage').value.trim();
+            if (!name || !price || !cat) { alert('Name, Price & Category required!'); return; }
+            let catName = '';
+            try {
+                const c = await db.collection('categories').doc(cat).get();
+                if (c.exists) catName = c.data().name;
+            } catch(e) {}
+            try {
+                await db.collection('products').add({
+                    name, description: desc, price, comparePrice: compare,
+                    categoryId: cat, categoryName: catName,
+                    images: image ? [image] : [],
+                    inStock: stock > 0, stockCount: stock, discount,
+                    createdAt: new Date().toISOString()
+                });
+                alert('✅ Product added!');
+                loadProducts();
+            } catch(e) { alert('❌ Error: ' + e.message); }
+        };
+
+        // ============================================
+        // EDIT PRODUCT
+        // ============================================
+        window.editProduct = function(id) {
+            db.collection('products').doc(id).get().then(doc => {
+                if (!doc.exists) { alert('Not found'); return; }
+                const d = doc.data();
+                db.collection('categories').orderBy('name', 'asc').get().then(cats => {
+                    let opts = '<option value="">Select Category</option>';
+                    cats.forEach(c => {
+                        const sel = c.id === d.categoryId ? 'selected' : '';
+                        opts += `<option value="${c.id}" ${sel}>${c.data().name}</option>`;
+                    });
+                    const container = document.getElementById('productsList');
+                    container.innerHTML = `
+                        <div style="background:#f9fafb; padding:20px; border-radius:12px; margin-top:12px;">
+                            <h4>✏️ Edit Product</h4>
+                            <div class="form-group"><label>Name *</label><input type="text" id="editName" value="${d.name || ''}"></div>
+                            <div class="form-group"><label>Description</label><input type="text" id="editDesc" value="${d.description || ''}"></div>
+                            <div class="form-group"><label>Price (₦) *</label><input type="number" id="editPrice" value="${d.price || 0}"></div>
+                            <div class="form-group"><label>Compare Price</label><input type="number" id="editCompare" value="${d.comparePrice || 0}"></div>
+                            <div class="form-group"><label>Category *</label><select id="editCategory">${opts}</select></div>
+                            <div class="form-group"><label>Stock</label><input type="number" id="editStock" value="${d.stockCount || 0}"></div>
+                            <div class="form-group"><label>Discount (%)</label><input type="number" id="editDiscount" value="${d.discount || 0}"></div>
+                            <div class="form-group"><label>Image URL</label><input type="text" id="editImage" value="${d.images && d.images.length > 0 ? d.images[0] : ''}"></div>
+                            <div style="margin:12px 0;"><button class="btn btn-primary" onclick="uploadEditImage()">📤 Upload Image</button></div>
+                            <button class="btn btn-primary" onclick="updateProduct('${id}')">💾 Update</button>
+                            <button class="btn" style="background:#e5e7eb;" onclick="loadProducts()">Cancel</button>
+                        </div>
+                    `;
+                    window.uploadEditImage = function() {
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = 'image/*';
+                        input.onchange = async function() {
+                            const file = this.files[0];
+                            if (!file) return;
+                            const fd = new FormData();
+                            fd.append('file', file);
+                            fd.append('upload_preset', 'tadaa_products');
+                            try {
+                                const res = await fetch('https://api.cloudinary.com/v1_1/cva6mpgc/image/upload', { method: 'POST', body: fd });
+                                const data = await res.json();
+                                if (data.secure_url) {
+                                    document.getElementById('editImage').value = data.secure_url;
+                                    alert('✅ Image uploaded!');
+                                }
+                            } catch(e) { alert('❌ Upload failed'); }
+                        };
+                        input.click();
+                    };
+                });
+            }).catch(e => alert('Error: ' + e.message));
+        };
+
+        // ============================================
+        // UPDATE PRODUCT
+        // ============================================
+        window.updateProduct = function(id) {
+            const name = document.getElementById('editName').value.trim();
+            const desc = document.getElementById('editDesc').value.trim();
+            const price = parseFloat(document.getElementById('editPrice').value);
+            const compare = parseFloat(document.getElementById('editCompare').value) || 0;
+            const cat = document.getElementById('editCategory').value;
+            const stock = parseInt(document.getElementById('editStock').value) || 0;
+            const discount = parseInt(document.getElementById('editDiscount').value) || 0;
+            const image = document.getElementById('editImage').value.trim();
+            if (!name || !price || !cat) { alert('Name, Price & Category required!'); return; }
+            db.collection('categories').doc(cat).get().then(c => {
+                const catName = c.exists ? c.data().name : '';
+                return db.collection('products').doc(id).update({
+                    name, description: desc, price, comparePrice: compare,
+                    categoryId: cat, categoryName: catName,
+                    images: image ? [image] : [],
+                    inStock: stock > 0, stockCount: stock, discount
+                });
+            }).then(() => { alert('✅ Product updated!'); loadProducts(); })
+              .catch(e => alert('❌ Error: ' + e.message));
+        };
+
+        // ============================================
+        // DELETE PRODUCT
+        // ============================================
+        window.deleteProduct = function(id) {
+            if (confirm('Delete this product?')) {
+                db.collection('products').doc(id).delete()
+                    .then(() => { alert('✅ Product deleted!'); loadProducts(); })
+                    .catch(e => alert('❌ Error: ' + e.message));
+            }
+        };
+
+        // ============================================
+        // ORDERS
         // ============================================
         async function loadOrders() {
             pageContent.innerHTML = `
@@ -398,7 +603,6 @@
                     <th>Status</th>
                     <th>Actions</th>
                 </tr></thead><tbody>`;
-            
             filteredOrders.forEach(order => {
                 const payStatus = order.payment?.status || 'pending';
                 const payColor = payStatus === 'paid' ? '#10B981' : payStatus === 'failed' ? '#EF4444' : '#F59E0B';
@@ -445,18 +649,13 @@
             container.innerHTML = html;
         }
 
-        // ============================================
-        // DELETE ORDER FUNCTION
-        // ============================================
         window.deleteOrder = async function(orderId, orderIdDisplay) {
-            if (!confirm(`⚠️ Are you sure you want to delete order ${orderIdDisplay}? This cannot be undone!`)) return;
+            if (!confirm(`⚠️ Delete order ${orderIdDisplay}?`)) return;
             try {
                 await db.collection('orders').doc(orderId).delete();
-                alert(`✅ Order ${orderIdDisplay} deleted successfully!`);
+                alert(`✅ Order ${orderIdDisplay} deleted!`);
                 loadOrders();
-            } catch (e) {
-                alert('❌ Error deleting order: ' + e.message);
-            }
+            } catch (e) { alert('❌ Error: ' + e.message); }
         };
 
         window.toggleOrderDetails = function(orderId) {
@@ -643,19 +842,188 @@
         window.filterInventory = filterInventory;
 
         // ============================================
-        // SETTINGS
+        // SETTINGS - FULL VERSION
         // ============================================
         function loadSettings() {
             pageContent.innerHTML = `
                 <div class="card">
-                    <h3>⚙️ Store Settings</h3>
-                    <p style="color:#9CA3AF; margin-top:12px;">Go to <a href="/tadaa-marketplace/admin-dashboard.html" style="color:#FFD700;">admin-dashboard.html</a> for full settings.</p>
+                    <h3 style="margin-bottom:20px;">⚙️ Store Settings</h3>
+                    <div id="settingsForm">Loading settings...</div>
                 </div>
             `;
+            loadSettingsForm();
         }
 
+        async function loadSettingsForm() {
+            const container = document.getElementById('settingsForm');
+            container.innerHTML = 'Loading...';
+            
+            try {
+                let settingsDoc = await db.collection('siteSettings').doc('settings').get();
+                let settings = settingsDoc.data();
+                
+                if (!settings) {
+                    const defaultSettings = {
+                        storeName: 'Tadaa! Marketplace',
+                        storeLogo: '',
+                        storePhone: '+2348012345678',
+                        storeEmail: 'support@tadaa.com',
+                        storeWhatsApp: '',
+                        storeAddress: 'Lagos, Nigeria',
+                        currency: '₦',
+                        currencyCode: 'NGN',
+                        deliveryFee: 100,
+                        freeDeliveryThreshold: 5000,
+                        freeDeliveryEnabled: false,
+                        deliveryLocations: ['Lagos', 'Abuja', 'Port Harcourt'],
+                        businessHours: 'Mon-Fri: 9am - 6pm, Sat: 10am - 4pm',
+                        announcementBanner: '',
+                        maintenanceMode: false,
+                        featuredProducts: []
+                    };
+                    
+                    await db.collection('siteSettings').doc('settings').set(defaultSettings);
+                    settings = defaultSettings;
+                }
+                
+                container.innerHTML = `
+                    <div class="settings-grid">
+                        <div class="settings-full"><h4 style="border-bottom:2px solid #FFD700; padding-bottom:8px;">🏪 Store Information</h4></div>
+                        
+                        <div class="form-group">
+                            <label>Store Name</label>
+                            <input type="text" id="setStoreName" value="${settings.storeName || ''}">
+                        </div>
+                        <div class="form-group">
+                            <label>Store Logo URL</label>
+                            <input type="text" id="setStoreLogo" value="${settings.storeLogo || ''}" placeholder="Cloudinary image URL">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Store Phone</label>
+                            <input type="text" id="setStorePhone" value="${settings.storePhone || ''}">
+                        </div>
+                        <div class="form-group">
+                            <label>Store Email</label>
+                            <input type="email" id="setStoreEmail" value="${settings.storeEmail || ''}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>WhatsApp Number</label>
+                            <input type="text" id="setStoreWhatsApp" value="${settings.storeWhatsApp || ''}">
+                        </div>
+                        <div class="form-group">
+                            <label>Store Address</label>
+                            <input type="text" id="setStoreAddress" value="${settings.storeAddress || ''}">
+                        </div>
+                        
+                        <div class="settings-full"><h4 style="border-bottom:2px solid #FFD700; padding-bottom:8px; margin-top:20px;">💰 Currency</h4></div>
+                        
+                        <div class="form-group">
+                            <label>Currency Symbol</label>
+                            <input type="text" id="setCurrency" value="${settings.currency || '₦'}">
+                        </div>
+                        <div class="form-group">
+                            <label>Currency Code</label>
+                            <input type="text" id="setCurrencyCode" value="${settings.currencyCode || 'NGN'}">
+                        </div>
+                        
+                        <div class="settings-full"><h4 style="border-bottom:2px solid #FFD700; padding-bottom:8px; margin-top:20px;">🚚 Delivery Settings</h4></div>
+                        
+                        <div class="form-group">
+                            <label>Delivery Fee (₦ per item)</label>
+                            <input type="number" id="setDeliveryFee" value="${settings.deliveryFee || 100}">
+                            <small style="color:#6B7280;">Default fee if product doesn't have its own</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Free Delivery Threshold (₦)</label>
+                            <input type="number" id="setFreeThreshold" value="${settings.freeDeliveryThreshold || 5000}">
+                        </div>
+                        
+                        <div class="form-group settings-check">
+                            <input type="checkbox" id="setFreeDelivery" ${settings.freeDeliveryEnabled ? 'checked' : ''}>
+                            <label style="margin:0;">Enable Free Delivery</label>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Delivery Locations (comma separated)</label>
+                            <input type="text" id="setDeliveryLocations" value="${(settings.deliveryLocations || []).join(', ')}">
+                        </div>
+                        
+                        <div class="settings-full"><h4 style="border-bottom:2px solid #FFD700; padding-bottom:8px; margin-top:20px;">🕐 Business Hours</h4></div>
+                        
+                        <div class="form-group settings-full">
+                            <label>Business Hours</label>
+                            <input type="text" id="setBusinessHours" value="${settings.businessHours || 'Mon-Fri: 9am - 6pm, Sat: 10am - 4pm'}">
+                        </div>
+                        
+                        <div class="settings-full"><h4 style="border-bottom:2px solid #FFD700; padding-bottom:8px; margin-top:20px;">📢 Announcement Banner</h4></div>
+                        
+                        <div class="form-group settings-full">
+                            <label>Announcement Text</label>
+                            <input type="text" id="setAnnouncement" value="${settings.announcementBanner || ''}" placeholder="e.g., Free delivery this weekend!">
+                        </div>
+                        
+                        <div class="settings-full"><h4 style="border-bottom:2px solid #FFD700; padding-bottom:8px; margin-top:20px;">⭐ Featured Products</h4></div>
+                        
+                        <div class="form-group settings-full">
+                            <label>Featured Product IDs (comma separated)</label>
+                            <input type="text" id="setFeaturedProducts" value="${(settings.featuredProducts || []).join(', ')}" placeholder="e.g., productId1, productId2">
+                            <small style="color:#6B7280;">Copy product IDs from the Products page</small>
+                        </div>
+                        
+                        <div class="settings-full"><h4 style="border-bottom:2px solid #FFD700; padding-bottom:8px; margin-top:20px;">🔧 Maintenance Mode</h4></div>
+                        
+                        <div class="form-group settings-check">
+                            <input type="checkbox" id="setMaintenance" ${settings.maintenanceMode ? 'checked' : ''}>
+                            <label style="margin:0;">Enable Maintenance Mode (store will be closed)</label>
+                        </div>
+                        
+                        <div class="settings-full" style="margin-top:20px;">
+                            <button class="btn btn-primary" onclick="saveSettings()">💾 Save All Settings</button>
+                        </div>
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Error loading settings:', error);
+                container.innerHTML = `<p style="color:red;">Error loading settings: ${error.message}</p>`;
+            }
+        }
+
+        window.saveSettings = async function() {
+            try {
+                const settings = {
+                    storeName: document.getElementById('setStoreName').value.trim(),
+                    storeLogo: document.getElementById('setStoreLogo').value.trim(),
+                    storePhone: document.getElementById('setStorePhone').value.trim(),
+                    storeEmail: document.getElementById('setStoreEmail').value.trim(),
+                    storeWhatsApp: document.getElementById('setStoreWhatsApp').value.trim(),
+                    storeAddress: document.getElementById('setStoreAddress').value.trim(),
+                    currency: document.getElementById('setCurrency').value.trim(),
+                    currencyCode: document.getElementById('setCurrencyCode').value.trim(),
+                    deliveryFee: parseInt(document.getElementById('setDeliveryFee').value) || 100,
+                    freeDeliveryThreshold: parseInt(document.getElementById('setFreeThreshold').value) || 0,
+                    freeDeliveryEnabled: document.getElementById('setFreeDelivery').checked,
+                    deliveryLocations: document.getElementById('setDeliveryLocations').value.split(',').map(s => s.trim()).filter(s => s),
+                    businessHours: document.getElementById('setBusinessHours').value.trim(),
+                    announcementBanner: document.getElementById('setAnnouncement').value.trim(),
+                    featuredProducts: document.getElementById('setFeaturedProducts').value.split(',').map(s => s.trim()).filter(s => s),
+                    maintenanceMode: document.getElementById('setMaintenance').checked,
+                    updatedAt: new Date().toISOString()
+                };
+                
+                await db.collection('siteSettings').doc('settings').update(settings);
+                alert('✅ Settings saved successfully!');
+                loadSettingsForm();
+            } catch (error) {
+                alert('❌ Error saving settings: ' + error.message);
+                console.error(error);
+            }
+        };
+
         window.loadPage = loadPage;
-        console.log('✅ Admin dashboard with delete orders!');
+        console.log('✅ Admin dashboard with full settings!');
     </script>
 </body>
 </html>
