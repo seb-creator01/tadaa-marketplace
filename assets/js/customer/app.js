@@ -1,5 +1,5 @@
 // ============================================
-// TADAA! - CUSTOMER WEBSITE (MAINTENANCE MODE FIXED)
+// TADAA! - CUSTOMER WEBSITE (WITH PRODUCT QUANTITY)
 // ============================================
 
 // ===== Firebase Config =====
@@ -18,7 +18,7 @@ const db = firebase.firestore();
 console.log('🛒 Tadaa! Customer Website Loaded');
 
 // ============================================
-// DOM ELEMENTS - FIXED: Using #app container
+// DOM ELEMENTS
 // ============================================
 const appContainer = document.getElementById('app');
 const mainHeader = document.getElementById('main-header');
@@ -63,10 +63,7 @@ function saveCart() {
 // ============================================
 function showMaintenancePage() {
     console.log('🔧 Showing maintenance page');
-    
     if (!appContainer) return;
-    
-    // Replace entire app with maintenance page
     appContainer.innerHTML = `
         <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, #000 0%, #1a1a1a 100%); padding:20px;">
             <div style="max-width:500px; width:100%; background:#fff; border-radius:24px; padding:48px 40px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
@@ -74,13 +71,11 @@ function showMaintenancePage() {
                 <h1 style="font-family:'Cormorant Garamond', serif; font-size:32px; color:#1F2937; margin:0 0 8px;">Store Under Maintenance</h1>
                 <p style="color:#6B7280; font-size:18px; margin:0 0 8px;">We're currently updating our store.</p>
                 <p style="color:#9CA3AF; font-size:14px; margin:0 0 24px;">Please check back soon!</p>
-                
                 <div style="background:#F9FAFB; border-radius:12px; padding:16px; text-align:left;">
                     <p style="margin:4px 0; color:#4B5563; font-size:14px;"><strong>🕐 Business Hours:</strong> ${settings.businessHours || 'Mon-Fri: 9am - 6pm'}</p>
                     <p style="margin:4px 0; color:#4B5563; font-size:14px;"><strong>📧 Contact:</strong> ${settings.storeEmail || 'support@tadaa.com'}</p>
                     <p style="margin:4px 0; color:#4B5563; font-size:14px;"><strong>📞 Phone:</strong> ${settings.storePhone || '+2348012345678'}</p>
                 </div>
-                
                 <div style="margin-top:20px; padding-top:20px; border-top:1px solid #E5E7EB;">
                     <p style="color:#9CA3AF; font-size:12px; margin:0;">© 2026 Tadaa! Marketplace. All rights reserved.</p>
                 </div>
@@ -103,24 +98,19 @@ async function loadData() {
         
         console.log('🔧 Maintenance Mode value:', settings.maintenanceMode);
         
-        // ============================================
-        // CHECK MAINTENANCE MODE - USING #app CONTAINER
-        // ============================================
         if (settings.maintenanceMode === true) {
             showMaintenancePage();
-            return; // Stop everything else
+            return;
         }
         
         console.log('🔧 Maintenance mode is OFF. Showing normal store.');
         
-        // Load categories
         const categoriesSnap = await db.collection('categories').orderBy('order', 'asc').get();
         categories = [];
         categoriesSnap.forEach(doc => {
             categories.push({ id: doc.id, ...doc.data() });
         });
         
-        // Load products
         const productsSnap = await db.collection('products').orderBy('createdAt', 'desc').get();
         products = [];
         productsSnap.forEach(doc => {
@@ -129,7 +119,6 @@ async function loadData() {
         
         console.log('✅ Data loaded - Categories:', categories.length, 'Products:', products.length);
         
-        // Render the website
         renderWebsite();
         updateCartCount();
         
@@ -268,7 +257,7 @@ function renderCategories() {
 }
 
 // ============================================
-// RENDER PRODUCTS
+// RENDER PRODUCTS - WITH QUANTITY CONTROLS BELOW
 // ============================================
 function renderProducts() {
     const productsDiv = document.getElementById('products-section');
@@ -310,7 +299,8 @@ function renderProducts() {
         const inStock = product.inStock !== false && (product.stockCount || 0) > 0;
         const discount = product.discount || 0;
         const discountedPrice = discount > 0 ? product.price * (1 - discount / 100) : product.price;
-        const inCart = cart.find(item => item.id === product.id);
+        const cartItem = cart.find(item => item.id === product.id);
+        const qty = cartItem ? cartItem.quantity : 0;
         
         html += `
             <div style="background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06); transition:transform 0.3s, box-shadow 0.3s; cursor:pointer;" onclick="viewProduct('${product.id}')" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.12)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)'">
@@ -318,22 +308,62 @@ function renderProducts() {
                     ${imageUrl ? `<img src="${imageUrl}" alt="${product.name}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; transition:transform 0.3s;" loading="lazy">` : '<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:40px;">📷</div>'}
                     ${discount > 0 ? `<div style="position:absolute; top:8px; right:8px; background:#EF4444; color:#fff; padding:2px 10px; border-radius:50px; font-size:12px; font-weight:700;">${discount}% OFF</div>` : ''}
                     ${!inStock ? `<div style="position:absolute; bottom:8px; left:8px; right:8px; background:rgba(0,0,0,0.7); color:#fff; text-align:center; padding:4px; border-radius:8px; font-size:12px;">Out of Stock</div>` : ''}
-                    ${inCart ? `<div style="position:absolute; top:8px; left:8px; background:#10B981; color:#fff; padding:2px 10px; border-radius:50px; font-size:10px; font-weight:700;">In Cart</div>` : ''}
+                    ${qty > 0 ? `<div style="position:absolute; top:8px; left:8px; background:#10B981; color:#fff; padding:2px 10px; border-radius:50px; font-size:10px; font-weight:700;">${qty} in Cart</div>` : ''}
                 </div>
+                
                 <div style="padding:12px;">
                     <h3 style="font-size:14px; font-weight:600; margin:0 0 4px; color:#1F2937; line-height:1.3;">${product.name}</h3>
                     <p style="font-size:12px; color:#6B7280; margin:0 0 8px;">${product.categoryName || 'Uncategorized'}</p>
-                    <div style="display:flex; align-items:center; gap:8px;">
+                    
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
                         <span style="font-size:18px; font-weight:700; color:#000;">₦${Math.round(discountedPrice).toLocaleString()}</span>
                         ${discount > 0 ? `<span style="font-size:12px; color:#9CA3AF; text-decoration:line-through;">₦${product.price.toLocaleString()}</span>` : ''}
                     </div>
-                    ${inStock ? `<button onclick="event.stopPropagation(); addToCart('${product.id}')" style="width:100%; margin-top:8px; background:#FFD700; border:none; padding:8px; border-radius:8px; font-weight:600; font-size:13px; cursor:pointer;">${inCart ? '🔄 Add More' : 'Add to Cart'}</button>` : ''}
+                    
+                    ${inStock ? `
+                    <div style="display:flex; align-items:center; gap:6px; margin-top:4px;">
+                        <button onclick="event.stopPropagation(); updateProductQuantity('${product.id}', -1)" style="background:#f3f4f6; border:none; width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:16px; ${qty === 0 ? 'opacity:0.4; cursor:not-allowed;' : ''}" ${qty === 0 ? 'disabled' : ''}>−</button>
+                        <span style="font-weight:600; min-width:24px; text-align:center; font-size:15px;">${qty}</span>
+                        <button onclick="event.stopPropagation(); updateProductQuantity('${product.id}', 1)" style="background:#f3f4f6; border:none; width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:16px;">+</button>
+                        <button onclick="event.stopPropagation(); addToCart('${product.id}')" style="flex:1; background:#FFD700; border:none; padding:6px 10px; border-radius:8px; font-weight:600; font-size:12px; cursor:pointer; transition:background 0.3s; white-space:nowrap;" onmouseover="this.style.background='#E6C200'" onmouseout="this.style.background='#FFD700'">
+                            ${qty > 0 ? '🔄 Update' : 'Add +'}
+                        </button>
+                    </div>
+                    ` : ''}
                 </div>
             </div>
         `;
     });
+    
     html += `</div></div>`;
     productsDiv.innerHTML = html;
+}
+
+// ============================================
+// UPDATE PRODUCT QUANTITY (NEW FUNCTION)
+// ============================================
+function updateProductQuantity(productId, change) {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+    
+    const existing = cart.find(item => item.id === productId);
+    if (!existing) {
+        // If not in cart, add it
+        addToCart(productId);
+        return;
+    }
+    
+    const newQty = existing.quantity + change;
+    if (newQty <= 0) {
+        removeFromCart(productId);
+        return;
+    }
+    
+    existing.quantity = newQty;
+    saveCart();
+    updateCartCount();
+    renderCartSidebar();
+    renderProducts();
 }
 
 // ============================================
@@ -438,6 +468,7 @@ function addToCart(productId) {
     saveCart();
     updateCartCount();
     renderCartSidebar();
+    renderProducts();
     showToast(product.name);
 }
 
@@ -461,6 +492,7 @@ function updateQuantity(productId, change) {
     saveCart();
     updateCartCount();
     renderCartSidebar();
+    renderProducts();
 }
 
 function clearCart() {
@@ -666,6 +698,7 @@ window.updateQuantity = updateQuantity;
 window.clearCart = clearCart;
 window.checkout = checkout;
 window.showToast = showToast;
+window.updateProductQuantity = updateProductQuantity;
 
 // ============================================
 // INITIALIZE
@@ -674,4 +707,4 @@ document.addEventListener('DOMContentLoaded', () => {
     loadData();
 });
 
-console.log('✅ Tadaa! Website with maintenance mode fix ready!');
+console.log('✅ Tadaa! Website with product quantity controls ready!');
