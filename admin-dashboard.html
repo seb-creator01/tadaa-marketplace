@@ -299,247 +299,68 @@
     };
 
     // ============================================
-    // PRODUCTS - WITH WORKING EDIT/DELETE
+    // PRODUCTS - SIMPLE WORKING VERSION
     // ============================================
     async function loadProducts() {
         pageContent.innerHTML = `
             <div class="card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                    <h3 style="margin:0;">📦 Products</h3>
+                    <h3>📦 Products</h3>
                     <button class="btn btn-primary" onclick="showAddProduct()">+ Add Product</button>
                 </div>
                 <div id="productsList">Loading...</div>
             </div>
         `;
-        await loadProductsList();
-    }
-
-    async function loadProductsList() {
         try {
             const snap = await db.collection('products').orderBy('createdAt', 'desc').get();
             const container = document.getElementById('productsList');
-            if (snap.empty) {
-                container.innerHTML = '<p style="color:#9CA3AF;">No products yet. Click "Add Product" to create one.</p>';
-                return;
-            }
-            let html = `<table style="width:100%; border-collapse:collapse;">
-                <thead>
-                    <tr style="background:#f3f4f6;">
-                        <th style="padding:10px; text-align:left;">Image</th>
-                        <th style="padding:10px; text-align:left;">Name</th>
-                        <th style="padding:10px; text-align:left;">Category</th>
-                        <th style="padding:10px; text-align:left;">Price</th>
-                        <th style="padding:10px; text-align:left;">Delivery</th>
-                        <th style="padding:10px; text-align:left;">Stock</th>
-                        <th style="padding:10px; text-align:center;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>`;
+            if (snap.empty) { container.innerHTML = '<p>No products yet.</p>'; return; }
+            let html = `<table>
+                <tr>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Actions</th>
+                </tr>`;
             snap.forEach(doc => {
                 const data = doc.data();
-                const imageUrl = data.images && data.images.length > 0 ? data.images[0] : '';
-                html += `<tr style="border-bottom:1px solid #e5e7eb;">
-                    <td style="padding:10px;">${imageUrl ? `<img src="${imageUrl}" style="width:40px;height:40px;object-fit:cover;border-radius:8px;">` : '📷'}</td>
-                    <td style="padding:10px;"><strong>${data.name}</strong></td>
-                    <td style="padding:10px;">${data.categoryName || 'Uncategorized'}</td>
-                    <td style="padding:10px;">₦${data.price?.toLocaleString() || 0}</td>
-                    <td style="padding:10px;">₦${data.deliveryFee || 100}</td>
-                    <td style="padding:10px;">${data.inStock ? '✅ In Stock' : '❌ Out of Stock'}</td>
-                    <td style="padding:10px; text-align:center;">
-                        <button onclick="editProduct('${doc.id}')" style="background:#F59E0B; color:#fff; border:none; padding:4px 12px; border-radius:6px; cursor:pointer; margin-right:4px;">✏️ Edit</button>
-                        <button onclick="deleteProduct('${doc.id}')" style="background:#EF4444; color:#fff; border:none; padding:4px 12px; border-radius:6px; cursor:pointer;">🗑️ Delete</button>
+                const img = data.images && data.images.length > 0 ? data.images[0] : '';
+                html += `<tr>
+                    <td>${img ? `<img src="${img}" style="width:40px;height:40px;object-fit:cover;border-radius:8px;">` : '📷'}</td>
+                    <td><strong>${data.name}</strong></td>
+                    <td>${data.categoryName || 'Uncategorized'}</td>
+                    <td>₦${data.price?.toLocaleString() || 0}</td>
+                    <td>${data.inStock ? '✅ In Stock' : '❌ Out of Stock'}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editProduct('${doc.id}')">✏️ Edit</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteProduct('${doc.id}')">🗑️ Delete</button>
                     </td>
                 </tr>`;
             });
-            html += `</tbody></table>`;
+            html += '</table>';
             container.innerHTML = html;
-        } catch (e) {
-            console.error(e);
-            document.getElementById('productsList').innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
-        }
+        } catch (e) { console.error(e); }
     }
 
-    // ============================================
-    // EDIT PRODUCT - WORKING
-    // ============================================
-    window.editProduct = function(id) {
-        db.collection('products').doc(id).get().then((doc) => {
-            if (!doc.exists) {
-                alert('Product not found!');
-                return;
-            }
-            const data = doc.data();
-            
-            db.collection('categories').orderBy('name', 'asc').get().then((catSnap) => {
-                let catOptions = '<option value="">Select Category</option>';
-                catSnap.forEach(d => {
-                    const selected = d.id === data.categoryId ? 'selected' : '';
-                    catOptions += `<option value="${d.id}" ${selected}>${d.data().name}</option>`;
-                });
-                
-                const container = document.getElementById('productsList');
-                container.innerHTML = `
-                    <div style="background:#f9fafb; padding:20px; border-radius:12px; margin-top:12px;">
-                        <h4>✏️ Edit Product</h4>
-                        <div class="form-group">
-                            <label>Product Name *</label>
-                            <input type="text" id="editProdName" value="${data.name || ''}">
-                        </div>
-                        <div class="form-group">
-                            <label>Description</label>
-                            <input type="text" id="editProdDesc" value="${data.description || ''}">
-                        </div>
-                        <div class="form-group">
-                            <label>Price (₦) *</label>
-                            <input type="number" id="editProdPrice" value="${data.price || 0}">
-                        </div>
-                        <div class="form-group">
-                            <label>Compare Price</label>
-                            <input type="number" id="editProdCompare" value="${data.comparePrice || 0}">
-                        </div>
-                        <div class="form-group">
-                            <label>Delivery Fee per item (₦)</label>
-                            <input type="number" id="editProdDeliveryFee" value="${data.deliveryFee || 100}">
-                        </div>
-                        <div class="form-group">
-                            <label>Category *</label>
-                            <select id="editProdCategory" style="width:100%; padding:10px; border:2px solid #e5e7eb; border-radius:8px;">
-                                ${catOptions}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Stock Count</label>
-                            <input type="number" id="editProdStock" value="${data.stockCount || 0}">
-                        </div>
-                        <div class="form-group">
-                            <label>Discount (%)</label>
-                            <input type="number" id="editProdDiscount" value="${data.discount || 0}">
-                        </div>
-                        <div class="form-group">
-                            <label>Image URL</label>
-                            <input type="text" id="editProdImage" value="${data.images && data.images.length > 0 ? data.images[0] : ''}">
-                        </div>
-                        <button class="btn btn-primary" onclick="updateProduct('${id}')">💾 Update Product</button>
-                        <button class="btn" style="background:#e5e7eb;" onclick="loadProducts()">Cancel</button>
-                    </div>
-                `;
-            });
-        }).catch((e) => {
-            alert('Error loading product: ' + e.message);
-        });
-    };
-
-    // ============================================
-    // DELETE PRODUCT - WORKING
-    // ============================================
-    window.deleteProduct = function(id) {
-        if (confirm('Are you sure you want to delete this product?')) {
-            db.collection('products').doc(id).delete().then(() => {
-                alert('✅ Product deleted successfully!');
-                loadProducts();
-            }).catch((e) => {
-                alert('❌ Error deleting product: ' + e.message);
-            });
-        }
-    };
-
-    // ============================================
-    // UPDATE PRODUCT - WORKING
-    // ============================================
-    window.updateProduct = function(id) {
-        const name = document.getElementById('editProdName').value.trim();
-        const description = document.getElementById('editProdDesc').value.trim();
-        const price = parseFloat(document.getElementById('editProdPrice').value);
-        const comparePrice = parseFloat(document.getElementById('editProdCompare').value) || 0;
-        const deliveryFee = parseFloat(document.getElementById('editProdDeliveryFee').value) || 100;
-        const categoryId = document.getElementById('editProdCategory').value;
-        const stock = parseInt(document.getElementById('editProdStock').value) || 0;
-        const discount = parseInt(document.getElementById('editProdDiscount').value) || 0;
-        const imageUrl = document.getElementById('editProdImage').value.trim();
-
-        if (!name) { alert('Product name is required!'); return; }
-        if (!price || price <= 0) { alert('Valid price is required!'); return; }
-        if (!categoryId) { alert('Please select a category!'); return; }
-
-        let categoryName = '';
-        db.collection('categories').doc(categoryId).get().then((catDoc) => {
-            if (catDoc.exists) {
-                categoryName = catDoc.data().name;
-            }
-            return db.collection('products').doc(id).update({
-                name: name,
-                slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
-                description: description,
-                price: price,
-                comparePrice: comparePrice,
-                deliveryFee: deliveryFee,
-                categoryId: categoryId,
-                categoryName: categoryName,
-                images: imageUrl ? [imageUrl] : [],
-                inStock: stock > 0,
-                stockCount: stock,
-                discount: discount
-            });
-        }).then(() => {
-            alert('✅ Product updated successfully!');
-            loadProducts();
-        }).catch((e) => {
-            alert('❌ Error updating product: ' + e.message);
-        });
-    };
-
-    // ============================================
-    // ADD PRODUCT
-    // ============================================
     window.showAddProduct = function() {
-        loadCategoriesForSelect();
-        
         const container = document.getElementById('productsList');
         container.innerHTML = `
-            <div style="background:#f9fafb; padding:20px; border-radius:12px; margin-top:12px;">
-                <h4>➕ Add New Product</h4>
-                <div class="form-group">
-                    <label>Product Name *</label>
-                    <input type="text" id="prodName" placeholder="e.g., Rice 20kg">
-                </div>
-                <div class="form-group">
-                    <label>Description</label>
-                    <input type="text" id="prodDesc" placeholder="Brief product description">
-                </div>
-                <div class="form-group">
-                    <label>Price (₦) *</label>
-                    <input type="number" id="prodPrice" placeholder="e.g., 2000">
-                </div>
-                <div class="form-group">
-                    <label>Compare Price</label>
-                    <input type="number" id="prodCompare" placeholder="e.g., 2500">
-                </div>
-                <div class="form-group">
-                    <label>Delivery Fee per item (₦)</label>
-                    <input type="number" id="prodDeliveryFee" placeholder="e.g., 500" value="100">
-                </div>
-                <div class="form-group">
-                    <label>Category *</label>
-                    <select id="prodCategory" style="width:100%; padding:10px; border:2px solid #e5e7eb; border-radius:8px;">
-                        <option value="">Loading categories...</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Stock Count</label>
-                    <input type="number" id="prodStock" placeholder="e.g., 45" value="0">
-                </div>
-                <div class="form-group">
-                    <label>Discount (%)</label>
-                    <input type="number" id="prodDiscount" placeholder="e.g., 10" value="0">
-                </div>
-                <div class="form-group">
-                    <label>Image URL</label>
-                    <input type="text" id="prodImage" placeholder="Paste Cloudinary image URL">
-                </div>
+            <div style="background:#f9fafb; padding:16px; border-radius:8px; margin-top:12px;">
+                <h4>Add New Product</h4>
+                <div class="form-group"><label>Product Name *</label><input type="text" id="prodName" placeholder="e.g., Rice"></div>
+                <div class="form-group"><label>Description</label><input type="text" id="prodDesc" placeholder="Brief description"></div>
+                <div class="form-group"><label>Price (₦) *</label><input type="number" id="prodPrice" placeholder="e.g., 2000"></div>
+                <div class="form-group"><label>Category *</label><select id="prodCategory" style="width:100%; padding:10px; border:2px solid #e5e7eb; border-radius:8px;"></select></div>
+                <div class="form-group"><label>Stock Count</label><input type="number" id="prodStock" value="0"></div>
+                <div class="form-group"><label>Discount (%)</label><input type="number" id="prodDiscount" value="0"></div>
+                <div class="form-group"><label>Image URL</label><input type="text" id="prodImage" placeholder="Cloudinary image URL"></div>
                 <button class="btn btn-primary" onclick="saveProduct()">💾 Save Product</button>
                 <button class="btn" style="background:#e5e7eb;" onclick="loadProducts()">Cancel</button>
             </div>
         `;
+        loadCategoriesForSelect();
     };
 
     async function loadCategoriesForSelect() {
@@ -552,56 +373,91 @@
                 html += `<option value="${doc.id}">${doc.data().name}</option>`;
             });
             select.innerHTML = html;
-        } catch (e) {
-            console.error('Error loading categories:', e);
-        }
+        } catch (e) {}
     }
 
     window.saveProduct = async function() {
         const name = document.getElementById('prodName').value.trim();
         const description = document.getElementById('prodDesc').value.trim();
         const price = parseFloat(document.getElementById('prodPrice').value);
-        const comparePrice = parseFloat(document.getElementById('prodCompare').value) || 0;
-        const deliveryFee = parseFloat(document.getElementById('prodDeliveryFee').value) || 100;
         const categoryId = document.getElementById('prodCategory').value;
         const stock = parseInt(document.getElementById('prodStock').value) || 0;
         const discount = parseInt(document.getElementById('prodDiscount').value) || 0;
         const imageUrl = document.getElementById('prodImage').value.trim();
 
-        if (!name) { alert('Product name is required!'); return; }
-        if (!price || price <= 0) { alert('Valid price is required!'); return; }
-        if (!categoryId) { alert('Please select a category!'); return; }
+        if (!name || !price || !categoryId) { alert('Please fill all required fields!'); return; }
 
         let categoryName = '';
         try {
             const catDoc = await db.collection('categories').doc(categoryId).get();
-            if (catDoc.exists) {
-                categoryName = catDoc.data().name;
-            }
+            if (catDoc.exists) { categoryName = catDoc.data().name; }
         } catch (e) {}
 
         try {
             await db.collection('products').add({
-                name: name,
-                slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
-                description: description,
-                price: price,
-                comparePrice: comparePrice,
-                deliveryFee: deliveryFee,
-                categoryId: categoryId,
-                categoryName: categoryName,
+                name, description, price, categoryId, categoryName,
                 images: imageUrl ? [imageUrl] : [],
-                inStock: stock > 0,
-                stockCount: stock,
-                discount: discount,
-                isFeatured: false,
-                isBestSeller: false,
+                inStock: stock > 0, stockCount: stock, discount,
                 createdAt: new Date().toISOString()
             });
-            alert('✅ Product added successfully!');
+            alert('✅ Product added!');
             loadProducts();
-        } catch (e) {
-            alert('❌ Error: ' + e.message);
+        } catch (e) { alert('❌ Error: ' + e.message); }
+    };
+
+    // ============================================
+    // EDIT PRODUCT - SIMPLE
+    // ============================================
+    window.editProduct = function(id) {
+        db.collection('products').doc(id).get().then((doc) => {
+            if (!doc.exists) { alert('Product not found!'); return; }
+            const data = doc.data();
+            const container = document.getElementById('productsList');
+            container.innerHTML = `
+                <div style="background:#f9fafb; padding:16px; border-radius:8px; margin-top:12px;">
+                    <h4>✏️ Edit Product</h4>
+                    <div class="form-group"><label>Product Name *</label><input type="text" id="editName" value="${data.name || ''}"></div>
+                    <div class="form-group"><label>Description</label><input type="text" id="editDesc" value="${data.description || ''}"></div>
+                    <div class="form-group"><label>Price (₦) *</label><input type="number" id="editPrice" value="${data.price || 0}"></div>
+                    <div class="form-group"><label>Stock Count</label><input type="number" id="editStock" value="${data.stockCount || 0}"></div>
+                    <div class="form-group"><label>Discount (%)</label><input type="number" id="editDiscount" value="${data.discount || 0}"></div>
+                    <div class="form-group"><label>Image URL</label><input type="text" id="editImage" value="${data.images && data.images.length > 0 ? data.images[0] : ''}"></div>
+                    <button class="btn btn-primary" onclick="updateProduct('${id}')">💾 Update</button>
+                    <button class="btn" style="background:#e5e7eb;" onclick="loadProducts()">Cancel</button>
+                </div>
+            `;
+        }).catch((e) => { alert('Error: ' + e.message); });
+    };
+
+    window.updateProduct = function(id) {
+        const name = document.getElementById('editName').value.trim();
+        const description = document.getElementById('editDesc').value.trim();
+        const price = parseFloat(document.getElementById('editPrice').value);
+        const stock = parseInt(document.getElementById('editStock').value) || 0;
+        const discount = parseInt(document.getElementById('editDiscount').value) || 0;
+        const imageUrl = document.getElementById('editImage').value.trim();
+
+        if (!name || !price) { alert('Name and price are required!'); return; }
+
+        db.collection('products').doc(id).update({
+            name, description, price,
+            images: imageUrl ? [imageUrl] : [],
+            inStock: stock > 0, stockCount: stock, discount
+        }).then(() => {
+            alert('✅ Product updated!');
+            loadProducts();
+        }).catch((e) => { alert('❌ Error: ' + e.message); });
+    };
+
+    // ============================================
+    // DELETE PRODUCT - SIMPLE
+    // ============================================
+    window.deleteProduct = function(id) {
+        if (confirm('Delete this product?')) {
+            db.collection('products').doc(id).delete().then(() => {
+                alert('✅ Product deleted!');
+                loadProducts();
+            }).catch((e) => { alert('❌ Error: ' + e.message); });
         }
     };
 
@@ -727,14 +583,12 @@
     };
 
     window.deleteOrder = async function(orderId, orderIdDisplay) {
-        if (!confirm(`⚠️ Are you sure you want to delete order ${orderIdDisplay}?`)) return;
+        if (!confirm(`⚠️ Delete order ${orderIdDisplay}?`)) return;
         try {
             await db.collection('orders').doc(orderId).delete();
             alert(`✅ Order ${orderIdDisplay} deleted!`);
             loadOrders();
-        } catch (e) {
-            alert('❌ Error: ' + e.message);
-        }
+        } catch (e) { alert('❌ Error: ' + e.message); }
     };
 
     window.filterOrders = filterOrders;
@@ -917,13 +771,13 @@
         pageContent.innerHTML = `
             <div class="card">
                 <h3>⚙️ Store Settings</h3>
-                <p style="color:#9CA3AF; margin-top:12px;">Go to <a href="/tadaa-marketplace/admin-dashboard.html" style="color:#FFD700;">admin-dashboard.html</a> for full settings.</p>
+                <p style="color:#9CA3AF; margin-top:12px;">Settings coming soon...</p>
             </div>
         `;
     }
 
     window.loadPage = loadPage;
-    console.log('✅ Admin dashboard with working Edit/Delete!');
+    console.log('✅ Admin dashboard loaded!');
 </script>
 </body>
 </html>
