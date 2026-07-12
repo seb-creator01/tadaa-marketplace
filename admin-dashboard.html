@@ -669,7 +669,7 @@
     }
 
     // ============================================
-    // SETTINGS - FIXED VERSION WITH PROPER SAVE
+    // SETTINGS - WITH PROPER MAINTENANCE MODE SAVE
     // ============================================
     function loadSettings() {
         pageContent.innerHTML = `
@@ -712,6 +712,9 @@
                 await db.collection('siteSettings').doc('settings').set(defaultSettings);
                 settings = defaultSettings;
             }
+            
+            // Log the maintenance mode value to check if it's loading
+            console.log('🔧 Maintenance Mode value:', settings.maintenanceMode);
             
             container.innerHTML = `
                 <div class="settings-grid">
@@ -803,7 +806,7 @@
                     
                     <div class="form-group settings-check">
                         <input type="checkbox" id="setMaintenance" ${settings.maintenanceMode ? 'checked' : ''}>
-                        <label style="margin:0;">Enable Maintenance Mode (store will be closed)</label>
+                        <label style="margin:0; font-weight:bold; color:#92400E;">Enable Maintenance Mode (store will be closed)</label>
                     </div>
                     
                     <div class="settings-full" style="margin-top:20px;">
@@ -819,10 +822,15 @@
     }
 
     // ============================================
-    // SAVE SETTINGS - FIXED VERSION
+    // SAVE SETTINGS - FIXED WITH MAINTENANCE MODE
     // ============================================
     window.saveSettings = async function() {
         try {
+            console.log('💾 Saving settings...');
+            
+            const maintenanceMode = document.getElementById('setMaintenance').checked;
+            console.log('🔧 Maintenance Mode value being saved:', maintenanceMode);
+            
             const settings = {
                 storeName: document.getElementById('setStoreName').value.trim(),
                 storeLogo: document.getElementById('setStoreLogo').value.trim(),
@@ -839,16 +847,23 @@
                 businessHours: document.getElementById('setBusinessHours').value.trim(),
                 announcementBanner: document.getElementById('setAnnouncement').value.trim(),
                 featuredProducts: document.getElementById('setFeaturedProducts').value.split(',').map(s => s.trim()).filter(s => s),
-                maintenanceMode: document.getElementById('setMaintenance').checked,
+                maintenanceMode: maintenanceMode,
                 updatedAt: new Date().toISOString()
             };
             
+            console.log('📝 Settings to save:', settings);
+            
             await db.collection('siteSettings').doc('settings').update(settings);
+            
+            console.log('✅ Settings saved successfully!');
             alert('✅ Settings saved successfully!');
+            
+            // Reload the settings form to show updated values
             loadSettingsForm();
+            
         } catch (error) {
+            console.error('❌ Error saving settings:', error);
             alert('❌ Error saving settings: ' + error.message);
-            console.error(error);
         }
     };
 
