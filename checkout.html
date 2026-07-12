@@ -84,7 +84,7 @@
                 <div id="orderSummary">
                     <div class="summary-row"><span>Subtotal</span><span id="subtotalDisplay">₦0</span></div>
                     <div class="summary-row"><span>Delivery</span><span id="deliveryDisplay">₦0</span></div>
-                    <div id="freeDeliveryBadge" class="free-badge" style="display:none;">🎉 You qualify for FREE delivery!</div>
+                    <div id="freeDeliveryBadge" style="display:none; margin:8px 0;"></div>
                     <div class="total-row"><span>Total</span><span id="totalDisplay">₦0</span></div>
                 </div>
             </div>
@@ -142,8 +142,11 @@ function displayOrderSummary() {
     const deliveryFee = perItemDelivery * totalItems;
     
     const freeThreshold = settings.freeDeliveryThreshold || 5000;
+    const freeDeliveryEnabled = settings.freeDeliveryEnabled || false;
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const isFreeDelivery = freeThreshold > 0 && subtotal >= freeThreshold;
+    
+    // Only apply free delivery if enabled AND subtotal meets threshold
+    const isFreeDelivery = freeDeliveryEnabled && freeThreshold > 0 && subtotal >= freeThreshold;
     const deliveryCharge = isFreeDelivery ? 0 : deliveryFee;
     const total = subtotal + deliveryCharge;
     
@@ -159,9 +162,42 @@ function displayOrderSummary() {
     `).join('');
     
     document.getElementById('subtotalDisplay').textContent = `₦${subtotal.toLocaleString()}`;
-    document.getElementById('deliveryDisplay').textContent = isFreeDelivery ? '🎉 FREE' : `₦${deliveryCharge.toLocaleString()} (${totalItems} items × ₦${perItemDelivery})`;
+    
+    // Delivery display
+    let deliveryDisplay = isFreeDelivery ? '🎉 FREE' : `₦${deliveryCharge.toLocaleString()} (${totalItems} items × ₦${perItemDelivery})`;
+    document.getElementById('deliveryDisplay').textContent = deliveryDisplay;
+    
     document.getElementById('totalDisplay').textContent = `₦${total.toLocaleString()}`;
-    document.getElementById('freeDeliveryBadge').style.display = isFreeDelivery ? 'block' : 'none';
+    
+    // Free delivery message - only show if free delivery is enabled
+    const badge = document.getElementById('freeDeliveryBadge');
+    if (freeDeliveryEnabled) {
+        if (isFreeDelivery) {
+            badge.innerHTML = '🎉 You qualify for FREE delivery!';
+            badge.style.display = 'block';
+            badge.style.background = '#D1FAE5';
+            badge.style.color = '#065F46';
+            badge.style.padding = '8px 12px';
+            badge.style.borderRadius = '8px';
+            badge.style.textAlign = 'center';
+            badge.style.fontWeight = '600';
+        } else if (subtotal < freeThreshold) {
+            const remaining = freeThreshold - subtotal;
+            badge.innerHTML = `Add ₦${remaining.toLocaleString()} more for FREE delivery`;
+            badge.style.display = 'block';
+            badge.style.background = '#FEF3C7';
+            badge.style.color = '#92400E';
+            badge.style.padding = '8px 12px';
+            badge.style.borderRadius = '8px';
+            badge.style.textAlign = 'center';
+            badge.style.fontSize = '13px';
+        } else {
+            badge.style.display = 'none';
+        }
+    } else {
+        badge.style.display = 'none';
+    }
+    
     document.getElementById('placeOrderBtn').textContent = `🛒 Place Order - ₦${total.toLocaleString()}`;
 }
 
@@ -254,8 +290,9 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
     const perItemDelivery = settings.deliveryFee || 100;
     const freeThreshold = settings.freeDeliveryThreshold || 5000;
+    const freeDeliveryEnabled = settings.freeDeliveryEnabled || false;
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const isFreeDelivery = freeThreshold > 0 && subtotal >= freeThreshold;
+    const isFreeDelivery = freeDeliveryEnabled && freeThreshold > 0 && subtotal >= freeThreshold;
     const deliveryCharge = isFreeDelivery ? 0 : (perItemDelivery * totalItems);
     const total = subtotal + deliveryCharge;
     const orderId = generateOrderId();
