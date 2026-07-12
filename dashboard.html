@@ -10,21 +10,24 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <style>
+        .badge { padding: 2px 12px; border-radius: 50px; font-size: 12px; font-weight: 600; color: #fff; }
         .order-details { background: #f9fafb; padding: 16px; border-radius: 12px; margin-top: 12px; }
         .order-details table { width: 100%; }
         .order-details th, .order-details td { padding: 8px; text-align: left; border-bottom: 1px solid #e5e7eb; }
-        .status-btn { padding: 4px 12px; border: none; border-radius: 50px; cursor: pointer; font-size: 12px; font-weight: 600; }
-        .status-pending { background: #F59E0B; color: #fff; }
-        .status-processing { background: #3B82F6; color: #fff; }
-        .status-shipped { background: #8B5CF6; color: #fff; }
-        .status-delivered { background: #10B981; color: #fff; }
-        .status-cancelled { background: #EF4444; color: #fff; }
+        .status-pending { background: #F59E0B; }
+        .status-processing { background: #3B82F6; }
+        .status-shipped { background: #8B5CF6; }
+        .status-delivered { background: #10B981; }
+        .status-cancelled { background: #EF4444; }
         .filter-bar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
         .filter-bar select, .filter-bar input { padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; }
         .filter-bar button { padding: 8px 16px; background: #FFD700; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
         .order-row { cursor: pointer; }
         .order-row:hover { background: #f3f4f6; }
-        .badge { padding: 2px 12px; border-radius: 50px; font-size: 12px; font-weight: 600; color: #fff; }
+        .inventory-summary { margin-top: 16px; padding: 12px; background: #f9fafb; border-radius: 8px; display: flex; gap: 24px; flex-wrap: wrap; }
+        .btn-sm { padding: 4px 12px; font-size: 12px; border: none; border-radius: 6px; cursor: pointer; }
+        .btn-primary { background: #FFD700; color: #000; }
+        .btn-secondary { background: #e5e7eb; color: #000; }
     </style>
 </head>
 <body>
@@ -60,6 +63,9 @@
     </div>
 
     <script>
+        // ============================================
+        // FIREBASE SETUP
+        // ============================================
         const firebaseConfig = {
             apiKey: "AIzaSyDCXnlAqyt2512HlvBOsSfMZ6O-xg0c94Y",
             authDomain: "tadaa-marketplace.firebaseapp.com",
@@ -77,9 +83,6 @@
         const pageTitle = document.getElementById('pageTitle');
         const adminEmailDisplay = document.getElementById('adminEmailDisplay');
         const logoutBtn = document.getElementById('logoutBtn');
-
-        let allOrders = [];
-        let filteredOrders = [];
 
         auth.onAuthStateChanged((user) => {
             if (!user) { window.location.href = '/tadaa-marketplace/admin.html'; return; }
@@ -138,7 +141,7 @@
                 const recent = await db.collection('orders').orderBy('createdAt', 'desc').limit(10).get();
                 const container = document.getElementById('recentOrders');
                 if (recent.empty) { container.innerHTML = '<p>No orders yet.</p>'; return; }
-                let html = `<table><tr><th>Order</th><th>Customer</th><th>Total</th><th>Payment</th><th>Status</th></tr>`;
+                let html = '<table><tr><th>Order</th><th>Customer</th><th>Total</th><th>Payment</th><th>Status</th></tr>';
                 recent.forEach(d => {
                     const data = d.data();
                     const payColor = data.payment?.status === 'paid' ? '#10B981' : '#F59E0B';
@@ -263,7 +266,7 @@
         }
 
         // ============================================
-        // ORDERS - FULL MANAGEMENT
+        // ORDERS
         // ============================================
         async function loadOrders() {
             pageContent.innerHTML = `
@@ -293,26 +296,23 @@
             await fetchOrders();
         }
 
+        let allOrders = [];
+        let filteredOrders = [];
+
         async function fetchOrders() {
             try {
                 const snap = await db.collection('orders').orderBy('createdAt', 'desc').get();
                 allOrders = [];
-                snap.forEach(doc => {
-                    allOrders.push({ id: doc.id, ...doc.data() });
-                });
+                snap.forEach(doc => { allOrders.push({ id: doc.id, ...doc.data() }); });
                 filteredOrders = [...allOrders];
                 renderOrders();
-            } catch (e) {
-                console.error(e);
-                document.getElementById('ordersList').innerHTML = `<p style="color:red;">Error loading orders: ${e.message}</p>`;
-            }
+            } catch (e) { console.error(e); document.getElementById('ordersList').innerHTML = `<p style="color:red;">Error: ${e.message}</p>`; }
         }
 
         function filterOrders() {
             const search = document.getElementById('orderSearch').value.toLowerCase();
             const status = document.getElementById('statusFilter').value;
             const payment = document.getElementById('paymentFilter').value;
-            
             filteredOrders = allOrders.filter(order => {
                 const matchSearch = order.orderId?.toLowerCase().includes(search) || false;
                 const matchStatus = status === 'all' || order.status === status;
@@ -324,37 +324,18 @@
 
         function renderOrders() {
             const container = document.getElementById('ordersList');
-            if (filteredOrders.length === 0) {
-                container.innerHTML = '<p style="color:#9CA3AF;">No orders found.</p>';
-                return;
-            }
-
+            if (filteredOrders.length === 0) { container.innerHTML = '<p style="color:#9CA3AF;">No orders found.</p>'; return; }
             let html = `<table>
-                <thead>
-                    <tr>
-                        <th>Order ID</th>
-                        <th>Customer</th>
-                        <th>Items</th>
-                        <th>Total</th>
-                        <th>Payment</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>`;
-            
+                <thead><tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Total</th><th>Payment</th><th>Status</th><th>Actions</th></tr></thead><tbody>`;
             filteredOrders.forEach(order => {
                 const payStatus = order.payment?.status || 'pending';
                 const payColor = payStatus === 'paid' ? '#10B981' : payStatus === 'failed' ? '#EF4444' : '#F59E0B';
                 const orderStatus = order.status || 'pending';
-                const statusClass = `status-${orderStatus}`;
-                const itemCount = order.items?.length || 0;
-                
                 html += `
                     <tr class="order-row" onclick="toggleOrderDetails('${order.id}')">
                         <td><strong>${order.orderId || 'N/A'}</strong></td>
-                        <td>${order.customer?.fullName || 'Unknown'}<br><small style="color:#6B7280;">${order.customer?.phoneNumber || ''}</small></td>
-                        <td>${itemCount} items</td>
+                        <td>${order.customer?.fullName || 'Unknown'}</td>
+                        <td>${order.items?.length || 0} items</td>
                         <td>₦${order.totals?.grandTotal?.toLocaleString() || 0}</td>
                         <td><span class="badge" style="background:${payColor}">${payStatus}</span></td>
                         <td><span class="badge status-${orderStatus}">${orderStatus}</span></td>
@@ -368,63 +349,38 @@
                             </select>
                         </td>
                     </tr>
-                    <tr id="details-${order.id}" style="display:none;">
-                        <td colspan="7">
-                            <div class="order-details">
-                                <h4>📦 Order Details</h4>
-                                <p><strong>Order ID:</strong> ${order.orderId}</p>
-                                <p><strong>Customer:</strong> ${order.customer?.fullName || 'Unknown'}</p>
-                                <p><strong>Phone:</strong> ${order.customer?.phoneNumber || 'N/A'}</p>
-                                <p><strong>Email:</strong> ${order.customer?.emailAddress || 'N/A'}</p>
-                                <p><strong>Address:</strong> ${order.customer?.deliveryAddress || 'N/A'}</p>
-                                <p><strong>Instructions:</strong> ${order.customer?.deliveryInstructions || 'None'}</p>
-                                <p><strong>Created:</strong> ${order.createdAt ? new Date(order.createdAt).toLocaleString() : 'N/A'}</p>
-                                <p><strong>Payment Reference:</strong> ${order.payment?.transactionRef || 'N/A'}</p>
-                                <table>
-                                    <thead><tr><th>Product</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead>
-                                    <tbody>
-                                        ${order.items?.map(item => `
-                                            <tr>
-                                                <td>${item.name}</td>
-                                                <td>${item.quantity}</td>
-                                                <td>₦${item.price?.toLocaleString() || 0}</td>
-                                                <td>₦${item.total?.toLocaleString() || 0}</td>
-                                            </tr>
-                                        `).join('') || '<tr><td colspan="4">No items</td></tr>'}
-                                    </tbody>
-                                </table>
-                                <p style="margin-top:12px;"><strong>Subtotal:</strong> ₦${order.totals?.subtotal?.toLocaleString() || 0}</p>
-                                <p><strong>Delivery:</strong> ₦${order.totals?.deliveryFee?.toLocaleString() || 0}</p>
-                                <p><strong>Total:</strong> ₦${order.totals?.grandTotal?.toLocaleString() || 0}</p>
-                            </div>
-                        </td>
-                    </tr>
+                    <tr id="details-${order.id}" style="display:none;"><td colspan="7"><div class="order-details">
+                        <h4>📦 Order Details</h4>
+                        <p><strong>Order ID:</strong> ${order.orderId}</p>
+                        <p><strong>Customer:</strong> ${order.customer?.fullName || 'Unknown'}</p>
+                        <p><strong>Phone:</strong> ${order.customer?.phoneNumber || 'N/A'}</p>
+                        <p><strong>Email:</strong> ${order.customer?.emailAddress || 'N/A'}</p>
+                        <p><strong>Address:</strong> ${order.customer?.deliveryAddress || 'N/A'}</p>
+                        <p><strong>Created:</strong> ${order.createdAt ? new Date(order.createdAt).toLocaleString() : 'N/A'}</p>
+                        <table><thead><tr><th>Product</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>
+                        ${order.items?.map(item => `<tr><td>${item.name}</td><td>${item.quantity}</td><td>₦${item.price?.toLocaleString() || 0}</td><td>₦${item.total?.toLocaleString() || 0}</td></tr>`).join('') || '<tr><td colspan="4">No items</td></tr>'}
+                        </tbody></table>
+                        <p><strong>Subtotal:</strong> ₦${order.totals?.subtotal?.toLocaleString() || 0}</p>
+                        <p><strong>Delivery:</strong> ₦${order.totals?.deliveryFee?.toLocaleString() || 0}</p>
+                        <p><strong>Total:</strong> ₦${order.totals?.grandTotal?.toLocaleString() || 0}</p>
+                    </div></td></tr>
                 `;
             });
-            
             html += '</tbody></table>';
             container.innerHTML = html;
         }
 
         window.toggleOrderDetails = function(orderId) {
             const row = document.getElementById(`details-${orderId}`);
-            if (row) {
-                row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
-            }
+            if (row) { row.style.display = row.style.display === 'none' ? 'table-row' : 'none'; }
         };
 
         window.updateOrderStatus = async function(orderId, newStatus) {
             if (!confirm(`Update order status to "${newStatus}"?`)) return;
             try {
-                await db.collection('orders').doc(orderId).update({
-                    status: newStatus,
-                    updatedAt: new Date().toISOString()
-                });
-                alert('✅ Order status updated!');
-                loadOrders();
-            } catch (e) {
-                alert('❌ Error updating order: ' + e.message);
-            }
+                await db.collection('orders').doc(orderId).update({ status: newStatus, updatedAt: new Date().toISOString() });
+                alert('✅ Order status updated!'); loadOrders();
+            } catch (e) { alert('❌ Error: ' + e.message); }
         };
 
         window.filterOrders = filterOrders;
@@ -443,7 +399,7 @@
                 const snap = await db.collection('orders').where('payment.status', 'in', ['paid', 'pending', 'failed']).orderBy('createdAt', 'desc').get();
                 const container = document.getElementById('paymentsList');
                 if (snap.empty) { container.innerHTML = '<p style="color:#9CA3AF;">No payments yet.</p>'; return; }
-                let html = `<table><tr><th>Order ID</th><th>Customer</th><th>Amount</th><th>Payment Status</th><th>Transaction Ref</th><th>Payment Date</th><th>Order Status</th></tr>`;
+                let html = '<table><tr><th>Order ID</th><th>Customer</th><th>Amount</th><th>Payment Status</th><th>Transaction Ref</th><th>Payment Date</th><th>Order Status</th></tr>';
                 snap.forEach(doc => {
                     const data = doc.data();
                     const payStatus = data.payment?.status || 'pending';
@@ -464,64 +420,140 @@
         }
 
         // ============================================
-        // INVENTORY
+        // INVENTORY - FIXED & COMPLETE
         // ============================================
+        let inventoryData = [];
+        let filteredInventory = [];
+
         async function loadInventory() {
             pageContent.innerHTML = `
                 <div class="card">
-                    <h3 style="margin-bottom:16px;">📊 Inventory Management</h3>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                        <h3 style="margin:0;">📊 Inventory Management</h3>
+                        <span style="font-size:14px; color:#6B7280;">Total Products: <span id="totalInventoryCount">0</span></span>
+                    </div>
+                    <div style="margin-bottom:16px; display:flex; gap:12px; flex-wrap:wrap;">
+                        <input type="text" id="inventorySearch" placeholder="Search products..." style="padding:8px 12px; border:2px solid #e5e7eb; border-radius:8px; flex:1; min-width:200px;" onkeyup="filterInventory()">
+                        <select id="stockFilter" onchange="filterInventory()" style="padding:8px 12px; border:2px solid #e5e7eb; border-radius:8px;">
+                            <option value="all">All Stock</option>
+                            <option value="instock">In Stock</option>
+                            <option value="lowstock">Low Stock (≤5)</option>
+                            <option value="outofstock">Out of Stock</option>
+                        </select>
+                        <button onclick="loadInventory()" style="padding:8px 16px; background:#FFD700; border:none; border-radius:8px; cursor:pointer; font-weight:600;">🔄 Refresh</button>
+                    </div>
                     <div id="inventoryList">Loading...</div>
                 </div>
             `;
+            await fetchInventory();
+        }
+
+        async function fetchInventory() {
             try {
                 const snap = await db.collection('products').orderBy('name', 'asc').get();
-                const container = document.getElementById('inventoryList');
-                if (snap.empty) { container.innerHTML = '<p>No products yet.</p>'; return; }
-                let html = `<table>
-                    <tr>
-                        <th>Product</th>
-                        <th>Category</th>
-                        <th>Stock Count</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>`;
-                snap.forEach(doc => {
-                    const data = doc.data();
-                    const stock = data.stockCount || 0;
-                    const status = stock <= 0 ? '❌ Out of Stock' : stock <= 5 ? '⚠️ Low Stock' : '✅ In Stock';
-                    const statusColor = stock <= 0 ? '#EF4444' : stock <= 5 ? '#F59E0B' : '#10B981';
-                    html += `<tr>
-                        <td><strong>${data.name}</strong></td>
-                        <td>${data.categoryName || 'Uncategorized'}</td>
-                        <td>${stock}</td>
-                        <td><span style="color:${statusColor}; font-weight:600;">${status}</span></td>
-                        <td>
-                            <button class="btn btn-primary btn-sm" onclick="updateStock('${doc.id}')">✏️ Update</button>
-                        </td>
-                    </tr>`;
-                });
-                html += '</table>';
-                container.innerHTML = html;
-            } catch (e) { console.error(e); }
+                inventoryData = [];
+                snap.forEach(doc => { inventoryData.push({ id: doc.id, ...doc.data() }); });
+                filteredInventory = [...inventoryData];
+                document.getElementById('totalInventoryCount').textContent = inventoryData.length;
+                renderInventory();
+            } catch (e) {
+                console.error(e);
+                document.getElementById('inventoryList').innerHTML = `<p style="color:red;">Error loading inventory: ${e.message}</p>`;
+            }
+        }
+
+        function filterInventory() {
+            const search = document.getElementById('inventorySearch').value.toLowerCase();
+            const stockFilter = document.getElementById('stockFilter').value;
+            filteredInventory = inventoryData.filter(product => {
+                const matchSearch = product.name?.toLowerCase().includes(search) || false;
+                const stock = product.stockCount || 0;
+                let matchStock = true;
+                if (stockFilter === 'instock') matchStock = stock > 5;
+                else if (stockFilter === 'lowstock') matchStock = stock > 0 && stock <= 5;
+                else if (stockFilter === 'outofstock') matchStock = stock <= 0;
+                return matchSearch && matchStock;
+            });
+            renderInventory();
+        }
+
+        function renderInventory() {
+            const container = document.getElementById('inventoryList');
+            if (filteredInventory.length === 0) {
+                container.innerHTML = '<p style="color:#9CA3AF;">No products found.</p>';
+                return;
+            }
+            let html = `<div style="overflow-x:auto;"><table style="width:100%;">
+                <thead><tr style="background:#f3f4f6;">
+                    <th style="padding:10px; text-align:left;">Product</th>
+                    <th style="padding:10px; text-align:left;">Category</th>
+                    <th style="padding:10px; text-align:center;">Stock</th>
+                    <th style="padding:10px; text-align:center;">Status</th>
+                    <th style="padding:10px; text-align:center;">Actions</th>
+                </tr></thead><tbody>`;
+            
+            filteredInventory.forEach(product => {
+                const stock = product.stockCount || 0;
+                let statusText, statusColor;
+                if (stock <= 0) { statusText = 'Out of Stock'; statusColor = '#EF4444'; }
+                else if (stock <= 5) { statusText = 'Low Stock'; statusColor = '#F59E0B'; }
+                else { statusText = 'In Stock'; statusColor = '#10B981'; }
+                
+                const imageUrl = product.images && product.images.length > 0 ? product.images[0] : '';
+                html += `<tr style="border-bottom:1px solid #f3f4f6;">
+                    <td style="padding:10px;"><div style="display:flex; align-items:center; gap:12px;">
+                        ${imageUrl ? `<img src="${imageUrl}" style="width:40px;height:40px;object-fit:cover;border-radius:8px;">` : '<span style="font-size:24px;">📷</span>'}
+                        <strong>${product.name || 'Unnamed'}</strong>
+                    </div></td>
+                    <td style="padding:10px;">${product.categoryName || 'Uncategorized'}</td>
+                    <td style="padding:10px; text-align:center; font-weight:600;">${stock}</td>
+                    <td style="padding:10px; text-align:center;"><span style="background:${statusColor}; color:white; padding:4px 12px; border-radius:50px; font-size:12px; font-weight:600;">${statusText}</span></td>
+                    <td style="padding:10px; text-align:center;">
+                        <button class="btn btn-primary btn-sm" onclick="updateStock('${product.id}')" style="margin-right:4px;">✏️ Update</button>
+                        <button class="btn btn-secondary btn-sm" onclick="viewProductStock('${product.id}')">📊 View</button>
+                    </td>
+                </tr>`;
+            });
+            
+            html += `</tbody></table>
+                <div class="inventory-summary">
+                    <span>📦 <strong>${filteredInventory.length}</strong> products shown</span>
+                    <span>✅ <strong style="color:#10B981;">${filteredInventory.filter(p => (p.stockCount || 0) > 5).length}</strong> In Stock</span>
+                    <span>⚠️ <strong style="color:#F59E0B;">${filteredInventory.filter(p => (p.stockCount || 0) > 0 && (p.stockCount || 0) <= 5).length}</strong> Low Stock</span>
+                    <span>❌ <strong style="color:#EF4444;">${filteredInventory.filter(p => (p.stockCount || 0) <= 0).length}</strong> Out of Stock</span>
+                </div>
+            </div>`;
+            container.innerHTML = html;
         }
 
         window.updateStock = async function(productId) {
-            const newStock = prompt('Enter new stock count:');
+            const product = inventoryData.find(p => p.id === productId);
+            if (!product) { alert('Product not found!'); return; }
+            const currentStock = product.stockCount || 0;
+            const newStock = prompt(`Current stock: ${currentStock}\nEnter new stock count:`, currentStock);
             if (newStock === null) return;
             const stock = parseInt(newStock);
-            if (isNaN(stock) || stock < 0) { alert('Please enter a valid number.'); return; }
+            if (isNaN(stock) || stock < 0) { alert('Please enter a valid number (0 or more).'); return; }
             try {
                 await db.collection('products').doc(productId).update({
                     stockCount: stock,
                     inStock: stock > 0,
                     updatedAt: new Date().toISOString()
                 });
-                alert('✅ Stock updated!');
+                alert(`✅ Stock updated! ${product.name} now has ${stock} units.`);
                 loadInventory();
-            } catch (e) {
-                alert('❌ Error updating stock: ' + e.message);
-            }
+            } catch (e) { alert('❌ Error updating stock: ' + e.message); }
         };
+
+        window.viewProductStock = function(productId) {
+            const product = inventoryData.find(p => p.id === productId);
+            if (!product) { alert('Product not found!'); return; }
+            const stock = product.stockCount || 0;
+            let status = stock <= 0 ? 'Out of Stock' : stock <= 5 ? 'Low Stock' : 'In Stock';
+            alert(`📊 ${product.name}\n\nStock: ${stock} units\nStatus: ${status}\nCategory: ${product.categoryName || 'Uncategorized'}\nPrice: ₦${product.price?.toLocaleString() || 0}\n\nClick "Update" to change stock.`);
+        };
+
+        window.filterInventory = filterInventory;
 
         // ============================================
         // SETTINGS
@@ -536,7 +568,7 @@
         }
 
         window.loadPage = loadPage;
-        console.log('✅ Admin dashboard with order management loaded!');
+        console.log('✅ Admin dashboard with inventory management loaded!');
     </script>
 </body>
 </html>
