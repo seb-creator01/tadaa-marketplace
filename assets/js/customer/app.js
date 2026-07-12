@@ -1,5 +1,5 @@
 // ============================================
-// TADAA! - CUSTOMER WEBSITE WITH MAINTENANCE MODE FIX
+// TADAA! - CUSTOMER WEBSITE (MAINTENANCE MODE FIXED)
 // ============================================
 
 // ===== Firebase Config =====
@@ -18,9 +18,9 @@ const db = firebase.firestore();
 console.log('🛒 Tadaa! Customer Website Loaded');
 
 // ============================================
-// DOM ELEMENTS
+// DOM ELEMENTS - FIXED: Using #app container
 // ============================================
-const mainContent = document.getElementById('main-content');
+const appContainer = document.getElementById('app');
 const mainHeader = document.getElementById('main-header');
 const mainFooter = document.getElementById('main-footer');
 
@@ -59,6 +59,37 @@ function saveCart() {
 }
 
 // ============================================
+// SHOW MAINTENANCE PAGE
+// ============================================
+function showMaintenancePage() {
+    console.log('🔧 Showing maintenance page');
+    
+    if (!appContainer) return;
+    
+    // Replace entire app with maintenance page
+    appContainer.innerHTML = `
+        <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, #000 0%, #1a1a1a 100%); padding:20px;">
+            <div style="max-width:500px; width:100%; background:#fff; border-radius:24px; padding:48px 40px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+                <div style="font-size:64px; margin-bottom:16px;">🔧</div>
+                <h1 style="font-family:'Cormorant Garamond', serif; font-size:32px; color:#1F2937; margin:0 0 8px;">Store Under Maintenance</h1>
+                <p style="color:#6B7280; font-size:18px; margin:0 0 8px;">We're currently updating our store.</p>
+                <p style="color:#9CA3AF; font-size:14px; margin:0 0 24px;">Please check back soon!</p>
+                
+                <div style="background:#F9FAFB; border-radius:12px; padding:16px; text-align:left;">
+                    <p style="margin:4px 0; color:#4B5563; font-size:14px;"><strong>🕐 Business Hours:</strong> ${settings.businessHours || 'Mon-Fri: 9am - 6pm'}</p>
+                    <p style="margin:4px 0; color:#4B5563; font-size:14px;"><strong>📧 Contact:</strong> ${settings.storeEmail || 'support@tadaa.com'}</p>
+                    <p style="margin:4px 0; color:#4B5563; font-size:14px;"><strong>📞 Phone:</strong> ${settings.storePhone || '+2348012345678'}</p>
+                </div>
+                
+                <div style="margin-top:20px; padding-top:20px; border-top:1px solid #E5E7EB;">
+                    <p style="color:#9CA3AF; font-size:12px; margin:0;">© 2026 Tadaa! Marketplace. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// ============================================
 // LOAD DATA
 // ============================================
 async function loadData() {
@@ -70,38 +101,17 @@ async function loadData() {
         window.tadaaSettings = settings;
         window.tadaaDb = db;
         
-        // ============================================
-        // CHECK MAINTENANCE MODE - FIXED
-        // ============================================
         console.log('🔧 Maintenance Mode value:', settings.maintenanceMode);
         
-        // Check if maintenance mode is true (boolean)
+        // ============================================
+        // CHECK MAINTENANCE MODE - USING #app CONTAINER
+        // ============================================
         if (settings.maintenanceMode === true) {
-            console.log('🔧 Maintenance mode is ON! Showing maintenance page.');
-            
-            if (mainContent) {
-                mainContent.innerHTML = `
-                    <div style="max-width:600px; margin:60px auto; padding:40px; text-align:center;">
-                        <div style="background:#FEF3C7; color:#92400E; padding:60px 40px; border-radius:24px; box-shadow:0 8px 32px rgba(0,0,0,0.1);">
-                            <p style="font-size:64px; margin:0 0 16px;">🔧</p>
-                            <h1 style="font-family:'Cormorant Garamond', serif; font-size:32px; color:#92400E; margin:0 0 8px;">Store Under Maintenance</h1>
-                            <p style="color:#92400E; font-size:18px;">We're currently updating our store. Please check back soon!</p>
-                            <p style="color:#6B7280; margin-top:12px;">🕐 ${settings.businessHours || 'Mon-Fri: 9am - 6pm'}</p>
-                            <p style="color:#9CA3AF; margin-top:12px; font-size:14px;">Contact us: ${settings.storeEmail || 'support@tadaa.com'}</p>
-                        </div>
-                    </div>
-                `;
-                // Hide header and footer
-                if (mainHeader) mainHeader.style.display = 'none';
-                if (mainFooter) mainFooter.style.display = 'none';
-                return; // Stop loading the rest of the page
-            }
+            showMaintenancePage();
+            return; // Stop everything else
         }
         
-        // If maintenance mode is off, show header and footer
         console.log('🔧 Maintenance mode is OFF. Showing normal store.');
-        if (mainHeader) mainHeader.style.display = 'block';
-        if (mainFooter) mainFooter.style.display = 'block';
         
         // Load categories
         const categoriesSnap = await db.collection('categories').orderBy('order', 'asc').get();
@@ -125,8 +135,8 @@ async function loadData() {
         
     } catch (error) {
         console.error('❌ Error loading data:', error);
-        if (mainContent) {
-            mainContent.innerHTML = `
+        if (appContainer) {
+            appContainer.innerHTML = `
                 <div style="text-align:center; padding:60px 20px;">
                     <h2>😅 Oops! Something went wrong</h2>
                     <p style="color:#6B7280;">Please refresh the page and try again.</p>
@@ -664,4 +674,4 @@ document.addEventListener('DOMContentLoaded', () => {
     loadData();
 });
 
-console.log('✅ Tadaa! Website with maintenance mode ready!');
+console.log('✅ Tadaa! Website with maintenance mode fix ready!');
