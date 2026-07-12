@@ -1,5 +1,5 @@
 // ============================================
-// TADAA! - CUSTOMER WEBSITE (MODAL FIX)
+// TADAA! - CUSTOMER WEBSITE (FIXED MODAL)
 // ============================================
 
 // ===== Firebase Config =====
@@ -33,6 +33,7 @@ let settings = {};
 let cart = [];
 let currentCategory = 'all';
 let searchTerm = '';
+let isModalOpen = false;
 
 // ============================================
 // LOAD CART
@@ -398,7 +399,7 @@ function toggleSearch() {
 }
 
 // ============================================
-// VIEW PRODUCT - WITH MODAL CLOSE ON ADD
+// VIEW PRODUCT - NO MODAL DIM ISSUE
 // ============================================
 function viewProduct(productId) {
     const product = products.find(p => p.id === productId);
@@ -408,15 +409,21 @@ function viewProduct(productId) {
     const discountedPrice = discount > 0 ? product.price * (1 - discount / 100) : product.price;
     const inStock = product.inStock !== false && (product.stockCount || 0) > 0;
     
-    // Create modal
+    // CLOSE ANY EXISTING MODAL FIRST
+    closeModal();
+    
     const modal = document.createElement('div');
     modal.id = 'productModal';
     modal.style.cssText = `position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px;`;
-    modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+    modal.onclick = function(e) {
+        if (e.target === modal) {
+            closeModal();
+        }
+    };
     
     modal.innerHTML = `
         <div style="background:#fff; border-radius:24px; max-width:500px; width:100%; max-height:90vh; overflow-y:auto; padding:24px; position:relative;">
-            <button onclick="this.closest('#productModal').remove()" style="position:absolute; top:12px; right:16px; background:none; border:none; font-size:24px; cursor:pointer;">✕</button>
+            <button onclick="closeModal()" style="position:absolute; top:12px; right:16px; background:none; border:none; font-size:24px; cursor:pointer;">✕</button>
             <div style="border-radius:16px; overflow:hidden; background:#f3f4f6; margin-bottom:16px;">
                 ${imageUrl ? `<img src="${imageUrl}" alt="${product.name}" style="width:100%; height:auto; max-height:300px; object-fit:cover;">` : '<div style="padding:60px; text-align:center; font-size:48px;">📷</div>'}
             </div>
@@ -431,24 +438,49 @@ function viewProduct(productId) {
             <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
                 <span style="color:#6B7280; font-size:14px;">Stock: ${inStock ? `✅ ${product.stockCount || 0} available` : '❌ Out of Stock'}</span>
             </div>
-            ${inStock ? `<button onclick="event.stopPropagation(); addToCartAndCloseModal('${product.id}')" style="width:100%; background:#FFD700; color:#000; border:none; padding:14px; border-radius:12px; font-size:18px; font-weight:600; cursor:pointer;">🛒 Add to Cart</button>` : `<button style="width:100%; background:#9CA3AF; color:#fff; border:none; padding:14px; border-radius:12px; font-size:18px; font-weight:600; cursor:not-allowed;">Out of Stock</button>`}
+            ${inStock ? `<button onclick="addToCartAndCloseModal('${product.id}')" style="width:100%; background:#FFD700; color:#000; border:none; padding:14px; border-radius:12px; font-size:18px; font-weight:600; cursor:pointer;">🛒 Add to Cart</button>` : `<button style="width:100%; background:#9CA3AF; color:#fff; border:none; padding:14px; border-radius:12px; font-size:18px; font-weight:600; cursor:not-allowed;">Out of Stock</button>`}
         </div>
     `;
     
     document.body.appendChild(modal);
+    isModalOpen = true;
+}
+
+// ============================================
+// CLOSE MODAL
+// ============================================
+function closeModal() {
+    const modal = document.getElementById('productModal');
+    if (modal) {
+        modal.remove();
+    }
+    isModalOpen = false;
 }
 
 // ============================================
 // ADD TO CART AND CLOSE MODAL
 // ============================================
 function addToCartAndCloseModal(productId) {
-    // Close the modal first
-    const modal = document.getElementById('productModal');
-    if (modal) {
-        modal.remove();
+    // Add to cart first
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+    
+    const existing = cart.find(item => item.id === productId);
+    if (existing) {
+        existing.quantity += 1;
+    } else {
+        cart.push({ ...product, quantity: 1 });
     }
-    // Then add to cart
-    addToCart(productId);
+    saveCart();
+    updateCartCount();
+    renderCartSidebar();
+    renderProducts();
+    
+    // Close modal
+    closeModal();
+    
+    // Show toast
+    showToast(product.name);
 }
 
 // ============================================
@@ -723,6 +755,7 @@ window.checkout = checkout;
 window.showToast = showToast;
 window.updateProductQuantity = updateProductQuantity;
 window.addToCartAndCloseModal = addToCartAndCloseModal;
+window.closeModal = closeModal;
 
 // ============================================
 // INITIALIZE
