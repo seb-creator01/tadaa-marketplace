@@ -1,5 +1,5 @@
 // ============================================
-// TADAA! - CUSTOMER WEBSITE (FIXED MODAL)
+// TADAA! - CUSTOMER WEBSITE (FINAL FIX)
 // ============================================
 
 // ===== Firebase Config =====
@@ -399,7 +399,7 @@ function toggleSearch() {
 }
 
 // ============================================
-// VIEW PRODUCT - NO MODAL DIM ISSUE
+// VIEW PRODUCT
 // ============================================
 function viewProduct(productId) {
     const product = products.find(p => p.id === productId);
@@ -487,7 +487,14 @@ function addToCartAndCloseModal(productId) {
 // TOAST NOTIFICATION
 // ============================================
 function showToast(productName) {
+    // Remove any existing toast
+    const existingToast = document.querySelector('.toast-notification');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
     const toast = document.createElement('div');
+    toast.className = 'toast-notification';
     toast.style.cssText = `
         position:fixed; bottom:20px; right:20px; background:#fff; color:#1F2937; padding:16px 20px; border-radius:16px; box-shadow:0 8px 32px rgba(0,0,0,0.2); z-index:2000; max-width:380px; width:100%; border-left:4px solid #FFD700;
     `;
@@ -498,10 +505,11 @@ function showToast(productName) {
                 <p style="margin:0; font-weight:600;">Added to Cart!</p>
                 <p style="margin:0; font-size:14px; color:#6B7280;">${productName}</p>
             </div>
+            <button onclick="this.closest('.toast-notification').remove()" style="background:none; border:none; font-size:20px; cursor:pointer; color:#9CA3AF;">✕</button>
         </div>
         <div style="display:flex; gap:8px; margin-top:12px;">
-            <button onclick="this.closest('div[style]').remove(); toggleCartSidebar();" style="flex:1; background:#FFD700; color:#000; border:none; padding:8px; border-radius:8px; font-weight:600; cursor:pointer;">🛒 View Cart</button>
-            <button onclick="this.closest('div[style]').remove();" style="flex:1; background:#f3f4f6; color:#1F2937; border:none; padding:8px; border-radius:8px; font-weight:600; cursor:pointer;">🛍️ Continue Shopping</button>
+            <button onclick="this.closest('.toast-notification').remove(); toggleCartSidebar();" style="flex:1; background:#FFD700; color:#000; border:none; padding:8px; border-radius:8px; font-weight:600; cursor:pointer;">🛒 View Cart</button>
+            <button onclick="this.closest('.toast-notification').remove();" style="flex:1; background:#f3f4f6; color:#1F2937; border:none; padding:8px; border-radius:8px; font-weight:600; cursor:pointer;">🛍️ Continue Shopping</button>
         </div>
     `;
     document.body.appendChild(toast);
@@ -571,6 +579,20 @@ function updateCartCount() {
 }
 
 // ============================================
+// CLOSE CART SIDEBAR AND OVERLAY
+// ============================================
+function closeCartSidebar() {
+    const sidebar = document.getElementById('cartSidebar');
+    const overlay = document.getElementById('cartOverlay');
+    if (sidebar) {
+        sidebar.style.right = '-400px';
+    }
+    if (overlay) {
+        overlay.style.display = 'none';
+    }
+}
+
+// ============================================
 // CART SIDEBAR
 // ============================================
 function renderCartSidebar() {
@@ -583,7 +605,9 @@ function renderCartSidebar() {
         const overlay = document.createElement('div');
         overlay.id = 'cartOverlay';
         overlay.style.cssText = `position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:1400; display:none; cursor:pointer;`;
-        overlay.onclick = toggleCartSidebar;
+        overlay.onclick = function() {
+            closeCartSidebar();
+        };
         document.body.appendChild(overlay);
     }
     const overlay = document.getElementById('cartOverlay');
@@ -592,15 +616,15 @@ function renderCartSidebar() {
         sidebar.innerHTML = `
             <div style="padding:20px; border-bottom:1px solid #e5e7eb; display:flex; justify-content:space-between; align-items:center;">
                 <h3 style="margin:0; font-family:'Cormorant Garamond', serif;">🛒 Your Cart</h3>
-                <button onclick="toggleCartSidebar()" style="background:none; border:none; font-size:24px; cursor:pointer;">✕</button>
+                <button onclick="closeCartSidebar()" style="background:none; border:none; font-size:24px; cursor:pointer;">✕</button>
             </div>
             <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px; color:#9CA3AF; text-align:center;">
                 <p style="font-size:48px; margin:0 0 16px;">🛒</p>
                 <p style="font-size:18px; margin:0;">Your cart is empty</p>
-                <button onclick="toggleCartSidebar()" style="background:#FFD700; color:#000; border:none; padding:12px 24px; border-radius:50px; margin-top:16px; cursor:pointer; font-weight:600;">Continue Shopping</button>
+                <button onclick="closeCartSidebar()" style="background:#FFD700; color:#000; border:none; padding:12px 24px; border-radius:50px; margin-top:16px; cursor:pointer; font-weight:600;">Continue Shopping</button>
             </div>
         `;
-        if (overlay) overlay.style.display = 'none';
+        overlay.style.display = 'none';
         return;
     }
     
@@ -619,7 +643,7 @@ function renderCartSidebar() {
             <h3 style="margin:0; font-family:'Cormorant Garamond', serif;">🛒 Your Cart</h3>
             <div style="display:flex; align-items:center; gap:12px;">
                 <button onclick="clearCart()" style="background:none; border:none; color:#EF4444; font-size:14px; cursor:pointer; text-decoration:underline;">Clear</button>
-                <button onclick="toggleCartSidebar()" style="background:none; border:none; font-size:24px; cursor:pointer;">✕</button>
+                <button onclick="closeCartSidebar()" style="background:none; border:none; font-size:24px; cursor:pointer;">✕</button>
             </div>
         </div>
         <div style="flex:1; overflow-y:auto; padding:16px 20px;">
@@ -665,13 +689,13 @@ function renderCartSidebar() {
                 <span>Total</span>
                 <span style="color:#FFD700; font-size:22px;">₦${total.toLocaleString()}</span>
             </div>
-            <button onclick="checkout()" style="width:100%; background:#FFD700; color:#000; border:none; padding:14px; border-radius:12px; font-size:18px; font-weight:700; cursor:pointer; margin-top:12px;">
+            <button onclick="closeCartSidebar(); checkout();" style="width:100%; background:#FFD700; color:#000; border:none; padding:14px; border-radius:12px; font-size:18px; font-weight:700; cursor:pointer; margin-top:12px;">
                 🛒 Proceed to Checkout →
             </button>
         </div>
     `;
     sidebar.innerHTML = cartHtml;
-    if (overlay) overlay.style.display = 'block';
+    overlay.style.display = 'block';
 }
 
 // ============================================
@@ -681,13 +705,13 @@ function toggleCartSidebar() {
     const sidebar = document.getElementById('cartSidebar');
     const overlay = document.getElementById('cartOverlay');
     if (!sidebar) return;
+    
     if (sidebar.style.right === '0px') {
-        sidebar.style.right = '-400px';
-        if (overlay) overlay.style.display = 'none';
+        closeCartSidebar();
     } else {
         renderCartSidebar();
         sidebar.style.right = '0px';
-        if (overlay) overlay.style.display = 'block';
+        overlay.style.display = 'block';
     }
 }
 
@@ -699,7 +723,8 @@ function checkout() {
         alert('🛒 Your cart is empty!');
         return;
     }
-    toggleCartSidebar();
+    // Make sure sidebar is closed
+    closeCartSidebar();
     window.location.href = '/tadaa-marketplace/checkout.html';
 }
 
@@ -756,6 +781,7 @@ window.showToast = showToast;
 window.updateProductQuantity = updateProductQuantity;
 window.addToCartAndCloseModal = addToCartAndCloseModal;
 window.closeModal = closeModal;
+window.closeCartSidebar = closeCartSidebar;
 
 // ============================================
 // INITIALIZE
@@ -764,4 +790,4 @@ document.addEventListener('DOMContentLoaded', () => {
     loadData();
 });
 
-console.log('✅ Tadaa! Website with modal fix ready!');
+console.log('✅ Tadaa! Website final fix ready!');
