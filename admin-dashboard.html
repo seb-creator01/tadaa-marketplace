@@ -34,6 +34,11 @@
         .settings-check { display: flex; align-items: center; gap: 12px; }
         .settings-check label { margin: 0; }
         .settings-check input { width: auto; }
+        .action-btn { padding: 6px 14px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
+        .action-btn.edit { background: #F59E0B; color: #fff; }
+        .action-btn.delete { background: #EF4444; color: #fff; }
+        .action-btn.edit:hover { background: #D97706; }
+        .action-btn.delete:hover { background: #DC2626; }
     </style>
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -210,8 +215,8 @@
                     <td><strong>${data.name}</strong></td>
                     <td>${data.slug || '-'}</td>
                     <td>
-                        <button class="btn btn-warning btn-sm" onclick="editCategory('${doc.id}')">✏️</button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteCategory('${doc.id}')">🗑️</button>
+                        <button class="btn btn-warning btn-sm" onclick="editCategory('${doc.id}')">✏️ Edit</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteCategory('${doc.id}')">🗑️ Delete</button>
                     </td>
                 </tr>`;
             });
@@ -284,7 +289,7 @@
     };
 
     // ============================================
-    // PRODUCTS - WITH DELIVERY FEE FIELD
+    // PRODUCTS - FIXED WITH DELIVERY FEE
     // ============================================
     async function loadProducts() {
         pageContent.innerHTML = `
@@ -304,33 +309,36 @@
                 container.innerHTML = '<p>No products yet. Click "Add Product" to create one.</p>';
                 return;
             }
-            let html = `<table>
-                <tr>
-                    <th>Image</th>
-                    <th>Name</th>
-                    <th>Category</th>
-                    <th>Price</th>
-                    <th>Delivery Fee</th>
-                    <th>Stock</th>
-                    <th>Actions</th>
-                </tr>`;
+            let html = `<table style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr style="background:#f3f4f6;">
+                        <th style="padding:10px; text-align:left;">Image</th>
+                        <th style="padding:10px; text-align:left;">Name</th>
+                        <th style="padding:10px; text-align:left;">Category</th>
+                        <th style="padding:10px; text-align:left;">Price</th>
+                        <th style="padding:10px; text-align:left;">Delivery Fee</th>
+                        <th style="padding:10px; text-align:left;">Stock</th>
+                        <th style="padding:10px; text-align:center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>`;
             snap.forEach(doc => {
                 const data = doc.data();
                 const imageUrl = data.images && data.images.length > 0 ? data.images[0] : '';
-                html += `<tr>
-                    <td>${imageUrl ? `<img src="${imageUrl}" class="product-img">` : '📷'}</td>
-                    <td><strong>${data.name}</strong></td>
-                    <td>${data.categoryName || 'Uncategorized'}</td>
-                    <td>₦${data.price?.toLocaleString() || 0}</td>
-                    <td>₦${data.deliveryFee || 100}</td>
-                    <td>${data.inStock ? '✅ In Stock' : '❌ Out of Stock'}</td>
-                    <td>
-                        <button class="btn btn-warning btn-sm" onclick="editProduct('${doc.id}')">✏️</button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteProduct('${doc.id}')">🗑️</button>
+                html += `<tr style="border-bottom:1px solid #e5e7eb;">
+                    <td style="padding:10px;">${imageUrl ? `<img src="${imageUrl}" style="width:40px;height:40px;object-fit:cover;border-radius:8px;">` : '📷'}</td>
+                    <td style="padding:10px;"><strong>${data.name}</strong></td>
+                    <td style="padding:10px;">${data.categoryName || 'Uncategorized'}</td>
+                    <td style="padding:10px;">₦${data.price?.toLocaleString() || 0}</td>
+                    <td style="padding:10px;">₦${data.deliveryFee || 100}</td>
+                    <td style="padding:10px;">${data.inStock ? '✅ In Stock' : '❌ Out of Stock'}</td>
+                    <td style="padding:10px; text-align:center;">
+                        <button onclick="editProduct('${doc.id}')" class="action-btn edit">✏️ Edit</button>
+                        <button onclick="deleteProduct('${doc.id}')" class="action-btn delete">🗑️ Delete</button>
                     </td>
                 </tr>`;
             });
-            html += '</table>';
+            html += `</tbody></table>`;
             container.innerHTML = html;
         } catch (e) {
             console.error(e);
@@ -361,7 +369,6 @@
                     <label>Compare Price (Original Price)</label>
                     <input type="number" id="prodCompare" placeholder="e.g., 2500">
                 </div>
-                <!-- DELIVERY FEE PER ITEM -->
                 <div class="form-group">
                     <label>Delivery Fee per item (₦) *</label>
                     <input type="number" id="prodDeliveryFee" placeholder="e.g., 500" value="100">
@@ -866,7 +873,7 @@
         }
     };
 
-    console.log('✅ Admin dashboard with delivery fee per product ready!');
+    console.log('✅ Admin dashboard with delivery fee and working buttons!');
 </script>
 
 </body>
