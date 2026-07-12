@@ -1,5 +1,5 @@
 // ============================================
-// TADAA! - CUSTOMER WEBSITE (WITH DELIVERY PER PRODUCT)
+// TADAA! - CUSTOMER WEBSITE (NO AUTO CHECKOUT)
 // ============================================
 
 // ===== Firebase Config =====
@@ -257,7 +257,7 @@ function renderCategories() {
 }
 
 // ============================================
-// RENDER PRODUCTS - WITH DELIVERY FEE PER PRODUCT
+// RENDER PRODUCTS - NO AUTO CHECKOUT
 // ============================================
 function renderProducts() {
     const productsDiv = document.getElementById('products-section');
@@ -285,7 +285,6 @@ function renderProducts() {
         return;
     }
     
-    // Get delivery fee per item from settings
     const perItemDelivery = settings.deliveryFee || 100;
     
     let html = `
@@ -304,8 +303,6 @@ function renderProducts() {
         const discountedPrice = discount > 0 ? product.price * (1 - discount / 100) : product.price;
         const cartItem = cart.find(item => item.id === product.id);
         const qty = cartItem ? cartItem.quantity : 0;
-        
-        // Show delivery fee per item
         const deliveryDisplay = perItemDelivery > 0 ? `Delivery: ₦${perItemDelivery}/item` : 'Free Delivery';
         
         html += `
@@ -326,7 +323,6 @@ function renderProducts() {
                         ${discount > 0 ? `<span style="font-size:12px; color:#9CA3AF; text-decoration:line-through;">₦${product.price.toLocaleString()}</span>` : ''}
                     </div>
                     
-                    <!-- DELIVERY FEE PER ITEM -->
                     <div style="font-size:11px; color:#6B7280; margin-bottom:6px;">
                         🚚 ${deliveryDisplay}
                     </div>
@@ -440,7 +436,7 @@ function viewProduct(productId) {
 }
 
 // ============================================
-// TOAST NOTIFICATION
+// TOAST NOTIFICATION - NOW WITH "VIEW CART" BUTTON
 // ============================================
 function showToast(productName) {
     const toast = document.createElement('div');
@@ -456,8 +452,8 @@ function showToast(productName) {
             </div>
         </div>
         <div style="display:flex; gap:8px; margin-top:12px;">
-            <button onclick="this.closest('div[style]').remove(); toggleCartSidebar();" style="flex:1; background:#FFD700; color:#000; border:none; padding:8px; border-radius:8px; font-weight:600; cursor:pointer;">View Cart</button>
-            <button onclick="this.closest('div[style]').remove();" style="flex:1; background:#f3f4f6; color:#1F2937; border:none; padding:8px; border-radius:8px; font-weight:600; cursor:pointer;">Continue Shopping</button>
+            <button onclick="this.closest('div[style]').remove(); toggleCartSidebar();" style="flex:1; background:#FFD700; color:#000; border:none; padding:8px; border-radius:8px; font-weight:600; cursor:pointer;">🛒 View Cart</button>
+            <button onclick="this.closest('div[style]').remove();" style="flex:1; background:#f3f4f6; color:#1F2937; border:none; padding:8px; border-radius:8px; font-weight:600; cursor:pointer;">🛍️ Continue Shopping</button>
         </div>
     `;
     document.body.appendChild(toast);
@@ -622,7 +618,7 @@ function renderCartSidebar() {
                 <span style="color:#FFD700; font-size:22px;">₦${total.toLocaleString()}</span>
             </div>
             <button onclick="checkout()" style="width:100%; background:#FFD700; color:#000; border:none; padding:14px; border-radius:12px; font-size:18px; font-weight:700; cursor:pointer; margin-top:12px;">
-                Proceed to Checkout →
+                🛒 Proceed to Checkout →
             </button>
         </div>
     `;
@@ -648,7 +644,7 @@ function toggleCartSidebar() {
 }
 
 // ============================================
-// CHECKOUT
+// CHECKOUT - ONLY WHEN CUSTOMER CLICKS THE BUTTON
 // ============================================
 function checkout() {
     if (cart.length === 0) {
@@ -718,4 +714,4 @@ document.addEventListener('DOMContentLoaded', () => {
     loadData();
 });
 
-console.log('✅ Tadaa! Website with delivery fee per product ready!');
+console.log('✅ Tadaa! Website with no auto-checkout ready!');
