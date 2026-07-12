@@ -10,72 +10,17 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <style>
-        /* ===== MOBILE SIDEBAR FIX ===== */
-        .sidebar-toggle {
-            display: none;
-            background: none;
-            border: none;
-            color: #000;
-            font-size: 28px;
-            cursor: pointer;
-            padding: 4px 8px;
-        }
-
-        .admin-sidebar-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 998;
-        }
-        .admin-sidebar-overlay.active {
-            display: block;
-        }
-
+        .sidebar-toggle { display: none; background: none; border: none; color: #000; font-size: 28px; cursor: pointer; padding: 4px 8px; }
+        .admin-sidebar-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 998; }
+        .admin-sidebar-overlay.active { display: block; }
         @media (max-width: 768px) {
-            .sidebar-toggle {
-                display: block;
-            }
-            .admin-sidebar {
-                transform: translateX(-100%);
-                transition: transform 0.3s ease;
-                width: 280px;
-                z-index: 999;
-                position: fixed;
-                top: 0;
-                left: 0;
-                bottom: 0;
-                overflow-y: auto;
-            }
-            .admin-sidebar.open {
-                transform: translateX(0);
-            }
-            .admin-content {
-                margin-left: 0 !important;
-                padding: 16px !important;
-            }
-            .admin-topnav {
-                flex-wrap: wrap;
-            }
-            .stats-grid {
-                grid-template-columns: 1fr 1fr !important;
-            }
+            .sidebar-toggle { display: block; }
+            .admin-sidebar { transform: translateX(-100%); transition: transform 0.3s ease; width: 280px; z-index: 999; position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; }
+            .admin-sidebar.open { transform: translateX(0); }
+            .admin-content { margin-left: 0 !important; padding: 16px !important; }
+            .stats-grid { grid-template-columns: 1fr 1fr !important; }
         }
-
-        @media (max-width: 480px) {
-            .stats-grid {
-                grid-template-columns: 1fr 1fr !important;
-                gap: 10px;
-            }
-            .admin-topnav h1 {
-                font-size: 18px;
-            }
-        }
-
-        /* ===== EXISTING STYLES ===== */
+        @media (max-width: 480px) { .stats-grid { grid-template-columns: 1fr 1fr !important; gap: 10px; } }
         .badge { padding: 2px 12px; border-radius: 50px; font-size: 12px; font-weight: 600; color: #fff; }
         .order-details { background: #f9fafb; padding: 16px; border-radius: 12px; margin-top: 12px; }
         .order-details table { width: 100%; }
@@ -103,7 +48,6 @@
         .admin-sidebar-nav a:hover, .admin-sidebar-nav a.active { background: rgba(255,215,0,0.1); color: #FFD700; }
         .admin-sidebar-nav .logout-link { border-top: 1px solid rgba(255,255,255,0.05); margin-top: 16px; padding-top: 16px; }
         .admin-sidebar-nav .logout-link a { color: #EF4444; }
-        .admin-sidebar-nav .logout-link a:hover { background: rgba(239,68,68,0.1); }
         .admin-content { margin-left: 220px; padding: 24px 32px 40px; min-height: 100vh; }
         .admin-topnav { display: flex; justify-content: space-between; align-items: center; padding: 16px 0 24px; border-bottom: 1px solid #e5e7eb; margin-bottom: 24px; }
         .admin-topnav h1 { font-family: 'Cormorant Garamond', serif; font-size: 28px; margin: 0; }
@@ -125,12 +69,8 @@
     </style>
 </head>
 <body>
-
-    <!-- Sidebar Overlay (Mobile) -->
     <div class="admin-sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
-
     <div class="admin-wrapper">
-        <!-- Sidebar -->
         <aside class="admin-sidebar" id="adminSidebar">
             <div class="admin-sidebar-brand">
                 <div class="brand-text">Tadaa!</div>
@@ -147,8 +87,6 @@
                 <li class="logout-link"><a href="#" id="logoutBtn">🚪 Logout</a></li>
             </ul>
         </aside>
-
-        <!-- Main Content -->
         <main class="admin-content">
             <div class="admin-topnav">
                 <div style="display:flex; align-items:center; gap:12px;">
@@ -168,7 +106,7 @@
 
     <script>
         // ============================================
-        // SIDEBAR TOGGLE (Mobile)
+        // SIDEBAR TOGGLE
         // ============================================
         function toggleSidebar() {
             const sidebar = document.getElementById('adminSidebar');
@@ -176,20 +114,15 @@
             sidebar.classList.toggle('open');
             overlay.classList.toggle('active');
         }
-
         function closeSidebar() {
             const sidebar = document.getElementById('adminSidebar');
             const overlay = document.getElementById('sidebarOverlay');
             sidebar.classList.remove('open');
             overlay.classList.remove('active');
         }
-
-        // Close sidebar when clicking a link (mobile)
         document.querySelectorAll('.admin-sidebar-nav a').forEach(function(link) {
             link.addEventListener('click', function() {
-                if (window.innerWidth <= 768) {
-                    closeSidebar();
-                }
+                if (window.innerWidth <= 768) { closeSidebar(); }
             });
         });
 
@@ -227,9 +160,6 @@
             });
         }
 
-        // ============================================
-        // PAGE LOADER
-        // ============================================
         function loadPage(page) {
             pageTitle.textContent = page.charAt(0).toUpperCase() + page.slice(1);
             document.querySelectorAll('.admin-sidebar-nav a').forEach(l => l.classList.remove('active'));
@@ -399,7 +329,7 @@
         }
 
         // ============================================
-        // ORDERS
+        // ORDERS WITH DELETE FUNCTION
         // ============================================
         async function loadOrders() {
             pageContent.innerHTML = `
@@ -459,7 +389,16 @@
             const container = document.getElementById('ordersList');
             if (filteredOrders.length === 0) { container.innerHTML = '<p style="color:#9CA3AF;">No orders found.</p>'; return; }
             let html = `<table>
-                <thead><tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Total</th><th>Payment</th><th>Status</th><th>Actions</th></tr></thead><tbody>`;
+                <thead><tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Items</th>
+                    <th>Total</th>
+                    <th>Payment</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr></thead><tbody>`;
+            
             filteredOrders.forEach(order => {
                 const payStatus = order.payment?.status || 'pending';
                 const payColor = payStatus === 'paid' ? '#10B981' : payStatus === 'failed' ? '#EF4444' : '#F59E0B';
@@ -473,13 +412,15 @@
                         <td><span class="badge" style="background:${payColor}">${payStatus}</span></td>
                         <td><span class="badge status-${orderStatus}">${orderStatus}</span></td>
                         <td>
-                            <select onchange="updateOrderStatus('${order.id}', this.value)" style="padding:4px 8px; border-radius:6px; border:1px solid #e5e7eb;">
+                            <select onchange="updateOrderStatus('${order.id}', this.value)" style="padding:4px 8px; border-radius:6px; border:1px solid #e5e7eb; margin-bottom:4px; width:100%;">
                                 <option value="pending" ${orderStatus === 'pending' ? 'selected' : ''}>Pending</option>
                                 <option value="processing" ${orderStatus === 'processing' ? 'selected' : ''}>Processing</option>
                                 <option value="shipped" ${orderStatus === 'shipped' ? 'selected' : ''}>Shipped</option>
                                 <option value="delivered" ${orderStatus === 'delivered' ? 'selected' : ''}>Delivered</option>
                                 <option value="cancelled" ${orderStatus === 'cancelled' ? 'selected' : ''}>Cancelled</option>
                             </select>
+                            <br>
+                            <button onclick="deleteOrder('${order.id}', '${order.orderId}')" style="background:#EF4444; color:#fff; border:none; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:12px; margin-top:4px; width:100%;">🗑️ Delete</button>
                         </td>
                     </tr>
                     <tr id="details-${order.id}" style="display:none;"><td colspan="7"><div class="order-details">
@@ -496,12 +437,27 @@
                         <p><strong>Subtotal:</strong> ₦${order.totals?.subtotal?.toLocaleString() || 0}</p>
                         <p><strong>Delivery:</strong> ₦${order.totals?.deliveryFee?.toLocaleString() || 0}</p>
                         <p><strong>Total:</strong> ₦${order.totals?.grandTotal?.toLocaleString() || 0}</p>
+                        <button onclick="deleteOrder('${order.id}', '${order.orderId}')" style="background:#EF4444; color:#fff; border:none; padding:8px 16px; border-radius:8px; cursor:pointer; margin-top:12px;">🗑️ Delete This Order</button>
                     </div></td></tr>
                 `;
             });
             html += '</tbody></table>';
             container.innerHTML = html;
         }
+
+        // ============================================
+        // DELETE ORDER FUNCTION
+        // ============================================
+        window.deleteOrder = async function(orderId, orderIdDisplay) {
+            if (!confirm(`⚠️ Are you sure you want to delete order ${orderIdDisplay}? This cannot be undone!`)) return;
+            try {
+                await db.collection('orders').doc(orderId).delete();
+                alert(`✅ Order ${orderIdDisplay} deleted successfully!`);
+                loadOrders();
+            } catch (e) {
+                alert('❌ Error deleting order: ' + e.message);
+            }
+        };
 
         window.toggleOrderDetails = function(orderId) {
             const row = document.getElementById(`details-${orderId}`);
@@ -522,60 +478,35 @@
         // PAYMENTS
         // ============================================
         async function loadPayments() {
-    pageContent.innerHTML = `
-        <div class="card">
-            <h3 style="margin-bottom:16px;">💳 Payment History</h3>
-            <div id="paymentsList">Loading...</div>
-        </div>
-    `;
-    try {
-        // Get ALL orders (don't filter by payment status)
-        const snap = await db.collection('orders').orderBy('createdAt', 'desc').get();
-        const container = document.getElementById('paymentsList');
-        
-        if (snap.empty) {
-            container.innerHTML = '<p style="color:#9CA3AF;">No orders found.</p>';
-            return;
+            pageContent.innerHTML = `
+                <div class="card">
+                    <h3 style="margin-bottom:16px;">💳 Payment History</h3>
+                    <div id="paymentsList">Loading...</div>
+                </div>
+            `;
+            try {
+                const snap = await db.collection('orders').orderBy('createdAt', 'desc').get();
+                const container = document.getElementById('paymentsList');
+                if (snap.empty) { container.innerHTML = '<p style="color:#9CA3AF;">No orders found.</p>'; return; }
+                let html = `<table><thead><tr><th>Order ID</th><th>Customer</th><th>Amount</th><th>Payment Status</th><th>Order Status</th></tr></thead><tbody>`;
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    const payStatus = data.payment?.status || 'pending';
+                    let payColor = '#F59E0B';
+                    if (payStatus === 'paid') payColor = '#10B981';
+                    else if (payStatus === 'failed') payColor = '#EF4444';
+                    html += `<tr>
+                        <td><strong>${data.orderId || 'N/A'}</strong></td>
+                        <td>${data.customer?.fullName || 'Unknown'}</td>
+                        <td style="text-align:right;">₦${data.totals?.grandTotal?.toLocaleString() || 0}</td>
+                        <td><span class="badge" style="background:${payColor}">${payStatus}</span></td>
+                        <td>${data.status || 'pending'}</td>
+                    </tr>`;
+                });
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (e) { console.error(e); document.getElementById('paymentsList').innerHTML = `<p style="color:red;">Error: ${e.message}</p>`; }
         }
-        
-        let html = `<table style="width:100%; border-collapse:collapse;">
-            <thead>
-                <tr style="background:#f3f4f6;">
-                    <th style="padding:10px; text-align:left;">Order ID</th>
-                    <th style="padding:10px; text-align:left;">Customer</th>
-                    <th style="padding:10px; text-align:right;">Amount</th>
-                    <th style="padding:10px; text-align:center;">Payment Status</th>
-                    <th style="padding:10px; text-align:center;">Order Status</th>
-                </tr>
-            </thead>
-            <tbody>`;
-        
-        snap.forEach(doc => {
-            const data = doc.data();
-            const payStatus = data.payment?.status || 'pending';
-            let payColor = '#F59E0B';
-            if (payStatus === 'paid') payColor = '#10B981';
-            else if (payStatus === 'failed') payColor = '#EF4444';
-            
-            html += `<tr style="border-bottom:1px solid #e5e7eb;">
-                <td style="padding:10px;"><strong>${data.orderId || 'N/A'}</strong></td>
-                <td style="padding:10px;">${data.customer?.fullName || 'Unknown'}</td>
-                <td style="padding:10px; text-align:right;">₦${data.totals?.grandTotal?.toLocaleString() || 0}</td>
-                <td style="padding:10px; text-align:center;">
-                    <span style="background:${payColor}; color:white; padding:4px 12px; border-radius:50px; font-size:12px; font-weight:600;">${payStatus}</span>
-                </td>
-                <td style="padding:10px; text-align:center;">${data.status || 'pending'}</td>
-            </tr>`;
-        });
-        
-        html += '</tbody></table>';
-        container.innerHTML = html;
-        
-    } catch (e) {
-        console.error('Error loading payments:', e);
-        document.getElementById('paymentsList').innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
-    }
-}
 
         // ============================================
         // INVENTORY
@@ -647,14 +578,12 @@
                     <th style="padding:12px; text-align:center; border-bottom:2px solid #e5e7eb;">Status</th>
                     <th style="padding:12px; text-align:center; border-bottom:2px solid #e5e7eb;">Actions</th>
                 </tr></thead><tbody>`;
-            
             filteredInventory.forEach(product => {
                 const stock = product.stockCount || 0;
                 let statusText, statusColor;
                 if (stock <= 0) { statusText = '❌ Out of Stock'; statusColor = '#EF4444'; }
                 else if (stock <= 5) { statusText = '⚠️ Low Stock'; statusColor = '#F59E0B'; }
                 else { statusText = '✅ In Stock'; statusColor = '#10B981'; }
-                
                 const imageUrl = product.images && product.images.length > 0 ? product.images[0] : '';
                 html += `<tr style="border-bottom:1px solid #f3f4f6;">
                     <td style="padding:12px;"><div style="display:flex; align-items:center; gap:12px;">
@@ -670,11 +599,9 @@
                     </td>
                 </tr>`;
             });
-            
             const inStock = filteredInventory.filter(p => (p.stockCount || 0) > 5).length;
             const lowStock = filteredInventory.filter(p => (p.stockCount || 0) > 0 && (p.stockCount || 0) <= 5).length;
             const outOfStock = filteredInventory.filter(p => (p.stockCount || 0) <= 0).length;
-            
             html += `</tbody></table>
                 <div style="margin-top:16px; padding:12px; background:#f9fafb; border-radius:8px; display:flex; gap:24px; flex-wrap:wrap;">
                     <span>📦 <strong>${filteredInventory.length}</strong> products shown</span>
@@ -728,7 +655,7 @@
         }
 
         window.loadPage = loadPage;
-        console.log('✅ Admin dashboard with mobile sidebar fix!');
+        console.log('✅ Admin dashboard with delete orders!');
     </script>
 </body>
 </html>
