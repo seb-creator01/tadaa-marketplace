@@ -1,5 +1,5 @@
 // ============================================
-// TADAA! - CUSTOMER WEBSITE (WITH PRODUCT QUANTITY)
+// TADAA! - CUSTOMER WEBSITE (WITH QUANTITY LABEL & CHECKOUT FIX)
 // ============================================
 
 // ===== Firebase Config =====
@@ -257,7 +257,7 @@ function renderCategories() {
 }
 
 // ============================================
-// RENDER PRODUCTS - WITH QUANTITY CONTROLS BELOW
+// RENDER PRODUCTS - WITH QUANTITY LABEL
 // ============================================
 function renderProducts() {
     const productsDiv = document.getElementById('products-section');
@@ -321,9 +321,11 @@ function renderProducts() {
                     </div>
                     
                     ${inStock ? `
-                    <div style="display:flex; align-items:center; gap:6px; margin-top:4px;">
+                    <!-- QUANTITY LABEL -->
+                    <div style="font-size:11px; color:#6B7280; margin-top:4px; margin-bottom:2px;">Quantity</div>
+                    <div style="display:flex; align-items:center; gap:6px;">
                         <button onclick="event.stopPropagation(); updateProductQuantity('${product.id}', -1)" style="background:#f3f4f6; border:none; width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:16px; ${qty === 0 ? 'opacity:0.4; cursor:not-allowed;' : ''}" ${qty === 0 ? 'disabled' : ''}>−</button>
-                        <span style="font-weight:600; min-width:24px; text-align:center; font-size:15px;">${qty}</span>
+                        <span style="font-weight:600; min-width:24px; text-align:center; font-size:16px;">${qty}</span>
                         <button onclick="event.stopPropagation(); updateProductQuantity('${product.id}', 1)" style="background:#f3f4f6; border:none; width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:16px;">+</button>
                         <button onclick="event.stopPropagation(); addToCart('${product.id}')" style="flex:1; background:#FFD700; border:none; padding:6px 10px; border-radius:8px; font-weight:600; font-size:12px; cursor:pointer; transition:background 0.3s; white-space:nowrap;" onmouseover="this.style.background='#E6C200'" onmouseout="this.style.background='#FFD700'">
                             ${qty > 0 ? '🔄 Update' : 'Add +'}
@@ -340,7 +342,7 @@ function renderProducts() {
 }
 
 // ============================================
-// UPDATE PRODUCT QUANTITY (NEW FUNCTION)
+// UPDATE PRODUCT QUANTITY
 // ============================================
 function updateProductQuantity(productId, change) {
     const product = products.find(p => p.id === productId);
@@ -348,7 +350,6 @@ function updateProductQuantity(productId, change) {
     
     const existing = cart.find(item => item.id === productId);
     if (!existing) {
-        // If not in cart, add it
         addToCart(productId);
         return;
     }
@@ -707,4 +708,4 @@ document.addEventListener('DOMContentLoaded', () => {
     loadData();
 });
 
-console.log('✅ Tadaa! Website with product quantity controls ready!');
+console.log('✅ Tadaa! Website with quantity label ready!');
