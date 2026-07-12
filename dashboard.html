@@ -420,27 +420,27 @@
         }
 
         // ============================================
-        // INVENTORY - FIXED & COMPLETE
+        // INVENTORY - FULLY WORKING
         // ============================================
         let inventoryData = [];
         let filteredInventory = [];
 
         async function loadInventory() {
             pageContent.innerHTML = `
-                <div class="card">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
                         <h3 style="margin:0;">📊 Inventory Management</h3>
                         <span style="font-size:14px; color:#6B7280;">Total Products: <span id="totalInventoryCount">0</span></span>
                     </div>
-                    <div style="margin-bottom:16px; display:flex; gap:12px; flex-wrap:wrap;">
-                        <input type="text" id="inventorySearch" placeholder="Search products..." style="padding:8px 12px; border:2px solid #e5e7eb; border-radius:8px; flex:1; min-width:200px;" onkeyup="filterInventory()">
-                        <select id="stockFilter" onchange="filterInventory()" style="padding:8px 12px; border:2px solid #e5e7eb; border-radius:8px;">
+                    <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
+                        <input type="text" id="inventorySearch" placeholder="Search products..." style="padding:10px 14px; border:2px solid #e5e7eb; border-radius:10px; flex:1; min-width:180px; font-size:14px;" onkeyup="filterInventory()">
+                        <select id="stockFilter" onchange="filterInventory()" style="padding:10px 14px; border:2px solid #e5e7eb; border-radius:10px; font-size:14px;">
                             <option value="all">All Stock</option>
                             <option value="instock">In Stock</option>
                             <option value="lowstock">Low Stock (≤5)</option>
                             <option value="outofstock">Out of Stock</option>
                         </select>
-                        <button onclick="loadInventory()" style="padding:8px 16px; background:#FFD700; border:none; border-radius:8px; cursor:pointer; font-weight:600;">🔄 Refresh</button>
+                        <button onclick="loadInventory()" style="padding:10px 20px; background:#FFD700; border:none; border-radius:10px; cursor:pointer; font-weight:600;">🔄 Refresh</button>
                     </div>
                     <div id="inventoryList">Loading...</div>
                 </div>
@@ -457,8 +457,7 @@
                 document.getElementById('totalInventoryCount').textContent = inventoryData.length;
                 renderInventory();
             } catch (e) {
-                console.error(e);
-                document.getElementById('inventoryList').innerHTML = `<p style="color:red;">Error loading inventory: ${e.message}</p>`;
+                document.getElementById('inventoryList').innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
             }
         }
 
@@ -468,11 +467,10 @@
             filteredInventory = inventoryData.filter(product => {
                 const matchSearch = product.name?.toLowerCase().includes(search) || false;
                 const stock = product.stockCount || 0;
-                let matchStock = true;
-                if (stockFilter === 'instock') matchStock = stock > 5;
-                else if (stockFilter === 'lowstock') matchStock = stock > 0 && stock <= 5;
-                else if (stockFilter === 'outofstock') matchStock = stock <= 0;
-                return matchSearch && matchStock;
+                if (stockFilter === 'instock') return matchSearch && stock > 5;
+                if (stockFilter === 'lowstock') return matchSearch && stock > 0 && stock <= 5;
+                if (stockFilter === 'outofstock') return matchSearch && stock <= 0;
+                return matchSearch;
             });
             renderInventory();
         }
@@ -483,44 +481,48 @@
                 container.innerHTML = '<p style="color:#9CA3AF;">No products found.</p>';
                 return;
             }
-            let html = `<div style="overflow-x:auto;"><table style="width:100%;">
+            let html = `<div style="overflow-x:auto;"><table style="width:100%; border-collapse:collapse;">
                 <thead><tr style="background:#f3f4f6;">
-                    <th style="padding:10px; text-align:left;">Product</th>
-                    <th style="padding:10px; text-align:left;">Category</th>
-                    <th style="padding:10px; text-align:center;">Stock</th>
-                    <th style="padding:10px; text-align:center;">Status</th>
-                    <th style="padding:10px; text-align:center;">Actions</th>
+                    <th style="padding:12px; text-align:left; border-bottom:2px solid #e5e7eb;">Product</th>
+                    <th style="padding:12px; text-align:left; border-bottom:2px solid #e5e7eb;">Category</th>
+                    <th style="padding:12px; text-align:center; border-bottom:2px solid #e5e7eb;">Stock</th>
+                    <th style="padding:12px; text-align:center; border-bottom:2px solid #e5e7eb;">Status</th>
+                    <th style="padding:12px; text-align:center; border-bottom:2px solid #e5e7eb;">Actions</th>
                 </tr></thead><tbody>`;
             
             filteredInventory.forEach(product => {
                 const stock = product.stockCount || 0;
                 let statusText, statusColor;
-                if (stock <= 0) { statusText = 'Out of Stock'; statusColor = '#EF4444'; }
-                else if (stock <= 5) { statusText = 'Low Stock'; statusColor = '#F59E0B'; }
-                else { statusText = 'In Stock'; statusColor = '#10B981'; }
+                if (stock <= 0) { statusText = '❌ Out of Stock'; statusColor = '#EF4444'; }
+                else if (stock <= 5) { statusText = '⚠️ Low Stock'; statusColor = '#F59E0B'; }
+                else { statusText = '✅ In Stock'; statusColor = '#10B981'; }
                 
                 const imageUrl = product.images && product.images.length > 0 ? product.images[0] : '';
                 html += `<tr style="border-bottom:1px solid #f3f4f6;">
-                    <td style="padding:10px;"><div style="display:flex; align-items:center; gap:12px;">
+                    <td style="padding:12px;"><div style="display:flex; align-items:center; gap:12px;">
                         ${imageUrl ? `<img src="${imageUrl}" style="width:40px;height:40px;object-fit:cover;border-radius:8px;">` : '<span style="font-size:24px;">📷</span>'}
                         <strong>${product.name || 'Unnamed'}</strong>
                     </div></td>
-                    <td style="padding:10px;">${product.categoryName || 'Uncategorized'}</td>
-                    <td style="padding:10px; text-align:center; font-weight:600;">${stock}</td>
-                    <td style="padding:10px; text-align:center;"><span style="background:${statusColor}; color:white; padding:4px 12px; border-radius:50px; font-size:12px; font-weight:600;">${statusText}</span></td>
-                    <td style="padding:10px; text-align:center;">
-                        <button class="btn btn-primary btn-sm" onclick="updateStock('${product.id}')" style="margin-right:4px;">✏️ Update</button>
-                        <button class="btn btn-secondary btn-sm" onclick="viewProductStock('${product.id}')">📊 View</button>
+                    <td style="padding:12px;">${product.categoryName || 'Uncategorized'}</td>
+                    <td style="padding:12px; text-align:center; font-weight:600; font-size:18px;">${stock}</td>
+                    <td style="padding:12px; text-align:center;"><span style="background:${statusColor}; color:white; padding:4px 14px; border-radius:50px; font-size:13px; font-weight:600;">${statusText}</span></td>
+                    <td style="padding:12px; text-align:center;">
+                        <button onclick="updateStock('${product.id}')" style="background:#FFD700; color:#000; border:none; padding:6px 16px; border-radius:8px; cursor:pointer; font-weight:600; margin-right:4px;">✏️ Update</button>
+                        <button onclick="viewProductStock('${product.id}')" style="background:#e5e7eb; color:#000; border:none; padding:6px 16px; border-radius:8px; cursor:pointer;">📊 View</button>
                     </td>
                 </tr>`;
             });
             
+            const inStock = filteredInventory.filter(p => (p.stockCount || 0) > 5).length;
+            const lowStock = filteredInventory.filter(p => (p.stockCount || 0) > 0 && (p.stockCount || 0) <= 5).length;
+            const outOfStock = filteredInventory.filter(p => (p.stockCount || 0) <= 0).length;
+            
             html += `</tbody></table>
-                <div class="inventory-summary">
+                <div style="margin-top:16px; padding:12px; background:#f9fafb; border-radius:8px; display:flex; gap:24px; flex-wrap:wrap;">
                     <span>📦 <strong>${filteredInventory.length}</strong> products shown</span>
-                    <span>✅ <strong style="color:#10B981;">${filteredInventory.filter(p => (p.stockCount || 0) > 5).length}</strong> In Stock</span>
-                    <span>⚠️ <strong style="color:#F59E0B;">${filteredInventory.filter(p => (p.stockCount || 0) > 0 && (p.stockCount || 0) <= 5).length}</strong> Low Stock</span>
-                    <span>❌ <strong style="color:#EF4444;">${filteredInventory.filter(p => (p.stockCount || 0) <= 0).length}</strong> Out of Stock</span>
+                    <span>✅ <strong style="color:#10B981;">${inStock}</strong> In Stock</span>
+                    <span>⚠️ <strong style="color:#F59E0B;">${lowStock}</strong> Low Stock</span>
+                    <span>❌ <strong style="color:#EF4444;">${outOfStock}</strong> Out of Stock</span>
                 </div>
             </div>`;
             container.innerHTML = html;
@@ -530,7 +532,7 @@
             const product = inventoryData.find(p => p.id === productId);
             if (!product) { alert('Product not found!'); return; }
             const currentStock = product.stockCount || 0;
-            const newStock = prompt(`Current stock: ${currentStock}\nEnter new stock count:`, currentStock);
+            const newStock = prompt(`Current stock for "${product.name}": ${currentStock}\nEnter new stock count:`, currentStock);
             if (newStock === null) return;
             const stock = parseInt(newStock);
             if (isNaN(stock) || stock < 0) { alert('Please enter a valid number (0 or more).'); return; }
@@ -542,7 +544,7 @@
                 });
                 alert(`✅ Stock updated! ${product.name} now has ${stock} units.`);
                 loadInventory();
-            } catch (e) { alert('❌ Error updating stock: ' + e.message); }
+            } catch (e) { alert('❌ Error: ' + e.message); }
         };
 
         window.viewProductStock = function(productId) {
@@ -550,7 +552,7 @@
             if (!product) { alert('Product not found!'); return; }
             const stock = product.stockCount || 0;
             let status = stock <= 0 ? 'Out of Stock' : stock <= 5 ? 'Low Stock' : 'In Stock';
-            alert(`📊 ${product.name}\n\nStock: ${stock} units\nStatus: ${status}\nCategory: ${product.categoryName || 'Uncategorized'}\nPrice: ₦${product.price?.toLocaleString() || 0}\n\nClick "Update" to change stock.`);
+            alert(`📊 ${product.name}\n\nStock: ${stock} units\nStatus: ${status}\nCategory: ${product.categoryName || 'Uncategorized'}\nPrice: ₦${product.price?.toLocaleString() || 0}`);
         };
 
         window.filterInventory = filterInventory;
@@ -568,7 +570,7 @@
         }
 
         window.loadPage = loadPage;
-        console.log('✅ Admin dashboard with inventory management loaded!');
+        console.log('✅ Admin dashboard loaded!');
     </script>
 </body>
 </html>
