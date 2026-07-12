@@ -522,35 +522,60 @@
         // PAYMENTS
         // ============================================
         async function loadPayments() {
-            pageContent.innerHTML = `
-                <div class="card">
-                    <h3 style="margin-bottom:16px;">💳 Payment History</h3>
-                    <div id="paymentsList">Loading...</div>
-                </div>
-            `;
-            try {
-                const snap = await db.collection('orders').where('payment.status', 'in', ['paid', 'pending', 'failed']).orderBy('createdAt', 'desc').get();
-                const container = document.getElementById('paymentsList');
-                if (snap.empty) { container.innerHTML = '<p style="color:#9CA3AF;">No payments yet.</p>'; return; }
-                let html = '<table><tr><th>Order ID</th><th>Customer</th><th>Amount</th><th>Payment Status</th><th>Transaction Ref</th><th>Payment Date</th><th>Order Status</th></tr>';
-                snap.forEach(doc => {
-                    const data = doc.data();
-                    const payStatus = data.payment?.status || 'pending';
-                    const payColor = payStatus === 'paid' ? '#10B981' : payStatus === 'failed' ? '#EF4444' : '#F59E0B';
-                    html += `<tr>
-                        <td><strong>${data.orderId || 'N/A'}</strong></td>
-                        <td>${data.customer?.fullName || 'Unknown'}</td>
-                        <td>₦${data.totals?.grandTotal?.toLocaleString() || 0}</td>
-                        <td><span class="badge" style="background:${payColor}">${payStatus}</span></td>
-                        <td>${data.payment?.transactionRef || '-'}</td>
-                        <td>${data.payment?.paidAt ? new Date(data.payment.paidAt).toLocaleDateString() : '-'}</td>
-                        <td>${data.status || 'pending'}</td>
-                    </tr>`;
-                });
-                html += '</table>';
-                container.innerHTML = html;
-            } catch (e) { console.error(e); }
+    pageContent.innerHTML = `
+        <div class="card">
+            <h3 style="margin-bottom:16px;">💳 Payment History</h3>
+            <div id="paymentsList">Loading...</div>
+        </div>
+    `;
+    try {
+        // Get ALL orders (don't filter by payment status)
+        const snap = await db.collection('orders').orderBy('createdAt', 'desc').get();
+        const container = document.getElementById('paymentsList');
+        
+        if (snap.empty) {
+            container.innerHTML = '<p style="color:#9CA3AF;">No orders found.</p>';
+            return;
         }
+        
+        let html = `<table style="width:100%; border-collapse:collapse;">
+            <thead>
+                <tr style="background:#f3f4f6;">
+                    <th style="padding:10px; text-align:left;">Order ID</th>
+                    <th style="padding:10px; text-align:left;">Customer</th>
+                    <th style="padding:10px; text-align:right;">Amount</th>
+                    <th style="padding:10px; text-align:center;">Payment Status</th>
+                    <th style="padding:10px; text-align:center;">Order Status</th>
+                </tr>
+            </thead>
+            <tbody>`;
+        
+        snap.forEach(doc => {
+            const data = doc.data();
+            const payStatus = data.payment?.status || 'pending';
+            let payColor = '#F59E0B';
+            if (payStatus === 'paid') payColor = '#10B981';
+            else if (payStatus === 'failed') payColor = '#EF4444';
+            
+            html += `<tr style="border-bottom:1px solid #e5e7eb;">
+                <td style="padding:10px;"><strong>${data.orderId || 'N/A'}</strong></td>
+                <td style="padding:10px;">${data.customer?.fullName || 'Unknown'}</td>
+                <td style="padding:10px; text-align:right;">₦${data.totals?.grandTotal?.toLocaleString() || 0}</td>
+                <td style="padding:10px; text-align:center;">
+                    <span style="background:${payColor}; color:white; padding:4px 12px; border-radius:50px; font-size:12px; font-weight:600;">${payStatus}</span>
+                </td>
+                <td style="padding:10px; text-align:center;">${data.status || 'pending'}</td>
+            </tr>`;
+        });
+        
+        html += '</tbody></table>';
+        container.innerHTML = html;
+        
+    } catch (e) {
+        console.error('Error loading payments:', e);
+        document.getElementById('paymentsList').innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
+    }
+}
 
         // ============================================
         // INVENTORY
