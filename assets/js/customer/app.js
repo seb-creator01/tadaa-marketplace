@@ -1,5 +1,5 @@
 // ============================================
-// TADAA! - CUSTOMER WEBSITE (WITH CHECKOUT PAGE)
+// TADAA! - CUSTOMER WEBSITE WITH MAINTENANCE MODE
 // ============================================
 
 // ===== Firebase Config =====
@@ -68,6 +68,35 @@ async function loadData() {
         const settingsDoc = await db.collection('siteSettings').doc('settings').get();
         settings = settingsDoc.data() || {};
         window.tadaaSettings = settings;
+        window.tadaaDb = db;
+        
+        // ============================================
+        // CHECK MAINTENANCE MODE
+        // ============================================
+        if (settings.maintenanceMode === true) {
+            const mainContent = document.getElementById('main-content');
+            if (mainContent) {
+                mainContent.innerHTML = `
+                    <div style="max-width:600px; margin:60px auto; padding:40px; text-align:center;">
+                        <div style="background:#FEF3C7; color:#92400E; padding:60px 40px; border-radius:24px; box-shadow:0 8px 32px rgba(0,0,0,0.1);">
+                            <p style="font-size:64px; margin:0 0 16px;">🔧</p>
+                            <h1 style="font-family:'Cormorant Garamond', serif; font-size:32px; color:#92400E; margin:0 0 8px;">Store Under Maintenance</h1>
+                            <p style="color:#92400E; font-size:18px;">We're currently updating our store. Please check back soon!</p>
+                            <p style="color:#6B7280; margin-top:12px;">🕐 ${settings.businessHours || 'Mon-Fri: 9am - 6pm'}</p>
+                            <p style="color:#9CA3AF; margin-top:12px; font-size:14px;">Contact us: ${settings.storeEmail || 'support@tadaa.com'}</p>
+                        </div>
+                    </div>
+                `;
+                // Hide header and footer when in maintenance mode
+                if (mainHeader) mainHeader.style.display = 'none';
+                if (mainFooter) mainFooter.style.display = 'none';
+                return; // Stop loading the rest of the page
+            }
+        }
+        
+        // Show header and footer if they were hidden
+        if (mainHeader) mainHeader.style.display = 'block';
+        if (mainFooter) mainFooter.style.display = 'block';
         
         const categoriesSnap = await db.collection('categories').orderBy('order', 'asc').get();
         categories = [];
@@ -469,10 +498,12 @@ function renderCartSidebar() {
     }
     
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const deliveryFee = settings.deliveryFee || 500;
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const perItemDelivery = settings.deliveryFee || 100;
     const freeThreshold = settings.freeDeliveryThreshold || 5000;
-    const isFreeDelivery = freeThreshold > 0 && subtotal >= freeThreshold;
-    const deliveryCharge = isFreeDelivery ? 0 : deliveryFee;
+    const freeDeliveryEnabled = settings.freeDeliveryEnabled || false;
+    const isFreeDelivery = freeDeliveryEnabled && freeThreshold > 0 && subtotal >= freeThreshold;
+    const deliveryCharge = isFreeDelivery ? 0 : (perItemDelivery * totalItems);
     const total = subtotal + deliveryCharge;
     const remainingForFree = freeThreshold - subtotal;
     
@@ -486,6 +517,7 @@ function renderCartSidebar() {
         </div>
         <div style="flex:1; overflow-y:auto; padding:16px 20px;">
     `;
+    
     cart.forEach(item => {
         const itemTotal = item.price * item.quantity;
         const imageUrl = item.images && item.images.length > 0 ? item.images[0] : '';
@@ -508,6 +540,7 @@ function renderCartSidebar() {
             </div>
         `;
     });
+    
     cartHtml += `
         </div>
         <div style="padding:16px 20px; border-top:2px solid #e5e7eb; flex-shrink:0; background:#f9fafb; border-radius:0 0 16px 16px;">
@@ -517,10 +550,10 @@ function renderCartSidebar() {
             </div>
             <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
                 <span style="color:#6B7280;">Delivery</span>
-                <span style="font-weight:600;">${isFreeDelivery ? '🎉 FREE' : `₦${deliveryFee.toLocaleString()}`}</span>
+                <span style="font-weight:600;">${isFreeDelivery ? '🎉 FREE' : `₦${deliveryCharge.toLocaleString()}`}</span>
             </div>
             ${isFreeDelivery ? `<div style="background:#D1FAE5; color:#065F46; padding:8px 12px; border-radius:8px; margin-bottom:8px; text-align:center; font-size:14px; font-weight:600;">🎉 You qualify for FREE delivery!</div>` : ''}
-            ${!isFreeDelivery && remainingForFree > 0 ? `<div style="background:#FEF3C7; color:#92400E; padding:8px 12px; border-radius:8px; margin-bottom:8px; text-align:center; font-size:13px;">Add ₦${remainingForFree.toLocaleString()} more for FREE delivery</div>` : ''}
+            ${!isFreeDelivery && freeDeliveryEnabled && remainingForFree > 0 ? `<div style="background:#FEF3C7; color:#92400E; padding:8px 12px; border-radius:8px; margin-bottom:8px; text-align:center; font-size:13px;">Add ₦${remainingForFree.toLocaleString()} more for FREE delivery</div>` : ''}
             <div style="display:flex; justify-content:space-between; font-size:18px; font-weight:700; border-top:2px solid #e5e7eb; padding-top:12px; margin-top:8px;">
                 <span>Total</span>
                 <span style="color:#FFD700; font-size:22px;">₦${total.toLocaleString()}</span>
@@ -560,7 +593,6 @@ function checkout() {
         return;
     }
     toggleCartSidebar();
-    // Go to the checkout page
     window.location.href = '/tadaa-marketplace/checkout.html';
 }
 
@@ -622,4 +654,4 @@ document.addEventListener('DOMContentLoaded', () => {
     loadData();
 });
 
-console.log('✅ Tadaa! Website ready!');
+console.log('✅ Tadaa! Website with maintenance mode ready!');
