@@ -9,6 +9,23 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <style>
+        .order-details { background: #f9fafb; padding: 16px; border-radius: 12px; margin-top: 12px; }
+        .order-details table { width: 100%; }
+        .order-details th, .order-details td { padding: 8px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        .status-btn { padding: 4px 12px; border: none; border-radius: 50px; cursor: pointer; font-size: 12px; font-weight: 600; }
+        .status-pending { background: #F59E0B; color: #fff; }
+        .status-processing { background: #3B82F6; color: #fff; }
+        .status-shipped { background: #8B5CF6; color: #fff; }
+        .status-delivered { background: #10B981; color: #fff; }
+        .status-cancelled { background: #EF4444; color: #fff; }
+        .filter-bar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+        .filter-bar select, .filter-bar input { padding: 8px 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; }
+        .filter-bar button { padding: 8px 16px; background: #FFD700; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .order-row { cursor: pointer; }
+        .order-row:hover { background: #f3f4f6; }
+        .badge { padding: 2px 12px; border-radius: 50px; font-size: 12px; font-weight: 600; color: #fff; }
+    </style>
 </head>
 <body>
     <div class="admin-wrapper">
@@ -22,9 +39,9 @@
                 <li><a href="#" onclick="loadPage('categories')">📂 Categories</a></li>
                 <li><a href="#" onclick="loadPage('products')">📦 Products</a></li>
                 <li><a href="#" onclick="loadPage('orders')">📋 Orders</a></li>
+                <li><a href="#" onclick="loadPage('payments')">💳 Payments</a></li>
                 <li><a href="#" onclick="loadPage('inventory')">📊 Inventory</a></li>
                 <li><a href="#" onclick="loadPage('settings')">⚙️ Settings</a></li>
-                <li><a href="#" onclick="loadPage('payments')">💳 Payments</a></li>
                 <li class="logout-link"><a href="#" id="logoutBtn">🚪 Logout</a></li>
             </ul>
         </aside>
@@ -43,9 +60,6 @@
     </div>
 
     <script>
-        // ============================================
-        // FIREBASE SETUP
-        // ============================================
         const firebaseConfig = {
             apiKey: "AIzaSyDCXnlAqyt2512HlvBOsSfMZ6O-xg0c94Y",
             authDomain: "tadaa-marketplace.firebaseapp.com",
@@ -59,227 +73,97 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        console.log('🔥 Dashboard loaded');
-
-        // ============================================
-        // DOM ELEMENTS
-        // ============================================
         const pageContent = document.getElementById('pageContent');
         const pageTitle = document.getElementById('pageTitle');
         const adminEmailDisplay = document.getElementById('adminEmailDisplay');
         const logoutBtn = document.getElementById('logoutBtn');
 
-        // ============================================
-        // AUTH CHECK
-        // ============================================
+        let allOrders = [];
+        let filteredOrders = [];
+
         auth.onAuthStateChanged((user) => {
-            if (!user) {
-                window.location.href = '/tadaa-marketplace/admin.html';
-                return;
-            }
-            if (adminEmailDisplay) {
-                adminEmailDisplay.textContent = user.email;
-            }
+            if (!user) { window.location.href = '/tadaa-marketplace/admin.html'; return; }
+            adminEmailDisplay.textContent = user.email;
             loadPage('dashboard');
         });
 
-        // ============================================
-        // LOGOUT
-        // ============================================
         if (logoutBtn) {
             logoutBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                auth.signOut().then(() => {
-                    window.location.href = '/tadaa-marketplace/admin.html';
-                });
+                auth.signOut().then(() => { window.location.href = '/tadaa-marketplace/admin.html'; });
             });
         }
 
-        // ============================================
-        // PAGE LOADER
-        // ============================================
         function loadPage(page) {
-            console.log('📄 Loading page:', page);
             pageTitle.textContent = page.charAt(0).toUpperCase() + page.slice(1);
-            
             document.querySelectorAll('.admin-sidebar-nav a').forEach(l => l.classList.remove('active'));
             document.querySelectorAll('.admin-sidebar-nav a').forEach(l => {
-                if (l.textContent.toLowerCase().includes(page)) {
-                    l.classList.add('active');
-                }
+                if (l.textContent.toLowerCase().includes(page)) { l.classList.add('active'); }
             });
-
             switch(page) {
                 case 'dashboard': loadDashboard(); break;
                 case 'categories': loadCategories(); break;
                 case 'products': loadProducts(); break;
                 case 'orders': loadOrders(); break;
+                case 'payments': loadPayments(); break;
                 case 'inventory': loadInventory(); break;
                 case 'settings': loadSettings(); break;
-                case 'payments': loadPayments(); break;
                 default: loadDashboard();
             }
         }
 
         // ============================================
-        // DASHBOARD - FIXED: Counts only PAID orders
+        // DASHBOARD
         // ============================================
         async function loadDashboard() {
             pageContent.innerHTML = `
                 <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon">📦</div>
-                        <div class="stat-label">Total Products</div>
-                        <div class="stat-number" id="totalProducts">...</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">📂</div>
-                        <div class="stat-label">Categories</div>
-                        <div class="stat-number" id="totalCategories">...</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">📋</div>
-                        <div class="stat-label">Total Orders</div>
-                        <div class="stat-number" id="totalOrders">...</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">💰</div>
-                        <div class="stat-label">Total Sales</div>
-                        <div class="stat-number" id="totalSales">₦0</div>
-                    </div>
+                    <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-label">Products</div><div class="stat-number" id="totalProducts">...</div></div>
+                    <div class="stat-card"><div class="stat-icon">📂</div><div class="stat-label">Categories</div><div class="stat-number" id="totalCategories">...</div></div>
+                    <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-label">Orders</div><div class="stat-number" id="totalOrders">...</div></div>
+                    <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-label">Paid Orders</div><div class="stat-number" id="totalSales">...</div></div>
                 </div>
-                <div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
-                    <h3 style="font-family: 'Cormorant Garamond', serif; margin-bottom: 12px;">📋 Recent Orders</h3>
-                    <div id="recentOrders">Loading...</div>
-                </div>
+                <div class="card"><h3>📋 Recent Orders</h3><div id="recentOrders">Loading...</div></div>
             `;
-
             try {
-                // Get all orders count
-                const allOrdersSnap = await db.collection('orders').get();
-                document.getElementById('totalOrders').textContent = allOrdersSnap.size;
+                const products = await db.collection('products').get();
+                const categories = await db.collection('categories').get();
+                const orders = await db.collection('orders').get();
+                const paid = await db.collection('orders').where('payment.status', '==', 'paid').get();
+                document.getElementById('totalProducts').textContent = products.size;
+                document.getElementById('totalCategories').textContent = categories.size;
+                document.getElementById('totalOrders').textContent = orders.size;
+                document.getElementById('totalSales').textContent = paid.size;
 
-                // Get paid orders count
-                const paidOrdersSnap = await db.collection('orders').where('payment.status', '==', 'paid').get();
-                document.getElementById('totalSales').textContent = paidOrdersSnap.size;
-
-                // Get products count
-                const productsSnap = await db.collection('products').get();
-                document.getElementById('totalProducts').textContent = productsSnap.size;
-
-                // Get categories count
-                const categoriesSnap = await db.collection('categories').get();
-                document.getElementById('totalCategories').textContent = categoriesSnap.size;
-
-                // Recent orders - show only paid or pending
-                const recentSnap = await db.collection('orders')
-                    .orderBy('createdAt', 'desc')
-                    .limit(10)
-                    .get();
-
+                const recent = await db.collection('orders').orderBy('createdAt', 'desc').limit(10).get();
                 const container = document.getElementById('recentOrders');
-                if (recentSnap.empty) {
-                    container.innerHTML = '<p style="color:#9CA3AF;">No orders yet.</p>';
-                } else {
-                    let html = `<table class="admin-table"><thead><tr>
-                        <th>Order ID</th>
-                        <th>Customer</th>
-                        <th>Total</th>
-                        <th>Payment Status</th>
-                        <th>Order Status</th>
-                    </tr></thead><tbody>`;
-                    
-                    recentSnap.forEach(doc => {
-                        const data = doc.data();
-                        const payStatus = data.payment?.status || 'pending';
-                        const payColor = payStatus === 'paid' ? '#10B981' : payStatus === 'failed' ? '#EF4444' : '#F59E0B';
-                        const orderStatus = data.status || 'pending';
-                        const orderColor = orderStatus === 'delivered' ? '#10B981' : orderStatus === 'cancelled' ? '#EF4444' : '#3B82F6';
-                        
-                        html += `<tr>
-                            <td><strong>${data.orderId || 'N/A'}</strong></td>
-                            <td>${data.customer?.fullName || 'Unknown'}</td>
-                            <td>₦${data.totals?.grandTotal?.toLocaleString() || 0}</td>
-                            <td><span style="background:${payColor}; color:white; padding:2px 12px; border-radius:50px; font-size:12px;">${payStatus}</span></td>
-                            <td><span style="background:${orderColor}; color:white; padding:2px 12px; border-radius:50px; font-size:12px;">${orderStatus}</span></td>
-                        </tr>`;
-                    });
-                    html += `</tbody></table>`;
-                    container.innerHTML = html;
-                }
-
-            } catch (error) {
-                console.error('Error loading dashboard:', error);
-                pageContent.innerHTML += `<p style="color:#EF4444;">Error: ${error.message}</p>`;
-            }
-        }
-
-        // ============================================
-        // PAYMENTS - Payment History
-        // ============================================
-        async function loadPayments() {
-            pageContent.innerHTML = `
-                <div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
-                    <h3 style="font-family: 'Cormorant Garamond', serif; margin-bottom: 20px;">💳 Payment History</h3>
-                    <div id="paymentsList">Loading...</div>
-                </div>
-            `;
-
-            try {
-                const snap = await db.collection('orders')
-                    .where('payment.status', 'in', ['paid', 'pending', 'failed'])
-                    .orderBy('createdAt', 'desc')
-                    .get();
-
-                const container = document.getElementById('paymentsList');
-                if (snap.empty) {
-                    container.innerHTML = '<p style="color:#9CA3AF;">No payments yet.</p>';
-                    return;
-                }
-
-                let html = `<table class="admin-table"><thead><tr>
-                    <th>Order ID</th>
-                    <th>Customer</th>
-                    <th>Amount</th>
-                    <th>Payment Status</th>
-                    <th>Transaction Ref</th>
-                    <th>Payment Date</th>
-                    <th>Order Status</th>
-                </tr></thead><tbody>`;
-
-                snap.forEach(doc => {
-                    const data = doc.data();
-                    const payStatus = data.payment?.status || 'pending';
-                    const payColor = payStatus === 'paid' ? '#10B981' : payStatus === 'failed' ? '#EF4444' : '#F59E0B';
-                    
+                if (recent.empty) { container.innerHTML = '<p>No orders yet.</p>'; return; }
+                let html = `<table><tr><th>Order</th><th>Customer</th><th>Total</th><th>Payment</th><th>Status</th></tr>`;
+                recent.forEach(d => {
+                    const data = d.data();
+                    const payColor = data.payment?.status === 'paid' ? '#10B981' : '#F59E0B';
                     html += `<tr>
                         <td><strong>${data.orderId || 'N/A'}</strong></td>
                         <td>${data.customer?.fullName || 'Unknown'}</td>
                         <td>₦${data.totals?.grandTotal?.toLocaleString() || 0}</td>
-                        <td><span style="background:${payColor}; color:white; padding:2px 12px; border-radius:50px; font-size:12px;">${payStatus}</span></td>
-                        <td>${data.payment?.transactionRef || '-'}</td>
-                        <td>${data.payment?.paidAt ? new Date(data.payment.paidAt).toLocaleDateString() : '-'}</td>
-                        <td>${data.status || 'pending'}</td>
+                        <td><span class="badge" style="background:${payColor}">${data.payment?.status || 'pending'}</span></td>
+                        <td><span class="badge" style="background:${data.status === 'delivered' ? '#10B981' : '#3B82F6'}">${data.status || 'pending'}</span></td>
                     </tr>`;
                 });
-                html += `</tbody></table>`;
+                html += '</table>';
                 container.innerHTML = html;
-
-            } catch (error) {
-                console.error('Error loading payments:', error);
-                document.getElementById('paymentsList').innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
-            }
+            } catch (e) { console.error(e); }
         }
 
         // ============================================
-        // OTHER PAGE FUNCTIONS
+        // CATEGORIES
         // ============================================
         async function loadCategories() {
             pageContent.innerHTML = `
-                <div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                        <h3 style="font-family: 'Cormorant Garamond', serif; margin:0;">📂 Categories</h3>
-                        <button class="btn btn-primary btn-sm" onclick="showAddCategory()">+ Add Category</button>
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                        <h3>📂 Categories</h3>
+                        <button class="btn btn-primary" onclick="showAddCategory()">+ Add Category</button>
                     </div>
                     <div id="categoriesList">Loading...</div>
                 </div>
@@ -287,25 +171,20 @@
             try {
                 const snap = await db.collection('categories').orderBy('order', 'asc').get();
                 const container = document.getElementById('categoriesList');
-                if (snap.empty) {
-                    container.innerHTML = '<p style="color:#9CA3AF;">No categories yet.</p>';
-                    return;
-                }
-                let html = `<table class="admin-table"><thead><tr><th>Name</th><th>Slug</th><th>Order</th><th>Featured</th><th>Actions</th></tr></thead><tbody>`;
+                if (snap.empty) { container.innerHTML = '<p>No categories yet.</p>'; return; }
+                let html = '<table><tr><th>Name</th><th>Slug</th><th>Actions</th></tr>';
                 snap.forEach(doc => {
                     const data = doc.data();
                     html += `<tr>
                         <td><strong>${data.name}</strong></td>
                         <td>${data.slug || '-'}</td>
-                        <td>${data.order || 0}</td>
-                        <td>${data.featured ? '✅' : '❌'}</td>
                         <td>
                             <button class="btn btn-warning btn-sm" onclick="editCategory('${doc.id}')">✏️</button>
                             <button class="btn btn-danger btn-sm" onclick="deleteCategory('${doc.id}')">🗑️</button>
                         </td>
                     </tr>`;
                 });
-                html += `</tbody></table>`;
+                html += '</table>';
                 container.innerHTML = html;
             } catch (e) { console.error(e); }
         }
@@ -315,10 +194,7 @@
             container.innerHTML = `
                 <div style="background:#f9fafb; padding:16px; border-radius:8px; margin-top:12px;">
                     <h4>Add New Category</h4>
-                    <div class="form-group">
-                        <label>Category Name</label>
-                        <input type="text" id="catName" placeholder="e.g., Electronics">
-                    </div>
+                    <div class="form-group"><label>Category Name</label><input type="text" id="catName" placeholder="e.g., Electronics"></div>
                     <button class="btn btn-primary" onclick="saveCategory()">Save</button>
                     <button class="btn" style="background:#e5e7eb;" onclick="loadCategories()">Cancel</button>
                 </div>
@@ -329,25 +205,15 @@
             const name = document.getElementById('catName').value.trim();
             if (!name) { alert('Name is required!'); return; }
             try {
-                await db.collection('categories').add({
-                    name: name,
-                    slug: name.toLowerCase().replace(/ /g, '-'),
-                    order: 0,
-                    featured: false,
-                    createdAt: new Date().toISOString()
-                });
-                alert('✅ Category added!');
-                loadCategories();
+                await db.collection('categories').add({ name, slug: name.toLowerCase().replace(/ /g, '-'), order: 0, featured: false, createdAt: new Date().toISOString() });
+                alert('✅ Category added!'); loadCategories();
             } catch (e) { alert('Error: ' + e.message); }
         };
 
         window.deleteCategory = async function(id) {
             if (confirm('Delete this category?')) {
-                try {
-                    await db.collection('categories').doc(id).delete();
-                    alert('✅ Deleted!');
-                    loadCategories();
-                } catch (e) { alert('Error: ' + e.message); }
+                try { await db.collection('categories').doc(id).delete(); alert('✅ Deleted!'); loadCategories(); } 
+                catch (e) { alert('Error: ' + e.message); }
             }
         };
 
@@ -355,22 +221,21 @@
             const newName = prompt('Enter new category name:');
             if (newName && newName.trim()) {
                 try {
-                    await db.collection('categories').doc(id).update({
-                        name: newName.trim(),
-                        slug: newName.trim().toLowerCase().replace(/ /g, '-')
-                    });
-                    alert('✅ Updated!');
-                    loadCategories();
+                    await db.collection('categories').doc(id).update({ name: newName.trim(), slug: newName.trim().toLowerCase().replace(/ /g, '-') });
+                    alert('✅ Updated!'); loadCategories();
                 } catch (e) { alert('Error: ' + e.message); }
             }
         };
 
+        // ============================================
+        // PRODUCTS
+        // ============================================
         async function loadProducts() {
             pageContent.innerHTML = `
-                <div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                        <h3 style="font-family: 'Cormorant Garamond', serif; margin:0;">📦 Products</h3>
-                        <button class="btn btn-primary btn-sm" onclick="alert('Add product in admin-dashboard.html')">+ Add Product</button>
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                        <h3>📦 Products</h3>
+                        <button class="btn btn-primary" onclick="alert('Add product in admin-dashboard.html')">+ Add Product</button>
                     </div>
                     <div id="productsList">Loading...</div>
                 </div>
@@ -378,11 +243,8 @@
             try {
                 const snap = await db.collection('products').orderBy('createdAt', 'desc').get();
                 const container = document.getElementById('productsList');
-                if (snap.empty) {
-                    container.innerHTML = '<p style="color:#9CA3AF;">No products yet.</p>';
-                    return;
-                }
-                let html = `<table class="admin-table"><thead><tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead><tbody>`;
+                if (snap.empty) { container.innerHTML = '<p>No products yet.</p>'; return; }
+                let html = '<table><tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Actions</th></tr>';
                 snap.forEach(doc => {
                     const data = doc.data();
                     const img = data.images && data.images.length > 0 ? data.images[0] : '';
@@ -392,71 +254,289 @@
                         <td>${data.categoryName || 'Uncategorized'}</td>
                         <td>₦${data.price?.toLocaleString() || 0}</td>
                         <td>${data.inStock ? '✅ In Stock' : '❌ Out of Stock'}</td>
-                        <td>
-                            <button class="btn btn-warning btn-sm">✏️</button>
-                            <button class="btn btn-danger btn-sm">🗑️</button>
-                        </td>
+                        <td><button class="btn btn-warning btn-sm">✏️</button><button class="btn btn-danger btn-sm">🗑️</button></td>
                     </tr>`;
                 });
-                html += `</tbody></table>`;
+                html += '</table>';
                 container.innerHTML = html;
             } catch (e) { console.error(e); }
         }
 
+        // ============================================
+        // ORDERS - FULL MANAGEMENT
+        // ============================================
         async function loadOrders() {
             pageContent.innerHTML = `
-                <div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
-                    <h3 style="font-family: 'Cormorant Garamond', serif; margin-bottom:20px;">📋 All Orders</h3>
+                <div class="card">
+                    <h3 style="margin-bottom:16px;">📋 Order Management</h3>
+                    <div class="filter-bar">
+                        <input type="text" id="orderSearch" placeholder="Search by Order ID..." onkeyup="filterOrders()">
+                        <select id="statusFilter" onchange="filterOrders()">
+                            <option value="all">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="processing">Processing</option>
+                            <option value="shipped">Shipped</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                        <select id="paymentFilter" onchange="filterOrders()">
+                            <option value="all">All Payment</option>
+                            <option value="pending">Pending</option>
+                            <option value="paid">Paid</option>
+                            <option value="failed">Failed</option>
+                        </select>
+                        <button onclick="loadOrders()">🔄 Refresh</button>
+                    </div>
                     <div id="ordersList">Loading...</div>
                 </div>
             `;
+            await fetchOrders();
+        }
+
+        async function fetchOrders() {
             try {
                 const snap = await db.collection('orders').orderBy('createdAt', 'desc').get();
-                const container = document.getElementById('ordersList');
-                if (snap.empty) {
-                    container.innerHTML = '<p style="color:#9CA3AF;">No orders yet.</p>';
-                    return;
-                }
-                let html = `<table class="admin-table"><thead><tr><th>Order ID</th><th>Customer</th><th>Total</th><th>Payment</th><th>Status</th></tr></thead><tbody>`;
+                allOrders = [];
+                snap.forEach(doc => {
+                    allOrders.push({ id: doc.id, ...doc.data() });
+                });
+                filteredOrders = [...allOrders];
+                renderOrders();
+            } catch (e) {
+                console.error(e);
+                document.getElementById('ordersList').innerHTML = `<p style="color:red;">Error loading orders: ${e.message}</p>`;
+            }
+        }
+
+        function filterOrders() {
+            const search = document.getElementById('orderSearch').value.toLowerCase();
+            const status = document.getElementById('statusFilter').value;
+            const payment = document.getElementById('paymentFilter').value;
+            
+            filteredOrders = allOrders.filter(order => {
+                const matchSearch = order.orderId?.toLowerCase().includes(search) || false;
+                const matchStatus = status === 'all' || order.status === status;
+                const matchPayment = payment === 'all' || order.payment?.status === payment;
+                return matchSearch && matchStatus && matchPayment;
+            });
+            renderOrders();
+        }
+
+        function renderOrders() {
+            const container = document.getElementById('ordersList');
+            if (filteredOrders.length === 0) {
+                container.innerHTML = '<p style="color:#9CA3AF;">No orders found.</p>';
+                return;
+            }
+
+            let html = `<table>
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Items</th>
+                        <th>Total</th>
+                        <th>Payment</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+            
+            filteredOrders.forEach(order => {
+                const payStatus = order.payment?.status || 'pending';
+                const payColor = payStatus === 'paid' ? '#10B981' : payStatus === 'failed' ? '#EF4444' : '#F59E0B';
+                const orderStatus = order.status || 'pending';
+                const statusClass = `status-${orderStatus}`;
+                const itemCount = order.items?.length || 0;
+                
+                html += `
+                    <tr class="order-row" onclick="toggleOrderDetails('${order.id}')">
+                        <td><strong>${order.orderId || 'N/A'}</strong></td>
+                        <td>${order.customer?.fullName || 'Unknown'}<br><small style="color:#6B7280;">${order.customer?.phoneNumber || ''}</small></td>
+                        <td>${itemCount} items</td>
+                        <td>₦${order.totals?.grandTotal?.toLocaleString() || 0}</td>
+                        <td><span class="badge" style="background:${payColor}">${payStatus}</span></td>
+                        <td><span class="badge status-${orderStatus}">${orderStatus}</span></td>
+                        <td>
+                            <select onchange="updateOrderStatus('${order.id}', this.value)" style="padding:4px 8px; border-radius:6px; border:1px solid #e5e7eb;">
+                                <option value="pending" ${orderStatus === 'pending' ? 'selected' : ''}>Pending</option>
+                                <option value="processing" ${orderStatus === 'processing' ? 'selected' : ''}>Processing</option>
+                                <option value="shipped" ${orderStatus === 'shipped' ? 'selected' : ''}>Shipped</option>
+                                <option value="delivered" ${orderStatus === 'delivered' ? 'selected' : ''}>Delivered</option>
+                                <option value="cancelled" ${orderStatus === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr id="details-${order.id}" style="display:none;">
+                        <td colspan="7">
+                            <div class="order-details">
+                                <h4>📦 Order Details</h4>
+                                <p><strong>Order ID:</strong> ${order.orderId}</p>
+                                <p><strong>Customer:</strong> ${order.customer?.fullName || 'Unknown'}</p>
+                                <p><strong>Phone:</strong> ${order.customer?.phoneNumber || 'N/A'}</p>
+                                <p><strong>Email:</strong> ${order.customer?.emailAddress || 'N/A'}</p>
+                                <p><strong>Address:</strong> ${order.customer?.deliveryAddress || 'N/A'}</p>
+                                <p><strong>Instructions:</strong> ${order.customer?.deliveryInstructions || 'None'}</p>
+                                <p><strong>Created:</strong> ${order.createdAt ? new Date(order.createdAt).toLocaleString() : 'N/A'}</p>
+                                <p><strong>Payment Reference:</strong> ${order.payment?.transactionRef || 'N/A'}</p>
+                                <table>
+                                    <thead><tr><th>Product</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead>
+                                    <tbody>
+                                        ${order.items?.map(item => `
+                                            <tr>
+                                                <td>${item.name}</td>
+                                                <td>${item.quantity}</td>
+                                                <td>₦${item.price?.toLocaleString() || 0}</td>
+                                                <td>₦${item.total?.toLocaleString() || 0}</td>
+                                            </tr>
+                                        `).join('') || '<tr><td colspan="4">No items</td></tr>'}
+                                    </tbody>
+                                </table>
+                                <p style="margin-top:12px;"><strong>Subtotal:</strong> ₦${order.totals?.subtotal?.toLocaleString() || 0}</p>
+                                <p><strong>Delivery:</strong> ₦${order.totals?.deliveryFee?.toLocaleString() || 0}</p>
+                                <p><strong>Total:</strong> ₦${order.totals?.grandTotal?.toLocaleString() || 0}</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        window.toggleOrderDetails = function(orderId) {
+            const row = document.getElementById(`details-${orderId}`);
+            if (row) {
+                row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+            }
+        };
+
+        window.updateOrderStatus = async function(orderId, newStatus) {
+            if (!confirm(`Update order status to "${newStatus}"?`)) return;
+            try {
+                await db.collection('orders').doc(orderId).update({
+                    status: newStatus,
+                    updatedAt: new Date().toISOString()
+                });
+                alert('✅ Order status updated!');
+                loadOrders();
+            } catch (e) {
+                alert('❌ Error updating order: ' + e.message);
+            }
+        };
+
+        window.filterOrders = filterOrders;
+
+        // ============================================
+        // PAYMENTS
+        // ============================================
+        async function loadPayments() {
+            pageContent.innerHTML = `
+                <div class="card">
+                    <h3 style="margin-bottom:16px;">💳 Payment History</h3>
+                    <div id="paymentsList">Loading...</div>
+                </div>
+            `;
+            try {
+                const snap = await db.collection('orders').where('payment.status', 'in', ['paid', 'pending', 'failed']).orderBy('createdAt', 'desc').get();
+                const container = document.getElementById('paymentsList');
+                if (snap.empty) { container.innerHTML = '<p style="color:#9CA3AF;">No payments yet.</p>'; return; }
+                let html = `<table><tr><th>Order ID</th><th>Customer</th><th>Amount</th><th>Payment Status</th><th>Transaction Ref</th><th>Payment Date</th><th>Order Status</th></tr>`;
                 snap.forEach(doc => {
                     const data = doc.data();
                     const payStatus = data.payment?.status || 'pending';
-                    const payColor = payStatus === 'paid' ? '#10B981' : '#F59E0B';
+                    const payColor = payStatus === 'paid' ? '#10B981' : payStatus === 'failed' ? '#EF4444' : '#F59E0B';
                     html += `<tr>
                         <td><strong>${data.orderId || 'N/A'}</strong></td>
                         <td>${data.customer?.fullName || 'Unknown'}</td>
                         <td>₦${data.totals?.grandTotal?.toLocaleString() || 0}</td>
-                        <td><span style="background:${payColor}; color:white; padding:2px 12px; border-radius:50px; font-size:12px;">${payStatus}</span></td>
+                        <td><span class="badge" style="background:${payColor}">${payStatus}</span></td>
+                        <td>${data.payment?.transactionRef || '-'}</td>
+                        <td>${data.payment?.paidAt ? new Date(data.payment.paidAt).toLocaleDateString() : '-'}</td>
                         <td>${data.status || 'pending'}</td>
                     </tr>`;
                 });
-                html += `</tbody></table>`;
+                html += '</table>';
                 container.innerHTML = html;
             } catch (e) { console.error(e); }
         }
 
-        function loadInventory() {
-            pageContent.innerHTML = `<div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
-                <h3 style="font-family: 'Cormorant Garamond', serif;">📊 Inventory Management</h3>
-                <p style="color:#9CA3AF; margin-top:12px;">Inventory management coming soon...</p>
-            </div>`;
+        // ============================================
+        // INVENTORY
+        // ============================================
+        async function loadInventory() {
+            pageContent.innerHTML = `
+                <div class="card">
+                    <h3 style="margin-bottom:16px;">📊 Inventory Management</h3>
+                    <div id="inventoryList">Loading...</div>
+                </div>
+            `;
+            try {
+                const snap = await db.collection('products').orderBy('name', 'asc').get();
+                const container = document.getElementById('inventoryList');
+                if (snap.empty) { container.innerHTML = '<p>No products yet.</p>'; return; }
+                let html = `<table>
+                    <tr>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th>Stock Count</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>`;
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    const stock = data.stockCount || 0;
+                    const status = stock <= 0 ? '❌ Out of Stock' : stock <= 5 ? '⚠️ Low Stock' : '✅ In Stock';
+                    const statusColor = stock <= 0 ? '#EF4444' : stock <= 5 ? '#F59E0B' : '#10B981';
+                    html += `<tr>
+                        <td><strong>${data.name}</strong></td>
+                        <td>${data.categoryName || 'Uncategorized'}</td>
+                        <td>${stock}</td>
+                        <td><span style="color:${statusColor}; font-weight:600;">${status}</span></td>
+                        <td>
+                            <button class="btn btn-primary btn-sm" onclick="updateStock('${doc.id}')">✏️ Update</button>
+                        </td>
+                    </tr>`;
+                });
+                html += '</table>';
+                container.innerHTML = html;
+            } catch (e) { console.error(e); }
         }
 
+        window.updateStock = async function(productId) {
+            const newStock = prompt('Enter new stock count:');
+            if (newStock === null) return;
+            const stock = parseInt(newStock);
+            if (isNaN(stock) || stock < 0) { alert('Please enter a valid number.'); return; }
+            try {
+                await db.collection('products').doc(productId).update({
+                    stockCount: stock,
+                    inStock: stock > 0,
+                    updatedAt: new Date().toISOString()
+                });
+                alert('✅ Stock updated!');
+                loadInventory();
+            } catch (e) {
+                alert('❌ Error updating stock: ' + e.message);
+            }
+        };
+
+        // ============================================
+        // SETTINGS
+        // ============================================
         function loadSettings() {
-            pageContent.innerHTML = `<div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
-                <h3 style="font-family: 'Cormorant Garamond', serif;">⚙️ Store Settings</h3>
-                <p style="color:#9CA3AF; margin-top:12px;">Store settings in admin-dashboard.html</p>
-            </div>`;
+            pageContent.innerHTML = `
+                <div class="card">
+                    <h3>⚙️ Store Settings</h3>
+                    <p style="color:#9CA3AF; margin-top:12px;">Go to <a href="/tadaa-marketplace/admin-dashboard.html" style="color:#FFD700;">admin-dashboard.html</a> for full settings.</p>
+                </div>
+            `;
         }
 
-        // Make functions global
         window.loadPage = loadPage;
-        window.showAddCategory = showAddCategory;
-        window.saveCategory = saveCategory;
-        window.deleteCategory = deleteCategory;
-        window.editCategory = editCategory;
-
-        console.log('✅ Admin dashboard loaded!');
+        console.log('✅ Admin dashboard with order management loaded!');
     </script>
 </body>
 </html>
