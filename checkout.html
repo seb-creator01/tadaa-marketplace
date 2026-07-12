@@ -93,9 +93,6 @@
 </div>
 
 <script>
-// ============================================
-// FIREBASE SETUP
-// ============================================
 const firebaseConfig = {
     apiKey: "AIzaSyDCXnlAqyt2512HlvBOsSfMZ6O-xg0c94Y",
     authDomain: "tadaa-marketplace.firebaseapp.com",
@@ -108,8 +105,6 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-console.log('🔥 Checkout page loaded');
-
 let cart = [];
 let settings = {};
 let orderData = null;
@@ -118,13 +113,8 @@ let orderId = null;
 async function loadCheckoutData() {
     try {
         const saved = localStorage.getItem('tadaa_cart');
-        if (saved) {
-            cart = JSON.parse(saved);
-        }
-        if (cart.length === 0) {
-            window.location.href = '/tadaa-marketplace/';
-            return;
-        }
+        if (saved) { cart = JSON.parse(saved); }
+        if (cart.length === 0) { window.location.href = '/tadaa-marketplace/'; return; }
         const settingsDoc = await db.collection('siteSettings').doc('settings').get();
         settings = settingsDoc.data() || {};
         displayOrderSummary();
@@ -134,18 +124,12 @@ async function loadCheckoutData() {
 }
 
 function displayOrderSummary() {
-    // ============================================
-    // DELIVERY: Based on quantity (per item)
-    // ============================================
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
     const perItemDelivery = settings.deliveryFee || 100;
     const deliveryFee = perItemDelivery * totalItems;
-    
     const freeThreshold = settings.freeDeliveryThreshold || 5000;
     const freeDeliveryEnabled = settings.freeDeliveryEnabled || false;
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    
-    // Only apply free delivery if enabled AND subtotal meets threshold
     const isFreeDelivery = freeDeliveryEnabled && freeThreshold > 0 && subtotal >= freeThreshold;
     const deliveryCharge = isFreeDelivery ? 0 : deliveryFee;
     const total = subtotal + deliveryCharge;
@@ -162,14 +146,9 @@ function displayOrderSummary() {
     `).join('');
     
     document.getElementById('subtotalDisplay').textContent = `₦${subtotal.toLocaleString()}`;
-    
-    // Delivery display
-    let deliveryDisplay = isFreeDelivery ? '🎉 FREE' : `₦${deliveryCharge.toLocaleString()} (${totalItems} items × ₦${perItemDelivery})`;
-    document.getElementById('deliveryDisplay').textContent = deliveryDisplay;
-    
+    document.getElementById('deliveryDisplay').textContent = isFreeDelivery ? '🎉 FREE' : `₦${deliveryCharge.toLocaleString()} (${totalItems} items × ₦${perItemDelivery})`;
     document.getElementById('totalDisplay').textContent = `₦${total.toLocaleString()}`;
     
-    // Free delivery message - only show if free delivery is enabled
     const badge = document.getElementById('freeDeliveryBadge');
     if (freeDeliveryEnabled) {
         if (isFreeDelivery) {
@@ -201,14 +180,18 @@ function displayOrderSummary() {
     document.getElementById('placeOrderBtn').textContent = `🛒 Place Order - ₦${total.toLocaleString()}`;
 }
 
+// ============================================
+// GENERATE ORDER ID - FIXED WITH TIMESTAMP
+// ============================================
 function generateOrderId() {
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
-    let counter = parseInt(localStorage.getItem('tadaa_order_counter') || '0') + 1;
-    localStorage.setItem('tadaa_order_counter', counter.toString());
-    return `TAD-${year}${month}${day}-${String(counter).padStart(6, '0')}`;
+    // Use timestamp + random for guaranteed uniqueness
+    const timestamp = Date.now().toString().slice(-6);
+    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    return `TAD-${year}${month}${day}-${timestamp}${random}`;
 }
 
 async function sendOrderEmail(orderData, orderId, total) {
@@ -284,9 +267,6 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
     btn.innerHTML = '<span class="loading-spinner"></span> Processing...';
     btn.disabled = true;
     
-    // ============================================
-    // DELIVERY: Based on quantity (per item)
-    // ============================================
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
     const perItemDelivery = settings.deliveryFee || 100;
     const freeThreshold = settings.freeDeliveryThreshold || 5000;
@@ -345,12 +325,10 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
         console.log('✅ Order saved:', orderId);
         
         localStorage.removeItem('tadaa_cart');
-        localStorage.removeItem('tadaa_order_counter');
         cart = [];
         
         sendOrderEmail(orderData, orderId, total);
         
-        // INITIATE PAYSTACK PAYMENT
         const email = orderData.customer.emailAddress || 'tadaamarketplace@gmail.com';
         const amount = Math.round(total * 100);
         const uniqueRef = orderId + '-' + Date.now();
