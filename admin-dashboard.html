@@ -34,11 +34,6 @@
         .settings-check { display: flex; align-items: center; gap: 12px; }
         .settings-check label { margin: 0; }
         .settings-check input { width: auto; }
-        .action-btn { padding: 6px 14px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
-        .action-btn.edit { background: #F59E0B; color: #fff; }
-        .action-btn.delete { background: #EF4444; color: #fff; }
-        .action-btn.edit:hover { background: #D97706; }
-        .action-btn.delete:hover { background: #DC2626; }
     </style>
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -215,8 +210,8 @@
                     <td><strong>${data.name}</strong></td>
                     <td>${data.slug || '-'}</td>
                     <td>
-                        <button class="btn btn-warning btn-sm" onclick="editCategory('${doc.id}')">✏️ Edit</button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteCategory('${doc.id}')">🗑️ Delete</button>
+                        <button class="btn btn-warning btn-sm" onclick="editCategory('${doc.id}')">✏️</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteCategory('${doc.id}')">🗑️</button>
                     </td>
                 </tr>`;
             });
@@ -289,7 +284,7 @@
     };
 
     // ============================================
-    // PRODUCTS - COMPLETE WITH EDIT & DELETE
+    // PRODUCTS
     // ============================================
     async function loadProducts() {
         pageContent.innerHTML = `
@@ -309,36 +304,31 @@
                 container.innerHTML = '<p>No products yet. Click "Add Product" to create one.</p>';
                 return;
             }
-            let html = `<table style="width:100%; border-collapse:collapse;">
-                <thead>
-                    <tr style="background:#f3f4f6;">
-                        <th style="padding:10px; text-align:left;">Image</th>
-                        <th style="padding:10px; text-align:left;">Name</th>
-                        <th style="padding:10px; text-align:left;">Category</th>
-                        <th style="padding:10px; text-align:left;">Price</th>
-                        <th style="padding:10px; text-align:left;">Delivery Fee</th>
-                        <th style="padding:10px; text-align:left;">Stock</th>
-                        <th style="padding:10px; text-align:center;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>`;
+            let html = `<table>
+                <tr>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Actions</th>
+                </tr>`;
             snap.forEach(doc => {
                 const data = doc.data();
                 const imageUrl = data.images && data.images.length > 0 ? data.images[0] : '';
-                html += `<tr style="border-bottom:1px solid #e5e7eb;">
-                    <td style="padding:10px;">${imageUrl ? `<img src="${imageUrl}" style="width:40px;height:40px;object-fit:cover;border-radius:8px;">` : '📷'}</td>
-                    <td style="padding:10px;"><strong>${data.name}</strong></td>
-                    <td style="padding:10px;">${data.categoryName || 'Uncategorized'}</td>
-                    <td style="padding:10px;">₦${data.price?.toLocaleString() || 0}</td>
-                    <td style="padding:10px;">₦${data.deliveryFee || 100}</td>
-                    <td style="padding:10px;">${data.inStock ? '✅ In Stock' : '❌ Out of Stock'}</td>
-                    <td style="padding:10px; text-align:center;">
-                        <button onclick="editProduct('${doc.id}')" class="action-btn edit">✏️ Edit</button>
-                        <button onclick="deleteProduct('${doc.id}')" class="action-btn delete">🗑️ Delete</button>
+                html += `<tr>
+                    <td>${imageUrl ? `<img src="${imageUrl}" class="product-img">` : '📷'}</td>
+                    <td><strong>${data.name}</strong></td>
+                    <td>${data.categoryName || 'Uncategorized'}</td>
+                    <td>₦${data.price?.toLocaleString() || 0}</td>
+                    <td>${data.inStock ? '✅ In Stock' : '❌ Out of Stock'}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editProduct('${doc.id}')">✏️</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteProduct('${doc.id}')">🗑️</button>
                     </td>
                 </tr>`;
             });
-            html += `</tbody></table>`;
+            html += '</table>';
             container.innerHTML = html;
         } catch (e) {
             console.error(e);
@@ -355,7 +345,7 @@
                 <h4>➕ Add New Product</h4>
                 <div class="form-group">
                     <label>Product Name *</label>
-                    <input type="text" id="prodName" placeholder="e.g., Rice 20kg">
+                    <input type="text" id="prodName" placeholder="e.g., Indomie Noodles 70g">
                 </div>
                 <div class="form-group">
                     <label>Description</label>
@@ -363,16 +353,11 @@
                 </div>
                 <div class="form-group">
                     <label>Price (₦) *</label>
-                    <input type="number" id="prodPrice" placeholder="e.g., 2000">
+                    <input type="number" id="prodPrice" placeholder="e.g., 200">
                 </div>
                 <div class="form-group">
                     <label>Compare Price (Original Price)</label>
-                    <input type="number" id="prodCompare" placeholder="e.g., 2500">
-                </div>
-                <div class="form-group">
-                    <label>Delivery Fee per item (₦) *</label>
-                    <input type="number" id="prodDeliveryFee" placeholder="e.g., 500" value="100">
-                    <small style="color:#6B7280;">This will be multiplied by the quantity when customer orders</small>
+                    <input type="number" id="prodCompare" placeholder="e.g., 250">
                 </div>
                 <div class="form-group">
                     <label>Category *</label>
@@ -469,7 +454,6 @@
         const description = document.getElementById('prodDesc').value.trim();
         const price = parseFloat(document.getElementById('prodPrice').value);
         const comparePrice = parseFloat(document.getElementById('prodCompare').value) || 0;
-        const deliveryFee = parseFloat(document.getElementById('prodDeliveryFee').value) || 100;
         const categoryId = document.getElementById('prodCategory').value;
         const stock = parseInt(document.getElementById('prodStock').value) || 0;
         const discount = parseInt(document.getElementById('prodDiscount').value) || 0;
@@ -494,7 +478,6 @@
                 description: description,
                 price: price,
                 comparePrice: comparePrice,
-                deliveryFee: deliveryFee,
                 categoryId: categoryId,
                 categoryName: categoryName,
                 images: imageUrl ? [imageUrl] : [],
@@ -512,9 +495,18 @@
         }
     };
 
-    // ============================================
-    // EDIT, DELETE, UPDATE PRODUCT FUNCTIONS
-    // ============================================
+    window.deleteProduct = async function(id) {
+        if (confirm('Delete this product?')) {
+            try {
+                await db.collection('products').doc(id).delete();
+                alert('✅ Product deleted!');
+                loadProducts();
+            } catch (e) {
+                alert('❌ Error: ' + e.message);
+            }
+        }
+    };
+
     window.editProduct = async function(id) {
         try {
             const doc = await db.collection('products').doc(id).get();
@@ -535,41 +527,37 @@
                     <h4>✏️ Edit Product</h4>
                     <div class="form-group">
                         <label>Product Name *</label>
-                        <input type="text" id="editProdName" value="${data.name || ''}">
+                        <input type="text" id="prodName" value="${data.name || ''}">
                     </div>
                     <div class="form-group">
                         <label>Description</label>
-                        <input type="text" id="editProdDesc" value="${data.description || ''}">
+                        <input type="text" id="prodDesc" value="${data.description || ''}">
                     </div>
                     <div class="form-group">
                         <label>Price (₦) *</label>
-                        <input type="number" id="editProdPrice" value="${data.price || 0}">
+                        <input type="number" id="prodPrice" value="${data.price || 0}">
                     </div>
                     <div class="form-group">
-                        <label>Compare Price</label>
-                        <input type="number" id="editProdCompare" value="${data.comparePrice || 0}">
-                    </div>
-                    <div class="form-group">
-                        <label>Delivery Fee per item (₦)</label>
-                        <input type="number" id="editProdDeliveryFee" value="${data.deliveryFee || 100}">
+                        <label>Compare Price (Original Price)</label>
+                        <input type="number" id="prodCompare" value="${data.comparePrice || 0}">
                     </div>
                     <div class="form-group">
                         <label>Category *</label>
-                        <select id="editProdCategory" style="width:100%; padding:10px; border:2px solid #e5e7eb; border-radius:8px;">
+                        <select id="prodCategory" style="width:100%; padding:10px; border:2px solid #e5e7eb; border-radius:8px;">
                             ${catOptions}
                         </select>
                     </div>
                     <div class="form-group">
                         <label>Stock Count</label>
-                        <input type="number" id="editProdStock" value="${data.stockCount || 0}">
+                        <input type="number" id="prodStock" value="${data.stockCount || 0}">
                     </div>
                     <div class="form-group">
                         <label>Discount (%)</label>
-                        <input type="number" id="editProdDiscount" value="${data.discount || 0}">
+                        <input type="number" id="prodDiscount" value="${data.discount || 0}">
                     </div>
                     <div class="form-group">
                         <label>Image URL</label>
-                        <input type="text" id="editProdImage" value="${data.images && data.images.length > 0 ? data.images[0] : ''}">
+                        <input type="text" id="prodImage" value="${data.images && data.images.length > 0 ? data.images[0] : ''}">
                     </div>
                     <div style="margin:12px 0;">
                         <button class="btn btn-primary" onclick="uploadToCloudinary()">📤 Upload New Image</button>
@@ -579,32 +567,19 @@
                 </div>
             `;
         } catch (e) {
-            alert('Error loading product: ' + e.message);
-        }
-    };
-
-    window.deleteProduct = async function(id) {
-        if (confirm('Delete this product?')) {
-            try {
-                await db.collection('products').doc(id).delete();
-                alert('✅ Product deleted!');
-                loadProducts();
-            } catch (e) {
-                alert('❌ Error: ' + e.message);
-            }
+            alert('Error: ' + e.message);
         }
     };
 
     window.updateProduct = async function(id) {
-        const name = document.getElementById('editProdName').value.trim();
-        const description = document.getElementById('editProdDesc').value.trim();
-        const price = parseFloat(document.getElementById('editProdPrice').value);
-        const comparePrice = parseFloat(document.getElementById('editProdCompare').value) || 0;
-        const deliveryFee = parseFloat(document.getElementById('editProdDeliveryFee').value) || 100;
-        const categoryId = document.getElementById('editProdCategory').value;
-        const stock = parseInt(document.getElementById('editProdStock').value) || 0;
-        const discount = parseInt(document.getElementById('editProdDiscount').value) || 0;
-        const imageUrl = document.getElementById('editProdImage').value.trim();
+        const name = document.getElementById('prodName').value.trim();
+        const description = document.getElementById('prodDesc').value.trim();
+        const price = parseFloat(document.getElementById('prodPrice').value);
+        const comparePrice = parseFloat(document.getElementById('prodCompare').value) || 0;
+        const categoryId = document.getElementById('prodCategory').value;
+        const stock = parseInt(document.getElementById('prodStock').value) || 0;
+        const discount = parseInt(document.getElementById('prodDiscount').value) || 0;
+        const imageUrl = document.getElementById('prodImage').value.trim();
 
         if (!name) { alert('Product name is required!'); return; }
         if (!price || price <= 0) { alert('Valid price is required!'); return; }
@@ -625,7 +600,6 @@
                 description: description,
                 price: price,
                 comparePrice: comparePrice,
-                deliveryFee: deliveryFee,
                 categoryId: categoryId,
                 categoryName: categoryName,
                 images: imageUrl ? [imageUrl] : [],
@@ -695,7 +669,7 @@
     }
 
     // ============================================
-    // SETTINGS
+    // SETTINGS - WITH PROPER MAINTENANCE MODE SAVE
     // ============================================
     function loadSettings() {
         pageContent.innerHTML = `
@@ -738,6 +712,9 @@
                 await db.collection('siteSettings').doc('settings').set(defaultSettings);
                 settings = defaultSettings;
             }
+            
+            // Log the maintenance mode value to check if it's loading
+            console.log('🔧 Maintenance Mode value:', settings.maintenanceMode);
             
             container.innerHTML = `
                 <div class="settings-grid">
@@ -784,9 +761,9 @@
                     <div class="settings-full"><h4 style="border-bottom:2px solid #FFD700; padding-bottom:8px; margin-top:20px;">🚚 Delivery Settings</h4></div>
                     
                     <div class="form-group">
-                        <label>Default Delivery Fee (₦ per item)</label>
+                        <label>Delivery Fee (₦ per item)</label>
                         <input type="number" id="setDeliveryFee" value="${settings.deliveryFee || 100}">
-                        <small style="color:#6B7280;">This is the default fee if product doesn't have its own</small>
+                        <small style="color:#6B7280;">This will be multiplied by the number of items in cart</small>
                     </div>
                     <div class="form-group">
                         <label>Free Delivery Threshold (₦)</label>
@@ -829,7 +806,7 @@
                     
                     <div class="form-group settings-check">
                         <input type="checkbox" id="setMaintenance" ${settings.maintenanceMode ? 'checked' : ''}>
-                        <label style="margin:0;">Enable Maintenance Mode (store will be closed)</label>
+                        <label style="margin:0; font-weight:bold; color:#92400E;">Enable Maintenance Mode (store will be closed)</label>
                     </div>
                     
                     <div class="settings-full" style="margin-top:20px;">
@@ -844,8 +821,16 @@
         }
     }
 
+    // ============================================
+    // SAVE SETTINGS - FIXED WITH MAINTENANCE MODE
+    // ============================================
     window.saveSettings = async function() {
         try {
+            console.log('💾 Saving settings...');
+            
+            const maintenanceMode = document.getElementById('setMaintenance').checked;
+            console.log('🔧 Maintenance Mode value being saved:', maintenanceMode);
+            
             const settings = {
                 storeName: document.getElementById('setStoreName').value.trim(),
                 storeLogo: document.getElementById('setStoreLogo').value.trim(),
@@ -862,20 +847,27 @@
                 businessHours: document.getElementById('setBusinessHours').value.trim(),
                 announcementBanner: document.getElementById('setAnnouncement').value.trim(),
                 featuredProducts: document.getElementById('setFeaturedProducts').value.split(',').map(s => s.trim()).filter(s => s),
-                maintenanceMode: document.getElementById('setMaintenance').checked,
+                maintenanceMode: maintenanceMode,
                 updatedAt: new Date().toISOString()
             };
             
+            console.log('📝 Settings to save:', settings);
+            
             await db.collection('siteSettings').doc('settings').update(settings);
+            
+            console.log('✅ Settings saved successfully!');
             alert('✅ Settings saved successfully!');
+            
+            // Reload the settings form to show updated values
             loadSettingsForm();
+            
         } catch (error) {
+            console.error('❌ Error saving settings:', error);
             alert('❌ Error saving settings: ' + error.message);
-            console.error(error);
         }
     };
 
-    console.log('✅ Admin dashboard with delivery fee and working edit/delete!');
+    console.log('✅ Admin dashboard with full settings ready!');
 </script>
 
 </body>
