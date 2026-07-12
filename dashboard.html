@@ -10,6 +10,72 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <style>
+        /* ===== MOBILE SIDEBAR FIX ===== */
+        .sidebar-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: #000;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 4px 8px;
+        }
+
+        .admin-sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 998;
+        }
+        .admin-sidebar-overlay.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-toggle {
+                display: block;
+            }
+            .admin-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                width: 280px;
+                z-index: 999;
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                overflow-y: auto;
+            }
+            .admin-sidebar.open {
+                transform: translateX(0);
+            }
+            .admin-content {
+                margin-left: 0 !important;
+                padding: 16px !important;
+            }
+            .admin-topnav {
+                flex-wrap: wrap;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr !important;
+                gap: 10px;
+            }
+            .admin-topnav h1 {
+                font-size: 18px;
+            }
+        }
+
+        /* ===== EXISTING STYLES ===== */
         .badge { padding: 2px 12px; border-radius: 50px; font-size: 12px; font-weight: 600; color: #fff; }
         .order-details { background: #f9fafb; padding: 16px; border-radius: 12px; margin-top: 12px; }
         .order-details table { width: 100%; }
@@ -27,11 +93,45 @@
         .btn-sm { padding: 4px 12px; font-size: 12px; border: none; border-radius: 6px; cursor: pointer; }
         .btn-primary { background: #FFD700; color: #000; }
         .btn-secondary { background: #e5e7eb; color: #000; }
+        .admin-sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 220px; background: #000; color: #fff; padding: 20px 0; overflow-y: auto; }
+        .admin-sidebar-brand { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 16px; }
+        .admin-sidebar-brand .brand-text { font-size: 24px; color: #FFD700; font-weight: 700; font-family: 'Cormorant Garamond', serif; }
+        .admin-sidebar-brand .brand-sub { font-size: 12px; color: #6B7280; letter-spacing: 2px; text-transform: uppercase; }
+        .admin-sidebar-nav { list-style: none; padding: 0 12px; margin: 0; }
+        .admin-sidebar-nav li { margin-bottom: 4px; }
+        .admin-sidebar-nav a { display: block; padding: 10px 16px; border-radius: 8px; color: #9CA3AF; text-decoration: none; font-size: 15px; transition: all 0.3s; cursor: pointer; }
+        .admin-sidebar-nav a:hover, .admin-sidebar-nav a.active { background: rgba(255,215,0,0.1); color: #FFD700; }
+        .admin-sidebar-nav .logout-link { border-top: 1px solid rgba(255,255,255,0.05); margin-top: 16px; padding-top: 16px; }
+        .admin-sidebar-nav .logout-link a { color: #EF4444; }
+        .admin-sidebar-nav .logout-link a:hover { background: rgba(239,68,68,0.1); }
+        .admin-content { margin-left: 220px; padding: 24px 32px 40px; min-height: 100vh; }
+        .admin-topnav { display: flex; justify-content: space-between; align-items: center; padding: 16px 0 24px; border-bottom: 1px solid #e5e7eb; margin-bottom: 24px; }
+        .admin-topnav h1 { font-family: 'Cormorant Garamond', serif; font-size: 28px; margin: 0; }
+        .admin-user { display: flex; align-items: center; gap: 12px; color: #6B7280; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: #FFD700; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #000; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: #fff; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+        .stat-card .stat-number { font-size: 32px; font-weight: 700; color: #1F2937; }
+        .stat-card .stat-label { color: #6B7280; font-size: 14px; }
+        .stat-card .stat-icon { font-size: 28px; }
+        .card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); margin-bottom: 20px; }
+        .card h3 { font-family: 'Cormorant Garamond', serif; margin: 0 0 16px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background: #f9fafb; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 4px; }
+        .form-group input { width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; }
     </style>
 </head>
 <body>
+
+    <!-- Sidebar Overlay (Mobile) -->
+    <div class="admin-sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
     <div class="admin-wrapper">
-        <aside class="admin-sidebar">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" id="adminSidebar">
             <div class="admin-sidebar-brand">
                 <div class="brand-text">Tadaa!</div>
                 <div class="brand-sub">Admin Panel</div>
@@ -47,9 +147,14 @@
                 <li class="logout-link"><a href="#" id="logoutBtn">🚪 Logout</a></li>
             </ul>
         </aside>
+
+        <!-- Main Content -->
         <main class="admin-content">
             <div class="admin-topnav">
-                <h1 id="pageTitle">Dashboard</h1>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+                    <h1 id="pageTitle">Dashboard</h1>
+                </div>
                 <div class="admin-user">
                     <span id="adminEmailDisplay">admin@tadaa.com</span>
                     <div class="avatar">A</div>
@@ -62,6 +167,32 @@
     </div>
 
     <script>
+        // ============================================
+        // SIDEBAR TOGGLE (Mobile)
+        // ============================================
+        function toggleSidebar() {
+            const sidebar = document.getElementById('adminSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('adminSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        }
+
+        // Close sidebar when clicking a link (mobile)
+        document.querySelectorAll('.admin-sidebar-nav a').forEach(function(link) {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    closeSidebar();
+                }
+            });
+        });
+
         // ============================================
         // FIREBASE SETUP
         // ============================================
@@ -96,6 +227,9 @@
             });
         }
 
+        // ============================================
+        // PAGE LOADER
+        // ============================================
         function loadPage(page) {
             pageTitle.textContent = page.charAt(0).toUpperCase() + page.slice(1);
             document.querySelectorAll('.admin-sidebar-nav a').forEach(l => l.classList.remove('active'));
@@ -419,13 +553,12 @@
         }
 
         // ============================================
-        // INVENTORY - FIXED VERSION
+        // INVENTORY
         // ============================================
         let inventoryData = [];
         let filteredInventory = [];
 
         async function loadInventory() {
-            console.log('📊 Loading inventory...');
             pageContent.innerHTML = `
                 <div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
@@ -450,18 +583,13 @@
 
         async function fetchInventory() {
             try {
-                console.log('📊 Fetching inventory data...');
                 const snap = await db.collection('products').orderBy('name', 'asc').get();
                 inventoryData = [];
-                snap.forEach(doc => {
-                    inventoryData.push({ id: doc.id, ...doc.data() });
-                });
+                snap.forEach(doc => { inventoryData.push({ id: doc.id, ...doc.data() }); });
                 filteredInventory = [...inventoryData];
                 document.getElementById('totalInventoryCount').textContent = inventoryData.length;
-                console.log('✅ Inventory loaded:', inventoryData.length, 'products');
                 renderInventory();
             } catch (e) {
-                console.error('Error loading inventory:', e);
                 document.getElementById('inventoryList').innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
             }
         }
@@ -575,7 +703,7 @@
         }
 
         window.loadPage = loadPage;
-        console.log('✅ Admin dashboard loaded!');
+        console.log('✅ Admin dashboard with mobile sidebar fix!');
     </script>
 </body>
 </html>
