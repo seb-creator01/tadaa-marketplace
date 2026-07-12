@@ -1,5 +1,5 @@
 // ============================================
-// TADAA! - CUSTOMER WEBSITE (WITH QUANTITY LABEL & CHECKOUT FIX)
+// TADAA! - CUSTOMER WEBSITE (WITH DELIVERY PER PRODUCT)
 // ============================================
 
 // ===== Firebase Config =====
@@ -257,7 +257,7 @@ function renderCategories() {
 }
 
 // ============================================
-// RENDER PRODUCTS - WITH QUANTITY LABEL
+// RENDER PRODUCTS - WITH DELIVERY FEE PER PRODUCT
 // ============================================
 function renderProducts() {
     const productsDiv = document.getElementById('products-section');
@@ -285,6 +285,9 @@ function renderProducts() {
         return;
     }
     
+    // Get delivery fee per item from settings
+    const perItemDelivery = settings.deliveryFee || 100;
+    
     let html = `
         <div style="max-width:1200px; margin:0 auto; padding:0 20px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
@@ -302,6 +305,9 @@ function renderProducts() {
         const cartItem = cart.find(item => item.id === product.id);
         const qty = cartItem ? cartItem.quantity : 0;
         
+        // Show delivery fee per item
+        const deliveryDisplay = perItemDelivery > 0 ? `Delivery: ₦${perItemDelivery}/item` : 'Free Delivery';
+        
         html += `
             <div style="background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06); transition:transform 0.3s, box-shadow 0.3s; cursor:pointer;" onclick="viewProduct('${product.id}')" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.12)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)'">
                 <div style="position:relative; padding-bottom:100%; background:#f3f4f6;">
@@ -315,13 +321,17 @@ function renderProducts() {
                     <h3 style="font-size:14px; font-weight:600; margin:0 0 4px; color:#1F2937; line-height:1.3;">${product.name}</h3>
                     <p style="font-size:12px; color:#6B7280; margin:0 0 8px;">${product.categoryName || 'Uncategorized'}</p>
                     
-                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:2px;">
                         <span style="font-size:18px; font-weight:700; color:#000;">₦${Math.round(discountedPrice).toLocaleString()}</span>
                         ${discount > 0 ? `<span style="font-size:12px; color:#9CA3AF; text-decoration:line-through;">₦${product.price.toLocaleString()}</span>` : ''}
                     </div>
                     
+                    <!-- DELIVERY FEE PER ITEM -->
+                    <div style="font-size:11px; color:#6B7280; margin-bottom:6px;">
+                        🚚 ${deliveryDisplay}
+                    </div>
+                    
                     ${inStock ? `
-                    <!-- QUANTITY LABEL -->
                     <div style="font-size:11px; color:#6B7280; margin-top:4px; margin-bottom:2px;">Quantity</div>
                     <div style="display:flex; align-items:center; gap:6px;">
                         <button onclick="event.stopPropagation(); updateProductQuantity('${product.id}', -1)" style="background:#f3f4f6; border:none; width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:16px; ${qty === 0 ? 'opacity:0.4; cursor:not-allowed;' : ''}" ${qty === 0 ? 'disabled' : ''}>−</button>
@@ -708,4 +718,4 @@ document.addEventListener('DOMContentLoaded', () => {
     loadData();
 });
 
-console.log('✅ Tadaa! Website with quantity label ready!');
+console.log('✅ Tadaa! Website with delivery fee per product ready!');
