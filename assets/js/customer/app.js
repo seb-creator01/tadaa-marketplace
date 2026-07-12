@@ -1,5 +1,5 @@
 // ============================================
-// TADAA! - CUSTOMER WEBSITE WITH MAINTENANCE MODE
+// TADAA! - CUSTOMER WEBSITE WITH MAINTENANCE MODE FIX
 // ============================================
 
 // ===== Firebase Config =====
@@ -71,10 +71,14 @@ async function loadData() {
         window.tadaaDb = db;
         
         // ============================================
-        // CHECK MAINTENANCE MODE
+        // CHECK MAINTENANCE MODE - FIXED
         // ============================================
+        console.log('🔧 Maintenance Mode value:', settings.maintenanceMode);
+        
+        // Check if maintenance mode is true (boolean)
         if (settings.maintenanceMode === true) {
-            const mainContent = document.getElementById('main-content');
+            console.log('🔧 Maintenance mode is ON! Showing maintenance page.');
+            
             if (mainContent) {
                 mainContent.innerHTML = `
                     <div style="max-width:600px; margin:60px auto; padding:40px; text-align:center;">
@@ -87,30 +91,35 @@ async function loadData() {
                         </div>
                     </div>
                 `;
-                // Hide header and footer when in maintenance mode
+                // Hide header and footer
                 if (mainHeader) mainHeader.style.display = 'none';
                 if (mainFooter) mainFooter.style.display = 'none';
                 return; // Stop loading the rest of the page
             }
         }
         
-        // Show header and footer if they were hidden
+        // If maintenance mode is off, show header and footer
+        console.log('🔧 Maintenance mode is OFF. Showing normal store.');
         if (mainHeader) mainHeader.style.display = 'block';
         if (mainFooter) mainFooter.style.display = 'block';
         
+        // Load categories
         const categoriesSnap = await db.collection('categories').orderBy('order', 'asc').get();
         categories = [];
         categoriesSnap.forEach(doc => {
             categories.push({ id: doc.id, ...doc.data() });
         });
         
+        // Load products
         const productsSnap = await db.collection('products').orderBy('createdAt', 'desc').get();
         products = [];
         productsSnap.forEach(doc => {
             products.push({ id: doc.id, ...doc.data() });
         });
         
-        console.log('✅ Data loaded');
+        console.log('✅ Data loaded - Categories:', categories.length, 'Products:', products.length);
+        
+        // Render the website
         renderWebsite();
         updateCartCount();
         
@@ -120,6 +129,7 @@ async function loadData() {
             mainContent.innerHTML = `
                 <div style="text-align:center; padding:60px 20px;">
                     <h2>😅 Oops! Something went wrong</h2>
+                    <p style="color:#6B7280;">Please refresh the page and try again.</p>
                     <button onclick="location.reload()" style="background:#FFD700; border:none; padding:12px 24px; border-radius:50px; margin-top:20px; cursor:pointer;">Refresh</button>
                 </div>
             `;
@@ -585,7 +595,7 @@ function toggleCartSidebar() {
 }
 
 // ============================================
-// CHECKOUT - GO TO CHECKOUT PAGE
+// CHECKOUT
 // ============================================
 function checkout() {
     if (cart.length === 0) {
