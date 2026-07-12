@@ -289,7 +289,7 @@
     };
 
     // ============================================
-    // PRODUCTS - FULLY WORKING
+    // PRODUCTS - COMPLETE WITH EDIT & DELETE
     // ============================================
     async function loadProducts() {
         pageContent.innerHTML = `
@@ -513,7 +513,7 @@
     };
 
     // ============================================
-    // EDIT & DELETE PRODUCT FUNCTIONS
+    // EDIT, DELETE, UPDATE PRODUCT FUNCTIONS
     // ============================================
     window.editProduct = async function(id) {
         try {
@@ -535,42 +535,41 @@
                     <h4>✏️ Edit Product</h4>
                     <div class="form-group">
                         <label>Product Name *</label>
-                        <input type="text" id="prodName" value="${data.name || ''}">
+                        <input type="text" id="editProdName" value="${data.name || ''}">
                     </div>
                     <div class="form-group">
                         <label>Description</label>
-                        <input type="text" id="prodDesc" value="${data.description || ''}">
+                        <input type="text" id="editProdDesc" value="${data.description || ''}">
                     </div>
                     <div class="form-group">
                         <label>Price (₦) *</label>
-                        <input type="number" id="prodPrice" value="${data.price || 0}">
+                        <input type="number" id="editProdPrice" value="${data.price || 0}">
                     </div>
                     <div class="form-group">
-                        <label>Compare Price (Original Price)</label>
-                        <input type="number" id="prodCompare" value="${data.comparePrice || 0}">
+                        <label>Compare Price</label>
+                        <input type="number" id="editProdCompare" value="${data.comparePrice || 0}">
                     </div>
                     <div class="form-group">
                         <label>Delivery Fee per item (₦)</label>
-                        <input type="number" id="prodDeliveryFee" value="${data.deliveryFee || 100}">
-                        <small style="color:#6B7280;">This will be multiplied by quantity</small>
+                        <input type="number" id="editProdDeliveryFee" value="${data.deliveryFee || 100}">
                     </div>
                     <div class="form-group">
                         <label>Category *</label>
-                        <select id="prodCategory" style="width:100%; padding:10px; border:2px solid #e5e7eb; border-radius:8px;">
+                        <select id="editProdCategory" style="width:100%; padding:10px; border:2px solid #e5e7eb; border-radius:8px;">
                             ${catOptions}
                         </select>
                     </div>
                     <div class="form-group">
                         <label>Stock Count</label>
-                        <input type="number" id="prodStock" value="${data.stockCount || 0}">
+                        <input type="number" id="editProdStock" value="${data.stockCount || 0}">
                     </div>
                     <div class="form-group">
                         <label>Discount (%)</label>
-                        <input type="number" id="prodDiscount" value="${data.discount || 0}">
+                        <input type="number" id="editProdDiscount" value="${data.discount || 0}">
                     </div>
                     <div class="form-group">
                         <label>Image URL</label>
-                        <input type="text" id="prodImage" value="${data.images && data.images.length > 0 ? data.images[0] : ''}">
+                        <input type="text" id="editProdImage" value="${data.images && data.images.length > 0 ? data.images[0] : ''}">
                     </div>
                     <div style="margin:12px 0;">
                         <button class="btn btn-primary" onclick="uploadToCloudinary()">📤 Upload New Image</button>
@@ -591,21 +590,21 @@
                 alert('✅ Product deleted!');
                 loadProducts();
             } catch (e) {
-                alert('❌ Error deleting product: ' + e.message);
+                alert('❌ Error: ' + e.message);
             }
         }
     };
 
     window.updateProduct = async function(id) {
-        const name = document.getElementById('prodName').value.trim();
-        const description = document.getElementById('prodDesc').value.trim();
-        const price = parseFloat(document.getElementById('prodPrice').value);
-        const comparePrice = parseFloat(document.getElementById('prodCompare').value) || 0;
-        const deliveryFee = parseFloat(document.getElementById('prodDeliveryFee').value) || 100;
-        const categoryId = document.getElementById('prodCategory').value;
-        const stock = parseInt(document.getElementById('prodStock').value) || 0;
-        const discount = parseInt(document.getElementById('prodDiscount').value) || 0;
-        const imageUrl = document.getElementById('prodImage').value.trim();
+        const name = document.getElementById('editProdName').value.trim();
+        const description = document.getElementById('editProdDesc').value.trim();
+        const price = parseFloat(document.getElementById('editProdPrice').value);
+        const comparePrice = parseFloat(document.getElementById('editProdCompare').value) || 0;
+        const deliveryFee = parseFloat(document.getElementById('editProdDeliveryFee').value) || 100;
+        const categoryId = document.getElementById('editProdCategory').value;
+        const stock = parseInt(document.getElementById('editProdStock').value) || 0;
+        const discount = parseInt(document.getElementById('editProdDiscount').value) || 0;
+        const imageUrl = document.getElementById('editProdImage').value.trim();
 
         if (!name) { alert('Product name is required!'); return; }
         if (!price || price <= 0) { alert('Valid price is required!'); return; }
@@ -637,7 +636,7 @@
             alert('✅ Product updated!');
             loadProducts();
         } catch (e) {
-            alert('❌ Error updating product: ' + e.message);
+            alert('❌ Error: ' + e.message);
         }
     };
 
@@ -876,7 +875,7 @@
         }
     };
 
-    console.log('✅ Admin dashboard with delivery fee and working buttons!');
+    console.log('✅ Admin dashboard with delivery fee and working edit/delete!');
 </script>
 
 </body>
