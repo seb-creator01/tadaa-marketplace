@@ -59,7 +59,7 @@
                         <input type="tel" id="phoneNumber" placeholder="e.g., 08012345678" required>
                     </div>
                     <div class="form-group">
-                        <label>Email Address</label>
+                        <label>Email Address <span style="color:#9CA3AF; font-weight:400;">(Optional)</span></label>
                         <input type="email" id="emailAddress" placeholder="e.g., john@example.com">
                         <small style="color:#6B7280;">We'll send your order confirmation here</small>
                     </div>
@@ -68,7 +68,7 @@
                         <textarea id="deliveryAddress" placeholder="e.g., 12, Awolowo Road, Ikoyi, Lagos" required></textarea>
                     </div>
                     <div class="form-group">
-                        <label>Delivery Instructions</label>
+                        <label>Delivery Instructions <span style="color:#9CA3AF; font-weight:400;">(Optional)</span></label>
                         <input type="text" id="deliveryInstructions" placeholder="e.g., Call before arrival">
                     </div>
                     <div id="formError" class="error"></div>
@@ -180,15 +180,11 @@ function displayOrderSummary() {
     document.getElementById('placeOrderBtn').textContent = `🛒 Place Order - ₦${total.toLocaleString()}`;
 }
 
-// ============================================
-// GENERATE ORDER ID - FIXED WITH TIMESTAMP
-// ============================================
 function generateOrderId() {
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
-    // Use timestamp + random for guaranteed uniqueness
     const timestamp = Date.now().toString().slice(-6);
     const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
     return `TAD-${year}${month}${day}-${timestamp}${random}`;
