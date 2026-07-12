@@ -1,5 +1,5 @@
 // ============================================
-// TADAA! - CUSTOMER WEBSITE (FIXED - NO AUTO OVERLAY)
+// TADAA! - CUSTOMER WEBSITE (QUANTITY INPUT + BUTTONS)
 // ============================================
 
 // ===== Firebase Config =====
@@ -146,7 +146,6 @@ function renderWebsite() {
     renderCategories();
     renderProducts();
     renderFooter();
-    // Only render cart sidebar content, NOT open it
     renderCartSidebarContent();
 }
 
@@ -258,7 +257,7 @@ function renderCategories() {
 }
 
 // ============================================
-// RENDER PRODUCTS
+// RENDER PRODUCTS - WITH QUANTITY INPUT
 // ============================================
 function renderProducts() {
     const productsDiv = document.getElementById('products-section');
@@ -305,6 +304,7 @@ function renderProducts() {
         const cartItem = cart.find(item => item.id === product.id);
         const qty = cartItem ? cartItem.quantity : 0;
         const deliveryDisplay = perItemDelivery > 0 ? `Delivery: ₦${perItemDelivery}/item` : 'Free Delivery';
+        const maxStock = product.stockCount || 999;
         
         html += `
             <div style="background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06); transition:transform 0.3s, box-shadow 0.3s; cursor:pointer;" onclick="viewProduct('${product.id}')" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.12)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)'">
@@ -329,12 +329,17 @@ function renderProducts() {
                     </div>
                     
                     ${inStock ? `
-                    <div style="font-size:11px; color:#6B7280; margin-top:4px; margin-bottom:2px;">Quantity</div>
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <button onclick="event.stopPropagation(); updateProductQuantity('${product.id}', -1)" style="background:#f3f4f6; border:none; width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:16px; ${qty === 0 ? 'opacity:0.4; cursor:not-allowed;' : ''}" ${qty === 0 ? 'disabled' : ''}>−</button>
-                        <span style="font-weight:600; min-width:24px; text-align:center; font-size:16px;">${qty}</span>
-                        <button onclick="event.stopPropagation(); updateProductQuantity('${product.id}', 1)" style="background:#f3f4f6; border:none; width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:16px;">+</button>
-                        <button onclick="event.stopPropagation(); addToCart('${product.id}')" style="flex:1; background:#FFD700; border:none; padding:6px 10px; border-radius:8px; font-weight:600; font-size:12px; cursor:pointer; transition:background 0.3s; white-space:nowrap;" onmouseover="this.style.background='#E6C200'" onmouseout="this.style.background='#FFD700'">
+                    <div style="font-size:12px; color:#6B7280; margin-top:4px; margin-bottom:2px; font-weight:600;">📦 Quantity</div>
+                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                        <button onclick="event.stopPropagation(); updateProductQuantity('${product.id}', -1)" style="background:#f3f4f6; border:2px solid #e5e7eb; width:36px; height:36px; border-radius:8px; cursor:pointer; font-size:20px; font-weight:700; ${qty === 0 ? 'opacity:0.4; cursor:not-allowed;' : ''}" ${qty === 0 ? 'disabled' : ''}>−</button>
+                        
+                        <input type="number" id="qty-input-${product.id}" value="${qty}" min="0" max="${maxStock}" 
+                               style="width:55px; height:36px; text-align:center; border:2px solid #e5e7eb; border-radius:8px; font-size:18px; font-weight:600; padding:0 4px;" 
+                               onchange="event.stopPropagation(); setProductQuantity('${product.id}', this.value)">
+                        
+                        <button onclick="event.stopPropagation(); updateProductQuantity('${product.id}', 1)" style="background:#f3f4f6; border:2px solid #e5e7eb; width:36px; height:36px; border-radius:8px; cursor:pointer; font-size:20px; font-weight:700;">+</button>
+                        
+                        <button onclick="event.stopPropagation(); addToCart('${product.id}')" style="flex:1; background:#FFD700; color:#000; border:none; padding:8px 10px; border-radius:8px; font-weight:600; font-size:12px; cursor:pointer; transition:background 0.3s; white-space:nowrap; min-width:60px;" onmouseover="this.style.background='#E6C200'" onmouseout="this.style.background='#FFD700'">
                             ${qty > 0 ? '🔄 Update' : 'Add +'}
                         </button>
                     </div>
@@ -349,7 +354,7 @@ function renderProducts() {
 }
 
 // ============================================
-// UPDATE PRODUCT QUANTITY
+// UPDATE PRODUCT QUANTITY (Button +/-)
 // ============================================
 function updateProductQuantity(productId, change) {
     const product = products.find(p => p.id === productId);
@@ -357,7 +362,9 @@ function updateProductQuantity(productId, change) {
     
     const existing = cart.find(item => item.id === productId);
     if (!existing) {
-        addToCart(productId);
+        if (change > 0) {
+            addToCart(productId);
+        }
         return;
     }
     
@@ -367,11 +374,98 @@ function updateProductQuantity(productId, change) {
         return;
     }
     
+    // Check stock limit
+    const maxStock = product.stockCount || 999;
+    if (newQty > maxStock) {
+        alert(`Only ${maxStock} items available.`);
+        return;
+    }
+    
     existing.quantity = newQty;
     saveCart();
     updateCartCount();
     renderCartSidebarContent();
     renderProducts();
+}
+
+// ============================================
+// SET PRODUCT QUANTITY (from input field)
+// ============================================
+function setProductQuantity(productId, value) {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+    
+    let newQty = parseInt(value);
+    if (isNaN(newQty) || newQty < 0) {
+        newQty = 0;
+    }
+    
+    const maxStock = product.stockCount || 999;
+    if (newQty > maxStock) {
+        newQty = maxStock;
+        alert(`Only ${maxStock} items available in stock.`);
+        document.getElementById(`qty-input-${productId}`).value = maxStock;
+    }
+    
+    const existing = cart.find(item => item.id === productId);
+    if (newQty === 0) {
+        if (existing) {
+            removeFromCart(productId);
+        }
+        return;
+    }
+    
+    if (existing) {
+        existing.quantity = newQty;
+    } else {
+        cart.push({ ...product, quantity: newQty });
+    }
+    saveCart();
+    updateCartCount();
+    renderCartSidebarContent();
+    renderProducts();
+}
+
+// ============================================
+// MODAL QUANTITY CONTROLS
+// ============================================
+function changeModalQty(productId, change) {
+    const input = document.getElementById(`modal-qty-${productId}`);
+    if (!input) return;
+    let val = parseInt(input.value) || 1;
+    val = val + change;
+    const product = products.find(p => p.id === productId);
+    const maxStock = product?.stockCount || 999;
+    if (val < 1) val = 1;
+    if (val > maxStock) val = maxStock;
+    input.value = val;
+}
+
+function addModalToCart(productId) {
+    const input = document.getElementById(`modal-qty-${productId}`);
+    const qty = parseInt(input?.value) || 1;
+    
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+    
+    const maxStock = product.stockCount || 999;
+    if (qty > maxStock) {
+        alert(`Only ${maxStock} items available.`);
+        return;
+    }
+    
+    const existing = cart.find(item => item.id === productId);
+    if (existing) {
+        existing.quantity = qty;
+    } else {
+        cart.push({ ...product, quantity: qty });
+    }
+    saveCart();
+    updateCartCount();
+    renderCartSidebarContent();
+    renderProducts();
+    closeModal();
+    showToast(product.name);
 }
 
 // ============================================
@@ -399,7 +493,7 @@ function toggleSearch() {
 }
 
 // ============================================
-// VIEW PRODUCT
+// VIEW PRODUCT - WITH MODAL QUANTITY INPUT
 // ============================================
 function viewProduct(productId) {
     const product = products.find(p => p.id === productId);
@@ -408,8 +502,8 @@ function viewProduct(productId) {
     const discount = product.discount || 0;
     const discountedPrice = discount > 0 ? product.price * (1 - discount / 100) : product.price;
     const inStock = product.inStock !== false && (product.stockCount || 0) > 0;
+    const maxStock = product.stockCount || 999;
     
-    // CLOSE ANY EXISTING MODAL FIRST
     closeModal();
     
     const modal = document.createElement('div');
@@ -438,7 +532,16 @@ function viewProduct(productId) {
             <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
                 <span style="color:#6B7280; font-size:14px;">Stock: ${inStock ? `✅ ${product.stockCount || 0} available` : '❌ Out of Stock'}</span>
             </div>
-            ${inStock ? `<button onclick="addToCartAndCloseModal('${product.id}')" style="width:100%; background:#FFD700; color:#000; border:none; padding:14px; border-radius:12px; font-size:18px; font-weight:600; cursor:pointer;">🛒 Add to Cart</button>` : `<button style="width:100%; background:#9CA3AF; color:#fff; border:none; padding:14px; border-radius:12px; font-size:18px; font-weight:600; cursor:not-allowed;">Out of Stock</button>`}
+            ${inStock ? `
+            <div style="display:flex; align-items:center; gap:12px; margin:12px 0;">
+                <span style="font-weight:600; font-size:16px;">Quantity:</span>
+                <button onclick="changeModalQty('${product.id}', -1)" style="background:#f3f4f6; border:2px solid #e5e7eb; width:36px; height:36px; border-radius:8px; cursor:pointer; font-size:20px; font-weight:700;">−</button>
+                <input type="number" id="modal-qty-${product.id}" value="1" min="1" max="${maxStock}" 
+                       style="width:60px; height:36px; text-align:center; border:2px solid #e5e7eb; border-radius:8px; font-size:18px; font-weight:600; padding:0 4px;">
+                <button onclick="changeModalQty('${product.id}', 1)" style="background:#f3f4f6; border:2px solid #e5e7eb; width:36px; height:36px; border-radius:8px; cursor:pointer; font-size:20px; font-weight:700;">+</button>
+            </div>
+            <button onclick="addModalToCart('${product.id}')" style="width:100%; background:#FFD700; color:#000; border:none; padding:14px; border-radius:12px; font-size:18px; font-weight:600; cursor:pointer;">🛒 Add to Cart</button>
+            ` : `<button style="width:100%; background:#9CA3AF; color:#fff; border:none; padding:14px; border-radius:12px; font-size:18px; font-weight:600; cursor:not-allowed;">Out of Stock</button>`}
         </div>
     `;
     
@@ -456,36 +559,9 @@ function closeModal() {
 }
 
 // ============================================
-// ADD TO CART AND CLOSE MODAL
-// ============================================
-function addToCartAndCloseModal(productId) {
-    // Add to cart first
-    const product = products.find(p => p.id === productId);
-    if (!product) return;
-    
-    const existing = cart.find(item => item.id === productId);
-    if (existing) {
-        existing.quantity += 1;
-    } else {
-        cart.push({ ...product, quantity: 1 });
-    }
-    saveCart();
-    updateCartCount();
-    renderCartSidebarContent();
-    renderProducts();
-    
-    // Close modal
-    closeModal();
-    
-    // Show toast
-    showToast(product.name);
-}
-
-// ============================================
 // TOAST NOTIFICATION
 // ============================================
 function showToast(productName) {
-    // Remove any existing toast
     const existingToast = document.querySelector('.toast-notification');
     if (existingToast) {
         existingToast.remove();
@@ -520,11 +596,20 @@ function showToast(productName) {
 function addToCart(productId) {
     const product = products.find(p => p.id === productId);
     if (!product) return;
+    
+    // Get quantity from input field if it exists
+    const input = document.getElementById(`qty-input-${productId}`);
+    let qtyToAdd = 1;
+    if (input) {
+        qtyToAdd = parseInt(input.value) || 1;
+        if (qtyToAdd <= 0) qtyToAdd = 1;
+    }
+    
     const existing = cart.find(item => item.id === productId);
     if (existing) {
-        existing.quantity += 1;
+        existing.quantity += qtyToAdd;
     } else {
-        cart.push({ ...product, quantity: 1 });
+        cart.push({ ...product, quantity: qtyToAdd });
     }
     saveCart();
     updateCartCount();
@@ -577,18 +662,16 @@ function updateCartCount() {
 }
 
 // ============================================
-// RENDER CART SIDEBAR CONTENT (ONLY UPDATES HTML, DOES NOT OPEN)
+// RENDER CART SIDEBAR CONTENT
 // ============================================
 function renderCartSidebarContent() {
     let sidebar = document.getElementById('cartSidebar');
     if (!sidebar) {
-        // Create sidebar if it doesn't exist
         sidebar = document.createElement('div');
         sidebar.id = 'cartSidebar';
         sidebar.style.cssText = `position:fixed; top:0; right:-400px; width:380px; height:100%; background:#fff; z-index:1500; transition:right 0.3s ease; box-shadow:-4px 0 24px rgba(0,0,0,0.15); display:flex; flex-direction:column;`;
         document.body.appendChild(sidebar);
         
-        // Create overlay (hidden by default)
         const overlay = document.createElement('div');
         overlay.id = 'cartOverlay';
         overlay.style.cssText = `position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:1400; display:none; cursor:pointer;`;
@@ -598,7 +681,6 @@ function renderCartSidebarContent() {
         document.body.appendChild(overlay);
     }
     
-    // If cart is empty, show empty state
     if (cart.length === 0) {
         sidebar.innerHTML = `
             <div style="padding:20px; border-bottom:1px solid #e5e7eb; display:flex; justify-content:space-between; align-items:center;">
@@ -614,7 +696,6 @@ function renderCartSidebarContent() {
         return;
     }
     
-    // Calculate totals
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
     const perItemDelivery = settings.deliveryFee || 100;
@@ -685,18 +766,16 @@ function renderCartSidebarContent() {
 }
 
 // ============================================
-// TOGGLE CART SIDEBAR - ONLY OPENS WHEN CLICKED
+// TOGGLE CART SIDEBAR
 // ============================================
 function toggleCartSidebar() {
     const sidebar = document.getElementById('cartSidebar');
     const overlay = document.getElementById('cartOverlay');
     if (!sidebar) return;
     
-    // Check if sidebar is open
     if (sidebar.style.right === '0px') {
         closeCartSidebar();
     } else {
-        // Update content before opening
         renderCartSidebarContent();
         sidebar.style.right = '0px';
         if (overlay) overlay.style.display = 'block';
@@ -725,7 +804,6 @@ function checkout() {
         alert('🛒 Your cart is empty!');
         return;
     }
-    // Make sure sidebar is closed
     closeCartSidebar();
     window.location.href = '/tadaa-marketplace/checkout.html';
 }
@@ -781,7 +859,9 @@ window.clearCart = clearCart;
 window.checkout = checkout;
 window.showToast = showToast;
 window.updateProductQuantity = updateProductQuantity;
-window.addToCartAndCloseModal = addToCartAndCloseModal;
+window.setProductQuantity = setProductQuantity;
+window.changeModalQty = changeModalQty;
+window.addModalToCart = addModalToCart;
 window.closeModal = closeModal;
 window.closeCartSidebar = closeCartSidebar;
 
@@ -792,4 +872,4 @@ document.addEventListener('DOMContentLoaded', () => {
     loadData();
 });
 
-console.log('✅ Tadaa! Website with ChatGPT fix ready!');
+console.log('✅ Tadaa! Website with quantity input ready!');
