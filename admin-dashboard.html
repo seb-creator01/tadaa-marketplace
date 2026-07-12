@@ -289,7 +289,7 @@
     };
 
     // ============================================
-    // PRODUCTS - FIXED WITH DELIVERY FEE
+    // PRODUCTS - FULLY WORKING
     // ============================================
     async function loadProducts() {
         pageContent.innerHTML = `
@@ -512,18 +512,9 @@
         }
     };
 
-    window.deleteProduct = async function(id) {
-        if (confirm('Delete this product?')) {
-            try {
-                await db.collection('products').doc(id).delete();
-                alert('✅ Product deleted!');
-                loadProducts();
-            } catch (e) {
-                alert('❌ Error: ' + e.message);
-            }
-        }
-    };
-
+    // ============================================
+    // EDIT & DELETE PRODUCT FUNCTIONS
+    // ============================================
     window.editProduct = async function(id) {
         try {
             const doc = await db.collection('products').doc(id).get();
@@ -589,7 +580,19 @@
                 </div>
             `;
         } catch (e) {
-            alert('Error: ' + e.message);
+            alert('Error loading product: ' + e.message);
+        }
+    };
+
+    window.deleteProduct = async function(id) {
+        if (confirm('Delete this product?')) {
+            try {
+                await db.collection('products').doc(id).delete();
+                alert('✅ Product deleted!');
+                loadProducts();
+            } catch (e) {
+                alert('❌ Error deleting product: ' + e.message);
+            }
         }
     };
 
@@ -634,7 +637,7 @@
             alert('✅ Product updated!');
             loadProducts();
         } catch (e) {
-            alert('❌ Error: ' + e.message);
+            alert('❌ Error updating product: ' + e.message);
         }
     };
 
