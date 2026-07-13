@@ -5,33 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tadaa! - Premium Online Marketplace</title>
     
-    <!-- SEO Meta Tags -->
     <meta name="description" content="Shop premium products at Tadaa! - Your trusted online marketplace in Nigeria." />
     <meta name="keywords" content="marketplace, online shopping, Nigeria, Tadaa, buy online" />
     <link rel="canonical" href="https://seb-creator01.github.io/tadaa-marketplace/" />
-    
-    <!-- Open Graph / Social Media -->
     <meta property="og:title" content="Tadaa! - Premium Online Marketplace" />
     <meta property="og:description" content="Shop premium products at Tadaa!" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://seb-creator01.github.io/tadaa-marketplace/" />
     
-    <!-- PWA Meta Tags -->
     <link rel="manifest" href="/tadaa-marketplace/manifest.json" />
     <meta name="theme-color" content="#FFD700" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     
-    <!-- Favicon -->
     <link rel="icon" href="/tadaa-marketplace/favicon.ico" />
-    
-    <!-- CSS -->
     <link rel="stylesheet" href="/tadaa-marketplace/assets/css/main.css" />
-    
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&display=swap" rel="stylesheet">
     
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -78,29 +68,17 @@
     <script>
         console.log('🚀 Tadaa! PWA loaded');
         
-        // ============================================
-        // CHECK IF APP IS INSTALLED
-        // ============================================
         function isAppInstalled() {
             if (window.matchMedia('(display-mode: standalone)').matches) return true;
             if (window.navigator.standalone) return true;
             return false;
         }
         
-        // ============================================
-        // SHOW / HIDE BANNER
-        // ============================================
         function showInstallBanner() {
             const banner = document.getElementById('installBanner');
             if (!banner) return;
-            if (isAppInstalled()) {
-                banner.classList.remove('show');
-                return;
-            }
-            if (sessionStorage.getItem('installDeclined') === 'true') {
-                banner.classList.remove('show');
-                return;
-            }
+            if (isAppInstalled()) { banner.classList.remove('show'); return; }
+            if (sessionStorage.getItem('installDeclined') === 'true') { banner.classList.remove('show'); return; }
             banner.classList.add('show');
         }
         
@@ -110,60 +88,56 @@
         }
         
         // ============================================
-        // INSTALL BUTTON - WORKS ON ANDROID
+        // INSTALL BUTTON - DIRECT APPROACH
         // ============================================
-        document.getElementById('installBtn').addEventListener('click', async function() {
+        document.getElementById('installBtn').addEventListener('click', function() {
             console.log('📲 Install button clicked');
             
-            // If we have the install prompt, use it
+            // Try the install prompt
             if (window.deferredPrompt) {
-                // Show the native install popup
                 window.deferredPrompt.prompt();
-                const result = await window.deferredPrompt.userChoice;
-                
-                if (result.outcome === 'accepted') {
-                    console.log('✅ App installed successfully!');
+                window.deferredPrompt.userChoice.then(function(result) {
+                    if (result.outcome === 'accepted') {
+                        console.log('✅ App installed!');
+                        hideInstallBanner();
+                    } else {
+                        console.log('❌ User declined');
+                        hideInstallBanner();
+                        sessionStorage.setItem('installDeclined', 'true');
+                    }
+                    window.deferredPrompt = null;
+                });
+                return;
+            }
+            
+            // If no deferredPrompt, try to trigger install directly
+            // This works on some Android browsers
+            try {
+                // Create a fake install prompt using the manifest
+                if (window.navigator && window.navigator.share) {
+                    // For browsers that support it
+                    alert('📲 Tap the three dots (⋮) in the browser menu and select "Install app"');
                     hideInstallBanner();
-                    showToast('🎉 Tadaa! installed successfully!');
-                } else {
-                    console.log('❌ User declined install');
-                    hideInstallBanner();
-                    sessionStorage.setItem('installDeclined', 'true');
+                    return;
                 }
-                window.deferredPrompt = null;
-                return;
-            }
-            
-            // If on iPhone or no install prompt, show instructions
-            if (navigator.userAgent.includes('iPhone') || navigator.userAgent.includes('iPad')) {
-                alert('📱 To install Tadaa! on iPhone:\n\n' +
-                      '1. Tap the Share icon (□↑) at the bottom\n' +
-                      '2. Scroll down and tap "Add to Home Screen"\n' +
-                      '3. Tap "Add" in the top right\n\n' +
-                      'This will add Tadaa! to your home screen!');
+                
+                // For other Android browsers, show the menu instruction once
+                alert('📲 Tap the three dots (⋮) in the browser menu and select "Install app"');
                 hideInstallBanner();
-                return;
+                
+            } catch(e) {
+                alert('📲 Tap the three dots (⋮) in the browser menu and select "Install app"');
+                hideInstallBanner();
             }
-            
-            // Fallback for other browsers
-            alert('📲 To install Tadaa!:\n\n' +
-                  '• On Android: Tap the three dots (⋮) → "Install app"\n' +
-                  '• On iPhone: Tap Share (□↑) → "Add to Home Screen"');
-            hideInstallBanner();
         });
         
-        // ============================================
-        // CANCEL BUTTON
-        // ============================================
         document.getElementById('cancelInstallBtn').addEventListener('click', function() {
             console.log('❌ User clicked Not Now');
             hideInstallBanner();
             sessionStorage.setItem('installDeclined', 'true');
         });
         
-        // ============================================
-        // CAPTURE INSTALL PROMPT
-        // ============================================
+        // Capture install prompt
         window.addEventListener('beforeinstallprompt', function(e) {
             console.log('📲 Install prompt captured');
             e.preventDefault();
@@ -171,46 +145,12 @@
             setTimeout(showInstallBanner, 1500);
         });
         
-        // ============================================
-        // APP INSTALLED
-        // ============================================
         window.addEventListener('appinstalled', function() {
             console.log('✅ App installed!');
             hideInstallBanner();
         });
         
-        // ============================================
-        // TOAST NOTIFICATION
-        // ============================================
-        function showToast(message) {
-            const existing = document.querySelector('.tadaa-toast');
-            if (existing) existing.remove();
-            
-            const toast = document.createElement('div');
-            toast.className = 'tadaa-toast';
-            toast.style.cssText = `
-                position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
-                background: #000; color: #fff; padding: 16px 24px;
-                border-radius: 12px; z-index: 9999;
-                font-family: 'Cormorant Garamond', serif;
-                font-size: 16px; text-align: center;
-                animation: slideInUp 0.5s ease;
-                max-width: 90%;
-            `;
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transition = 'opacity 0.5s';
-                setTimeout(() => toast.remove(), 500);
-            }, 3000);
-        }
-        
-        // ============================================
-        // SHOW BANNER ON PAGE LOAD
-        // ============================================
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('📄 DOM loaded');
             setTimeout(showInstallBanner, 2000);
         });
         
@@ -220,18 +160,12 @@
             }
         });
         
-        // ============================================
-        // SERVICE WORKER
-        // ============================================
+        // Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/tadaa-marketplace/sw.js')
-                    .then(function(reg) {
-                        console.log('✅ Service Worker registered');
-                    })
-                    .catch(function(err) {
-                        console.log('❌ Service Worker error:', err);
-                    });
+                    .then(function(reg) { console.log('✅ Service Worker registered'); })
+                    .catch(function(err) { console.log('❌ Service Worker error:', err); });
             });
         }
         
