@@ -37,66 +37,26 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     
     <style>
-        /* Install Banner - Simple Version */
-        #installBanner {
-            display: none;
-            background: #FFD700;
-            padding: 12px 20px;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 12px;
-            position: sticky;
-            top: 0;
-            z-index: 99;
-            border-bottom: 2px solid #000;
-        }
-        #installBanner.show {
-            display: flex !important;
-        }
-        #installBanner button {
-            border: none;
-            padding: 10px 20px;
-            border-radius: 50px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 700;
-            font-family: 'Cormorant Garamond', serif;
-        }
-        .btn-install {
-            background: #000;
-            color: #FFD700;
-        }
-        .btn-install:hover {
-            background: #1a1a1a;
-        }
-        .btn-cancel {
-            background: transparent;
-            color: #000;
-            border: 2px solid #000 !important;
-        }
-        .btn-cancel:hover {
-            background: #000;
-            color: #fff;
-        }
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        #installBanner.show {
-            animation: slideDown 0.5s ease;
-        }
+        #installBanner { display: none; background: #FFD700; padding: 12px 20px; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; position: sticky; top: 0; z-index: 99; }
+        #installBanner.show { display: flex !important; }
+        #installBanner button { border: none; padding: 10px 20px; border-radius: 50px; cursor: pointer; font-size: 14px; font-weight: 700; font-family: 'Cormorant Garamond', serif; }
+        .btn-install { background: #000; color: #FFD700; }
+        .btn-install:hover { background: #1a1a1a; }
+        .btn-cancel { background: transparent; color: #000; border: 2px solid #000 !important; }
+        .btn-cancel:hover { background: #000; color: #fff; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        #installBanner.show { animation: slideDown 0.5s ease; }
     </style>
 </head>
 <body>
     <div id="app">
-        <!-- Install Banner - SIMPLE VERSION -->
+        <!-- Install Banner -->
         <div id="installBanner">
             <div style="display:flex; align-items:center; gap:12px;">
                 <span style="font-size:28px;">📲</span>
                 <div>
                     <span style="font-weight:700; font-size:16px; color:#000;">Install Tadaa! App</span>
-                    <span style="font-size:12px; color:#333; display:block;">Add to home screen for faster shopping</span>
+                    <span style="font-size:12px; color:#333; display:block;">Get the full app experience</span>
                 </div>
             </div>
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -105,31 +65,16 @@
             </div>
         </div>
         
-        <!-- Header -->
         <header id="main-header"></header>
-        
-        <!-- Hero Section -->
         <section id="hero-section"></section>
-        
-        <!-- Announcement Section -->
         <section id="announcement-section"></section>
-        
-        <!-- Categories Section -->
         <section id="categories-section" style="padding: 30px 0;"></section>
-        
-        <!-- Products Section -->
         <section id="products-section" style="padding: 20px 0 40px;"></section>
-        
-        <!-- Footer -->
         <footer id="main-footer"></footer>
     </div>
     
-    <!-- Customer App -->
     <script src="/tadaa-marketplace/assets/js/customer/app.js"></script>
     
-    <!-- ============================================
-         SIMPLE PWA INSTALL
-         ============================================ -->
     <script>
         console.log('🚀 Tadaa! PWA loaded');
         
@@ -143,73 +88,68 @@
         }
         
         // ============================================
-        // SHOW INSTALL BANNER
+        // SHOW / HIDE BANNER
         // ============================================
         function showInstallBanner() {
             const banner = document.getElementById('installBanner');
             if (!banner) return;
-            
-            // Don't show if already installed
             if (isAppInstalled()) {
-                console.log('✅ App already installed, hiding banner');
                 banner.classList.remove('show');
                 return;
             }
-            
-            // Don't show if user declined this session
             if (sessionStorage.getItem('installDeclined') === 'true') {
-                console.log('⏭️ User declined this session');
                 banner.classList.remove('show');
                 return;
             }
-            
-            // Show the banner
-            console.log('📲 Showing install banner');
             banner.classList.add('show');
         }
         
-        // ============================================
-        // HIDE INSTALL BANNER
-        // ============================================
         function hideInstallBanner() {
             const banner = document.getElementById('installBanner');
-            if (banner) {
-                banner.classList.remove('show');
-            }
+            if (banner) banner.classList.remove('show');
         }
         
         // ============================================
-        // INSTALL BUTTON
+        // INSTALL BUTTON - WORKS ON ANDROID
         // ============================================
-        document.getElementById('installBtn').addEventListener('click', function() {
+        document.getElementById('installBtn').addEventListener('click', async function() {
             console.log('📲 Install button clicked');
             
-            // Try the native install prompt first
+            // If we have the install prompt, use it
             if (window.deferredPrompt) {
+                // Show the native install popup
                 window.deferredPrompt.prompt();
-                window.deferredPrompt.userChoice.then(function(result) {
-                    if (result.outcome === 'accepted') {
-                        console.log('✅ App installed!');
-                        hideInstallBanner();
-                    } else {
-                        console.log('❌ User declined');
-                        hideInstallBanner();
-                        sessionStorage.setItem('installDeclined', 'true');
-                    }
-                    window.deferredPrompt = null;
-                });
+                const result = await window.deferredPrompt.userChoice;
+                
+                if (result.outcome === 'accepted') {
+                    console.log('✅ App installed successfully!');
+                    hideInstallBanner();
+                    showToast('🎉 Tadaa! installed successfully!');
+                } else {
+                    console.log('❌ User declined install');
+                    hideInstallBanner();
+                    sessionStorage.setItem('installDeclined', 'true');
+                }
+                window.deferredPrompt = null;
                 return;
             }
             
-            // Fallback: Show instructions
-            var message = '📲 To install Tadaa! on your phone:\n\n';
-            message += '• On Android: Tap the three dots (⋮) → "Install app"\n';
-            message += '• On iPhone: Tap the share icon (□↑) → "Add to Home Screen"\n\n';
-            message += 'This will add Tadaa! to your home screen like a real app!';
+            // If on iPhone or no install prompt, show instructions
+            if (navigator.userAgent.includes('iPhone') || navigator.userAgent.includes('iPad')) {
+                alert('📱 To install Tadaa! on iPhone:\n\n' +
+                      '1. Tap the Share icon (□↑) at the bottom\n' +
+                      '2. Scroll down and tap "Add to Home Screen"\n' +
+                      '3. Tap "Add" in the top right\n\n' +
+                      'This will add Tadaa! to your home screen!');
+                hideInstallBanner();
+                return;
+            }
             
-            alert(message);
+            // Fallback for other browsers
+            alert('📲 To install Tadaa!:\n\n' +
+                  '• On Android: Tap the three dots (⋮) → "Install app"\n' +
+                  '• On iPhone: Tap Share (□↑) → "Add to Home Screen"');
             hideInstallBanner();
-            sessionStorage.setItem('installDeclined', 'true');
         });
         
         // ============================================
@@ -228,8 +168,6 @@
             console.log('📲 Install prompt captured');
             e.preventDefault();
             window.deferredPrompt = e;
-            
-            // Show banner after a delay
             setTimeout(showInstallBanner, 1500);
         });
         
@@ -242,18 +180,40 @@
         });
         
         // ============================================
+        // TOAST NOTIFICATION
+        // ============================================
+        function showToast(message) {
+            const existing = document.querySelector('.tadaa-toast');
+            if (existing) existing.remove();
+            
+            const toast = document.createElement('div');
+            toast.className = 'tadaa-toast';
+            toast.style.cssText = `
+                position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+                background: #000; color: #fff; padding: 16px 24px;
+                border-radius: 12px; z-index: 9999;
+                font-family: 'Cormorant Garamond', serif;
+                font-size: 16px; text-align: center;
+                animation: slideInUp 0.5s ease;
+                max-width: 90%;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.5s';
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+        
+        // ============================================
         // SHOW BANNER ON PAGE LOAD
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
             console.log('📄 DOM loaded');
-            
-            // Wait 2 seconds, then show banner
-            setTimeout(function() {
-                showInstallBanner();
-            }, 2000);
+            setTimeout(showInstallBanner, 2000);
         });
         
-        // Check when user comes back
         document.addEventListener('visibilitychange', function() {
             if (!document.hidden) {
                 setTimeout(showInstallBanner, 500);
@@ -275,7 +235,7 @@
             });
         }
         
-        console.log('✅ Tadaa! PWA ready - banner will show in 2 seconds');
+        console.log('✅ Tadaa! PWA ready');
     </script>
 </body>
 </html>
