@@ -1,5 +1,5 @@
 // ============================================
-// TADAA! - CUSTOMER WEBSITE (QUANTITY BUTTONS)
+// TADAA! - CUSTOMER WEBSITE (WITH PER-PRODUCT DELIVERY)
 // ============================================
 
 // ===== Firebase Config =====
@@ -33,6 +33,7 @@ let settings = {};
 let cart = [];
 let currentCategory = 'all';
 let searchTerm = '';
+let isModalOpen = false;
 
 // ============================================
 // LOAD CART
@@ -257,7 +258,7 @@ function renderCategories() {
 }
 
 // ============================================
-// RENDER PRODUCTS - WITH CLEAR QUANTITY BUTTON
+// RENDER PRODUCTS - WITH PER-PRODUCT DELIVERY FEE
 // ============================================
 function renderProducts() {
     const productsDiv = document.getElementById('products-section');
@@ -285,8 +286,6 @@ function renderProducts() {
         return;
     }
     
-    const perItemDelivery = settings.deliveryFee || 100;
-    
     let html = `
         <div style="max-width:1200px; margin:0 auto; padding:0 20px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
@@ -303,7 +302,9 @@ function renderProducts() {
         const discountedPrice = discount > 0 ? product.price * (1 - discount / 100) : product.price;
         const cartItem = cart.find(item => item.id === product.id);
         const qty = cartItem ? cartItem.quantity : 0;
-        const deliveryDisplay = perItemDelivery > 0 ? `Delivery: ₦${perItemDelivery}/item` : 'Free Delivery';
+        // PER-PRODUCT DELIVERY FEE
+        const productDeliveryFee = product.deliveryFee || settings.deliveryFee || 100;
+        const deliveryDisplay = productDeliveryFee > 0 ? `Delivery: ₦${productDeliveryFee}/item` : 'Free Delivery';
         
         html += `
             <div style="background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06); transition:transform 0.3s, box-shadow 0.3s; cursor:pointer;" onclick="viewProduct('${product.id}')" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.12)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)'">
@@ -331,11 +332,8 @@ function renderProducts() {
                     <div style="font-size:12px; color:#6B7280; margin-top:6px; margin-bottom:4px; font-weight:600;">📦 Quantity</div>
                     <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                         <button onclick="event.stopPropagation(); updateProductQuantity('${product.id}', -1)" style="background:#f3f4f6; border:2px solid #d1d5db; padding:6px 14px; border-radius:8px; cursor:pointer; font-size:18px; font-weight:700; ${qty === 0 ? 'opacity:0.4; cursor:not-allowed;' : ''}" ${qty === 0 ? 'disabled' : ''}>−</button>
-                        
                         <span style="min-width:32px; text-align:center; font-size:18px; font-weight:700; padding:0 4px;">${qty}</span>
-                        
                         <button onclick="event.stopPropagation(); updateProductQuantity('${product.id}', 1)" style="background:#f3f4f6; border:2px solid #d1d5db; padding:6px 14px; border-radius:8px; cursor:pointer; font-size:18px; font-weight:700;">+</button>
-                        
                         <button onclick="event.stopPropagation(); addToCart('${product.id}')" style="flex:1; background:#FFD700; color:#000; border:none; padding:8px 12px; border-radius:8px; font-weight:600; font-size:13px; cursor:pointer; transition:background 0.3s; min-width:65px;" onmouseover="this.style.background='#E6C200'" onmouseout="this.style.background='#FFD700'">
                             ${qty > 0 ? '🔄 Update' : 'Add +'}
                         </button>
@@ -351,7 +349,7 @@ function renderProducts() {
 }
 
 // ============================================
-// UPDATE PRODUCT QUANTITY (Button +/-)
+// UPDATE PRODUCT QUANTITY
 // ============================================
 function updateProductQuantity(productId, change) {
     const product = products.find(p => p.id === productId);
@@ -409,7 +407,7 @@ function toggleSearch() {
 }
 
 // ============================================
-// VIEW PRODUCT - WITH CLEAR QUANTITY BUTTONS
+// VIEW PRODUCT
 // ============================================
 function viewProduct(productId) {
     const product = products.find(p => p.id === productId);
@@ -419,6 +417,8 @@ function viewProduct(productId) {
     const discountedPrice = discount > 0 ? product.price * (1 - discount / 100) : product.price;
     const inStock = product.inStock !== false && (product.stockCount || 0) > 0;
     const maxStock = product.stockCount || 999;
+    // PER-PRODUCT DELIVERY FEE
+    const productDeliveryFee = product.deliveryFee || settings.deliveryFee || 100;
     
     closeModal();
     
@@ -448,6 +448,9 @@ function viewProduct(productId) {
             <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
                 <span style="color:#6B7280; font-size:14px;">Stock: ${inStock ? `✅ ${product.stockCount || 0} available` : '❌ Out of Stock'}</span>
             </div>
+            <div style="font-size:13px; color:#6B7280; margin-bottom:12px;">
+                🚚 Delivery: ₦${productDeliveryFee}/item
+            </div>
             ${inStock ? `
             <div style="margin:16px 0;">
                 <div style="font-size:14px; font-weight:600; margin-bottom:8px;">Quantity</div>
@@ -468,8 +471,6 @@ function viewProduct(productId) {
 // ============================================
 // MODAL QUANTITY CONTROLS
 // ============================================
-let modalQtyValue = {};
-
 function changeModalQty(productId, change) {
     const display = document.getElementById(`modal-qty-display-${productId}`);
     if (!display) return;
@@ -480,7 +481,6 @@ function changeModalQty(productId, change) {
     if (val < 1) val = 1;
     if (val > maxStock) val = maxStock;
     display.textContent = val;
-    modalQtyValue[productId] = val;
 }
 
 function addModalToCart(productId) {
@@ -616,7 +616,7 @@ function updateCartCount() {
 }
 
 // ============================================
-// RENDER CART SIDEBAR CONTENT
+// RENDER CART SIDEBAR CONTENT - WITH PER-PRODUCT DELIVERY
 // ============================================
 function renderCartSidebarContent() {
     let sidebar = document.getElementById('cartSidebar');
@@ -650,13 +650,20 @@ function renderCartSidebarContent() {
         return;
     }
     
+    // Calculate subtotal
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-    const perItemDelivery = settings.deliveryFee || 100;
+    
+    // Calculate delivery fee - PER PRODUCT
+    let totalDelivery = 0;
+    cart.forEach(item => {
+        const productDeliveryFee = item.deliveryFee || settings.deliveryFee || 100;
+        totalDelivery += productDeliveryFee * item.quantity;
+    });
+    
     const freeThreshold = settings.freeDeliveryThreshold || 5000;
     const freeDeliveryEnabled = settings.freeDeliveryEnabled || false;
     const isFreeDelivery = freeDeliveryEnabled && freeThreshold > 0 && subtotal >= freeThreshold;
-    const deliveryCharge = isFreeDelivery ? 0 : (perItemDelivery * totalItems);
+    const deliveryCharge = isFreeDelivery ? 0 : totalDelivery;
     const total = subtotal + deliveryCharge;
     const remainingForFree = freeThreshold - subtotal;
     
@@ -674,6 +681,7 @@ function renderCartSidebarContent() {
     cart.forEach(item => {
         const itemTotal = item.price * item.quantity;
         const imageUrl = item.images && item.images.length > 0 ? item.images[0] : '';
+        const itemDeliveryFee = item.deliveryFee || settings.deliveryFee || 100;
         cartHtml += `
             <div style="display:flex; gap:12px; padding:12px 0; border-bottom:1px solid #f3f4f6;">
                 <div style="width:60px; height:60px; border-radius:8px; overflow:hidden; background:#f3f4f6; flex-shrink:0;">
@@ -682,10 +690,11 @@ function renderCartSidebarContent() {
                 <div style="flex:1; min-width:0;">
                     <p style="margin:0; font-weight:600; font-size:14px;">${item.name}</p>
                     <p style="margin:4px 0 0; font-size:14px; font-weight:700;">₦${item.price.toLocaleString()}</p>
+                    <p style="margin:2px 0 0; font-size:11px; color:#6B7280;">Delivery: ₦${itemDeliveryFee}/item</p>
                     <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
-                        <button onclick="updateQuantity('${item.id}', -1)" style="background:#f3f4f6; border:1px solid #d1d5db; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:16px; font-weight:700;">−</button>
+                        <button onclick="updateQuantity('${item.id}', -1)" style="background:#f3f4f6; border:none; width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:16px;">−</button>
                         <span style="font-weight:600; min-width:24px; text-align:center;">${item.quantity}</span>
-                        <button onclick="updateQuantity('${item.id}', 1)" style="background:#f3f4f6; border:1px solid #d1d5db; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:16px; font-weight:700;">+</button>
+                        <button onclick="updateQuantity('${item.id}', 1)" style="background:#f3f4f6; border:none; width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:16px;">+</button>
                         <span style="margin-left:auto; font-weight:600;">₦${itemTotal.toLocaleString()}</span>
                         <button onclick="removeFromCart('${item.id}')" style="background:none; border:none; color:#EF4444; cursor:pointer; font-size:18px; margin-left:4px;">✕</button>
                     </div>
@@ -825,4 +834,4 @@ document.addEventListener('DOMContentLoaded', () => {
     loadData();
 });
 
-console.log('✅ Tadaa! Website with clear quantity buttons ready!');
+console.log('✅ Tadaa! Website with per-product delivery ready!');
