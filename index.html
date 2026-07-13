@@ -5,23 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tadaa! - Premium Online Marketplace</title>
     
+    <!-- SEO Meta Tags -->
     <meta name="description" content="Shop premium products at Tadaa! - Your trusted online marketplace in Nigeria." />
     <meta name="keywords" content="marketplace, online shopping, Nigeria, Tadaa, buy online" />
     <link rel="canonical" href="https://seb-creator01.github.io/tadaa-marketplace/" />
+    
+    <!-- Open Graph / Social Media -->
     <meta property="og:title" content="Tadaa! - Premium Online Marketplace" />
     <meta property="og:description" content="Shop premium products at Tadaa!" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://seb-creator01.github.io/tadaa-marketplace/" />
     
+    <!-- PWA Meta Tags -->
     <link rel="manifest" href="/tadaa-marketplace/manifest.json" />
     <meta name="theme-color" content="#FFD700" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     
+    <!-- Favicon -->
     <link rel="icon" href="/tadaa-marketplace/favicon.ico" />
+    
+    <!-- CSS -->
     <link rel="stylesheet" href="/tadaa-marketplace/assets/css/main.css" />
+    
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&display=swap" rel="stylesheet">
     
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -36,28 +46,6 @@
         .btn-cancel:hover { background: #000; color: #fff; }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
         #installBanner.show { animation: slideDown 0.5s ease; }
-        
-        /* Debug Status Bar */
-        #pwaStatus {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            right: 10px;
-            background: #000;
-            color: #fff;
-            padding: 12px 16px;
-            border-radius: 12px;
-            font-size: 12px;
-            z-index: 9998;
-            font-family: 'Courier New', monospace;
-            text-align: center;
-            border-left: 4px solid #FFD700;
-            max-width: 400px;
-            margin: 0 auto;
-        }
-        #pwaStatus .status-ok { color: #10B981; }
-        #pwaStatus .status-error { color: #EF4444; }
-        #pwaStatus .status-waiting { color: #F59E0B; }
     </style>
 </head>
 <body>
@@ -85,41 +73,57 @@
         <footer id="main-footer"></footer>
     </div>
     
-    <!-- PWA Status Bar -->
-    <div id="pwaStatus">
-        <span id="pwaStatusText">🔍 Checking PWA install status...</span>
-    </div>
-    
     <script src="/tadaa-marketplace/assets/js/customer/app.js"></script>
     
     <script>
         console.log('🚀 Tadaa! PWA loaded');
-        
-        // ============================================
-        // UPDATE STATUS DISPLAY
-        // ============================================
-        function updateStatus(message, type) {
-            const statusEl = document.getElementById('pwaStatusText');
-            if (statusEl) {
-                statusEl.textContent = message;
-                statusEl.className = type || '';
-            }
-            console.log('📊 Status:', message);
-        }
+        console.log('🔍 Checking PWA installability...');
         
         // ============================================
         // CHECK IF APP IS INSTALLED
         // ============================================
         function isAppInstalled() {
             if (window.matchMedia('(display-mode: standalone)').matches) {
-                updateStatus('✅ App is already installed!', 'status-ok');
+                console.log('✅ App is already installed (standalone mode)');
                 return true;
             }
             if (window.navigator.standalone) {
-                updateStatus('✅ App is already installed (iOS)', 'status-ok');
+                console.log('✅ App is already installed (iOS standalone)');
                 return true;
             }
             return false;
+        }
+        
+        // ============================================
+        // CHECK PWA REQUIREMENTS
+        // ============================================
+        function checkPWARequirements() {
+            const requirements = [];
+            
+            // Check HTTPS
+            if (window.location.protocol === 'https:') {
+                requirements.push('✅ HTTPS');
+            } else {
+                requirements.push('❌ HTTPS (required)');
+            }
+            
+            // Check manifest
+            const manifestLink = document.querySelector('link[rel="manifest"]');
+            if (manifestLink) {
+                requirements.push('✅ Manifest link exists');
+            } else {
+                requirements.push('❌ Manifest link (required)');
+            }
+            
+            // Check service worker
+            if ('serviceWorker' in navigator) {
+                requirements.push('✅ Service Worker support');
+            } else {
+                requirements.push('❌ Service Worker (required)');
+            }
+            
+            console.log('📋 PWA Requirements:', requirements);
+            return requirements;
         }
         
         // ============================================
@@ -129,23 +133,27 @@
             const banner = document.getElementById('installBanner');
             if (!banner) return;
             
+            // Check if already installed
             if (isAppInstalled()) {
+                console.log('⏭️ App already installed, hiding banner');
                 banner.classList.remove('show');
                 return;
             }
             
+            // Check if user declined this session
             if (sessionStorage.getItem('installDeclined') === 'true') {
+                console.log('⏭️ User declined this session, hiding banner');
                 banner.classList.remove('show');
-                updateStatus('⏭️ You declined install this session', 'status-waiting');
                 return;
             }
             
+            // Only show if deferredPrompt exists
             if (window.deferredPrompt) {
+                console.log('📲 Showing install banner (deferredPrompt available)');
                 banner.classList.add('show');
-                updateStatus('📲 Tap "Install" to add Tadaa! to your phone', 'status-ok');
             } else {
+                console.log('⏳ deferredPrompt not available yet, waiting...');
                 banner.classList.remove('show');
-                updateStatus('⏳ Waiting for install prompt...', 'status-waiting');
             }
         }
         
@@ -155,26 +163,28 @@
         }
         
         // ============================================
-        // INSTALL BUTTON
+        // INSTALL BUTTON - NO ALERTS
         // ============================================
         document.getElementById('installBtn').addEventListener('click', function() {
             console.log('📲 Install button clicked');
             
+            // Check if already installed
             if (isAppInstalled()) {
-                updateStatus('✅ App already installed!', 'status-ok');
+                console.log('⏭️ App already installed');
                 hideInstallBanner();
                 return;
             }
             
+            // Check if we have the install prompt
             if (window.deferredPrompt) {
-                updateStatus('📲 Showing install prompt...', 'status-waiting');
+                console.log('📲 Showing native install prompt');
                 window.deferredPrompt.prompt();
                 window.deferredPrompt.userChoice.then(function(result) {
                     if (result.outcome === 'accepted') {
-                        updateStatus('✅ App installed successfully! 🎉', 'status-ok');
+                        console.log('✅ App installed successfully!');
                         hideInstallBanner();
                     } else {
-                        updateStatus('❌ You declined the install', 'status-error');
+                        console.log('❌ User declined install');
                         hideInstallBanner();
                         sessionStorage.setItem('installDeclined', 'true');
                     }
@@ -183,8 +193,8 @@
                 return;
             }
             
-            // No install prompt
-            updateStatus('❌ Cannot install right now. Try using Chrome browser.', 'status-error');
+            // No install prompt available
+            console.log('❌ No install prompt available');
             hideInstallBanner();
             sessionStorage.setItem('installDeclined', 'true');
         });
@@ -196,7 +206,6 @@
             console.log('❌ User clicked Not Now');
             hideInstallBanner();
             sessionStorage.setItem('installDeclined', 'true');
-            updateStatus('⏭️ Install declined this session', 'status-waiting');
         });
         
         // ============================================
@@ -206,8 +215,13 @@
             console.log('📲 beforeinstallprompt event FIRED!');
             e.preventDefault();
             window.deferredPrompt = e;
-            updateStatus('✅ App is ready to install! Tap "Install" above.', 'status-ok');
-            setTimeout(showInstallBanner, 1000);
+            
+            console.log('✅ deferredPrompt is now available');
+            
+            // Show banner after a short delay
+            setTimeout(function() {
+                showInstallBanner();
+            }, 1000);
         });
         
         // ============================================
@@ -215,52 +229,54 @@
         // ============================================
         window.addEventListener('appinstalled', function() {
             console.log('✅ App installed successfully!');
-            updateStatus('✅ App installed! 🎉', 'status-ok');
             hideInstallBanner();
         });
         
         // ============================================
-        // INITIALIZE
+        // CHECK PWA REQUIREMENTS ON LOAD
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
             console.log('📄 DOM loaded');
             
-            // Check if already installed
-            if (isAppInstalled()) {
-                updateStatus('✅ App is already installed!', 'status-ok');
-                hideInstallBanner();
-                return;
-            }
+            // Check PWA requirements
+            const requirements = checkPWARequirements();
             
-            updateStatus('🔍 Checking if app can be installed...', 'status-waiting');
-            
-            // Check after 3 seconds
+            // Wait 3 seconds, then check if deferredPrompt exists
             setTimeout(function() {
                 if (window.deferredPrompt) {
-                    updateStatus('✅ App is ready to install!', 'status-ok');
+                    console.log('✅ deferredPrompt is available - app is installable');
                     showInstallBanner();
                 } else {
-                    updateStatus('⏳ Waiting for install prompt. Try refreshing.', 'status-waiting');
-                    // Try again after 5 more seconds
-                    setTimeout(function() {
-                        if (window.deferredPrompt) {
-                            updateStatus('✅ App is ready to install!', 'status-ok');
-                            showInstallBanner();
-                        } else {
-                            updateStatus('❌ Install not available. Use Chrome browser.', 'status-error');
-                        }
-                    }, 5000);
+                    console.log('❌ deferredPrompt is NOT available');
+                    console.log('💡 This means the browser is not allowing installation.');
+                    console.log('🔍 Possible reasons:');
+                    console.log('   - App already installed');
+                    console.log('   - User previously declined');
+                    console.log('   - Browser does not support PWA');
+                    console.log('   - Not meeting PWA criteria');
+                    
+                    // Check if already installed
+                    if (isAppInstalled()) {
+                        console.log('✅ App is already installed - banner hidden');
+                        hideInstallBanner();
+                    } else {
+                        console.log('📲 App is not installed but prompt not available');
+                        // Don't show banner if no deferredPrompt
+                        hideInstallBanner();
+                    }
                 }
             }, 3000);
         });
         
+        // Check when user comes back to page
         document.addEventListener('visibilitychange', function() {
             if (!document.hidden) {
                 console.log('👁️ Page became visible');
                 setTimeout(function() {
                     if (window.deferredPrompt && !isAppInstalled()) {
                         showInstallBanner();
-                        updateStatus('✅ App is ready to install!', 'status-ok');
+                    } else {
+                        hideInstallBanner();
                     }
                 }, 500);
             }
@@ -273,15 +289,16 @@
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/tadaa-marketplace/sw.js')
                     .then(function(reg) {
-                        console.log('✅ Service Worker registered');
+                        console.log('✅ Service Worker registered successfully');
                     })
                     .catch(function(err) {
-                        console.log('❌ Service Worker error:', err);
+                        console.log('❌ Service Worker registration failed:', err);
                     });
             });
         }
         
-        console.log('✅ Tadaa! PWA ready');
+        console.log('✅ Tadaa! PWA ready with debug logging');
+        console.log('📱 Open the console to see install status');
     </script>
 </body>
 </html>
