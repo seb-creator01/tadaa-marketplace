@@ -1,5 +1,5 @@
 // ============================================
-// TADAA! - CUSTOMER WEBSITE (FULLY ANIMATED)
+// TADAA! - CUSTOMER WEBSITE (COMPLETE)
 // ============================================
 
 // ===== Firebase Config =====
@@ -35,7 +35,7 @@ let currentCategory = 'all';
 let searchTerm = '';
 
 // ============================================
-// THEME TOGGLE FUNCTIONS
+// THEME TOGGLE
 // ============================================
 function toggleTheme() {
     const html = document.documentElement;
@@ -46,12 +46,10 @@ function toggleTheme() {
         html.removeAttribute('data-theme');
         localStorage.setItem('theme', 'light');
         if (themeToggle) themeToggle.textContent = '🌙';
-        console.log('☀️ Light mode activated');
     } else {
         html.setAttribute('data-theme', 'dark');
         localStorage.setItem('theme', 'dark');
         if (themeToggle) themeToggle.textContent = '☀️';
-        console.log('🌙 Dark mode activated');
     }
 }
 
@@ -90,6 +88,32 @@ function saveCart() {
     } catch (e) {
         console.error('Error saving cart:', e);
     }
+}
+
+// ============================================
+// SHOW MAINTENANCE PAGE
+// ============================================
+function showMaintenancePage() {
+    console.log('🔧 Showing maintenance page');
+    if (!appContainer) return;
+    appContainer.innerHTML = `
+        <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, #000 0%, #1a1a1a 100%); padding:20px;">
+            <div style="max-width:500px; width:100%; background:var(--bg-card); border-radius:24px; padding:48px 40px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+                <div style="font-size:64px; margin-bottom:16px;">🔧</div>
+                <h1 style="font-family:'Cormorant Garamond', serif; font-size:32px; color:var(--text-primary); margin:0 0 8px;">Store Under Maintenance</h1>
+                <p style="color:var(--text-secondary); font-size:18px; margin:0 0 8px;">We're currently updating our store.</p>
+                <p style="color:var(--text-muted); font-size:14px; margin:0 0 24px;">Please check back soon!</p>
+                <div style="background:var(--bg-input); border-radius:12px; padding:16px; text-align:left;">
+                    <p style="margin:4px 0; color:var(--text-secondary); font-size:14px;"><strong>🕐 Business Hours:</strong> ${settings.businessHours || 'Mon-Fri: 9am - 6pm'}</p>
+                    <p style="margin:4px 0; color:var(--text-secondary); font-size:14px;"><strong>📧 Contact:</strong> ${settings.storeEmail || 'support@tadaa.com'}</p>
+                    <p style="margin:4px 0; color:var(--text-secondary); font-size:14px;"><strong>📞 Phone:</strong> ${settings.storePhone || '+2348012345678'}</p>
+                </div>
+                <div style="margin-top:20px; padding-top:20px; border-top:1px solid var(--border-color);">
+                    <p style="color:var(--text-muted); font-size:12px; margin:0;">© 2026 Tadaa! Marketplace. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 // ============================================
@@ -138,28 +162,6 @@ async function loadData() {
             `;
         }
     }
-}
-
-function showMaintenancePage() {
-    if (!appContainer) return;
-    appContainer.innerHTML = `
-        <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, #000 0%, #1a1a1a 100%); padding:20px;">
-            <div style="max-width:500px; width:100%; background:var(--bg-card); border-radius:24px; padding:48px 40px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
-                <div style="font-size:64px; margin-bottom:16px;">🔧</div>
-                <h1 style="font-family:'Cormorant Garamond', serif; font-size:32px; color:var(--text-primary); margin:0 0 8px;">Store Under Maintenance</h1>
-                <p style="color:var(--text-secondary); font-size:18px; margin:0 0 8px;">We're currently updating our store.</p>
-                <p style="color:var(--text-muted); font-size:14px; margin:0 0 24px;">Please check back soon!</p>
-                <div style="background:var(--bg-input); border-radius:12px; padding:16px; text-align:left;">
-                    <p style="margin:4px 0; color:var(--text-secondary); font-size:14px;"><strong>🕐 Business Hours:</strong> ${settings.businessHours || 'Mon-Fri: 9am - 6pm'}</p>
-                    <p style="margin:4px 0; color:var(--text-secondary); font-size:14px;"><strong>📧 Contact:</strong> ${settings.storeEmail || 'support@tadaa.com'}</p>
-                    <p style="margin:4px 0; color:var(--text-secondary); font-size:14px;"><strong>📞 Phone:</strong> ${settings.storePhone || '+2348012345678'}</p>
-                </div>
-                <div style="margin-top:20px; padding-top:20px; border-top:1px solid var(--border-color);">
-                    <p style="color:var(--text-muted); font-size:12px; margin:0;">© 2026 Tadaa! Marketplace. All rights reserved.</p>
-                </div>
-            </div>
-        </div>
-    `;
 }
 
 // ============================================
@@ -212,7 +214,7 @@ function renderHeader() {
 }
 
 // ============================================
-// RENDER HERO - ANIMATED
+// RENDER HERO
 // ============================================
 function renderHero() {
     const heroSection = document.getElementById('hero-section');
@@ -285,7 +287,7 @@ function renderCategories() {
 }
 
 // ============================================
-// RENDER PRODUCTS - WITH ANIMATIONS
+// RENDER PRODUCTS
 // ============================================
 function renderProducts() {
     const productsDiv = document.getElementById('products-section');
@@ -333,7 +335,7 @@ function renderProducts() {
         const deliveryDisplay = productDeliveryFee > 0 ? `Delivery: ₦${productDeliveryFee}/item` : 'Free Delivery';
         
         html += `
-            <div class="product-card animate-fade-scale" style="background:var(--bg-card); border-radius:12px; overflow:hidden; box-shadow:var(--shadow-sm); border:1px solid var(--border-color); cursor:pointer; transition:all 0.3s cubic-bezier(0.4,0,0.2,1); animation-delay:${index * 0.05}s;" onclick="viewProduct('${product.id}')" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-lg)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-sm)'">
+            <div class="product-card" style="background:var(--bg-card); border-radius:12px; overflow:hidden; box-shadow:var(--shadow-sm); border:1px solid var(--border-color); cursor:pointer; transition:all 0.3s cubic-bezier(0.4,0,0.2,1);" onclick="viewProduct('${product.id}')" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-lg)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-sm)'">
                 <div style="position:relative; padding-bottom:100%; background:#f3f4f6;">
                     ${imageUrl ? `<img src="${imageUrl}" alt="${product.name}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; transition:transform 0.5s ease;" loading="lazy">` : '<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:32px;">📷</div>'}
                     ${discount > 0 ? `<div style="position:absolute; top:6px; right:6px; background:#EF4444; color:#fff; padding:2px 8px; border-radius:50px; font-size:10px; font-weight:700;">${discount}% OFF</div>` : ''}
@@ -436,6 +438,9 @@ function toggleSearch() {
 // VIEW PRODUCT
 // ============================================
 function viewProduct(productId) {
+    // Close any existing modal first
+    closeModal();
+    
     const product = products.find(p => p.id === productId);
     if (!product) return;
     const imageUrl = product.images && product.images.length > 0 ? product.images[0] : '';
@@ -444,8 +449,6 @@ function viewProduct(productId) {
     const inStock = product.inStock !== false && (product.stockCount || 0) > 0;
     const maxStock = product.stockCount || 999;
     const productDeliveryFee = product.deliveryFee || settings.deliveryFee || 100;
-    
-    closeModal();
     
     const modal = document.createElement('div');
     modal.id = 'productModal';
@@ -508,6 +511,9 @@ function changeModalQty(productId, change) {
     display.textContent = val;
 }
 
+// ============================================
+// ADD TO CART FROM MODAL - FIXED
+// ============================================
 function addModalToCart(productId) {
     const display = document.getElementById(`modal-qty-display-${productId}`);
     const qty = parseInt(display?.textContent) || 1;
@@ -527,21 +533,40 @@ function addModalToCart(productId) {
     } else {
         cart.push({ ...product, quantity: qty });
     }
+    
     saveCart();
     updateCartCount();
+    
+    // CLOSE MODAL FIRST - THIS IS THE FIX
+    closeModal();
+    
+    // THEN UPDATE UI
     renderCartSidebarContent();
     renderProducts();
-    closeModal();
     showToast(product.name);
 }
 
 // ============================================
-// CLOSE MODAL
+// CLOSE MODAL - COMPLETE CLEANUP
 // ============================================
 function closeModal() {
     const modal = document.getElementById('productModal');
     if (modal) {
         modal.remove();
+    }
+    
+    // Remove any leftover overlays
+    document.querySelectorAll('.modal-overlay, .modal-backdrop').forEach(el => el.remove());
+    
+    // Restore body scroll
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    
+    // Reset any inline styles
+    const app = document.getElementById('app');
+    if (app) {
+        app.style.filter = '';
+        app.style.pointerEvents = '';
     }
 }
 
@@ -856,4 +881,4 @@ document.addEventListener('DOMContentLoaded', () => {
     loadData();
 });
 
-console.log('✅ Tadaa! Website with animations ready!');
+console.log('✅ Tadaa! Website with modal fix ready!');
