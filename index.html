@@ -5,33 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tadaa! - Premium Online Marketplace</title>
     
-    <!-- SEO Meta Tags -->
     <meta name="description" content="Shop premium products at Tadaa! - Your trusted online marketplace in Nigeria." />
-    <meta name="keywords" content="marketplace, online shopping, Nigeria, Tadaa, buy online" />
     <link rel="canonical" href="https://seb-creator01.github.io/tadaa-marketplace/" />
-    
-    <!-- Open Graph / Social Media -->
     <meta property="og:title" content="Tadaa! - Premium Online Marketplace" />
     <meta property="og:description" content="Shop premium products at Tadaa!" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://seb-creator01.github.io/tadaa-marketplace/" />
     
-    <!-- PWA Meta Tags -->
     <link rel="manifest" href="/tadaa-marketplace/manifest.json" />
     <meta name="theme-color" content="#FFD700" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     
-    <!-- Favicon -->
     <link rel="icon" href="/tadaa-marketplace/favicon.ico" />
-    
-    <!-- CSS -->
     <link rel="stylesheet" href="/tadaa-marketplace/assets/css/main.css" />
-    
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&display=swap" rel="stylesheet">
     
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -77,7 +64,13 @@
     
     <script>
         console.log('🚀 Tadaa! PWA loaded');
-        console.log('🔍 Checking PWA installability...');
+        
+        let deferredPrompt = null;
+        let installBannerShown = false;
+        
+        const banner = document.getElementById('installBanner');
+        const installBtn = document.getElementById('installBtn');
+        const cancelBtn = document.getElementById('cancelInstallBtn');
         
         // ============================================
         // CHECK IF APP IS INSTALLED
@@ -88,217 +81,168 @@
                 return true;
             }
             if (window.navigator.standalone) {
-                console.log('✅ App is already installed (iOS standalone)');
+                console.log('✅ App is already installed (iOS)');
                 return true;
             }
             return false;
         }
         
         // ============================================
-        // CHECK PWA REQUIREMENTS
-        // ============================================
-        function checkPWARequirements() {
-            const requirements = [];
-            
-            // Check HTTPS
-            if (window.location.protocol === 'https:') {
-                requirements.push('✅ HTTPS');
-            } else {
-                requirements.push('❌ HTTPS (required)');
-            }
-            
-            // Check manifest
-            const manifestLink = document.querySelector('link[rel="manifest"]');
-            if (manifestLink) {
-                requirements.push('✅ Manifest link exists');
-            } else {
-                requirements.push('❌ Manifest link (required)');
-            }
-            
-            // Check service worker
-            if ('serviceWorker' in navigator) {
-                requirements.push('✅ Service Worker support');
-            } else {
-                requirements.push('❌ Service Worker (required)');
-            }
-            
-            console.log('📋 PWA Requirements:', requirements);
-            return requirements;
-        }
-        
-        // ============================================
         // SHOW / HIDE BANNER
         // ============================================
-        function showInstallBanner() {
-            const banner = document.getElementById('installBanner');
+        function showBanner() {
             if (!banner) return;
-            
-            // Check if already installed
-            if (isAppInstalled()) {
-                console.log('⏭️ App already installed, hiding banner');
-                banner.classList.remove('show');
-                return;
+            if (isAppInstalled()) { banner.classList.remove('show'); return; }
+            if (sessionStorage.getItem('installDeclined') === 'true') { banner.classList.remove('show'); return; }
+            if (!deferredPrompt) { 
+                console.log('⏳ No deferredPrompt, banner hidden');
+                banner.classList.remove('show'); 
+                return; 
             }
-            
-            // Check if user declined this session
-            if (sessionStorage.getItem('installDeclined') === 'true') {
-                console.log('⏭️ User declined this session, hiding banner');
-                banner.classList.remove('show');
-                return;
-            }
-            
-            // Only show if deferredPrompt exists
-            if (window.deferredPrompt) {
-                console.log('📲 Showing install banner (deferredPrompt available)');
-                banner.classList.add('show');
-            } else {
-                console.log('⏳ deferredPrompt not available yet, waiting...');
-                banner.classList.remove('show');
-            }
+            console.log('📲 Showing install banner');
+            banner.classList.add('show');
+            installBannerShown = true;
         }
         
-        function hideInstallBanner() {
-            const banner = document.getElementById('installBanner');
+        function hideBanner() {
             if (banner) banner.classList.remove('show');
         }
         
         // ============================================
-        // INSTALL BUTTON - NO ALERTS
+        // INSTALL BUTTON - ONLY PROMPT, NO ALERTS
         // ============================================
-        document.getElementById('installBtn').addEventListener('click', function() {
-            console.log('📲 Install button clicked');
-            
-            // Check if already installed
-            if (isAppInstalled()) {
-                console.log('⏭️ App already installed');
-                hideInstallBanner();
-                return;
-            }
-            
-            // Check if we have the install prompt
-            if (window.deferredPrompt) {
-                console.log('📲 Showing native install prompt');
-                window.deferredPrompt.prompt();
-                window.deferredPrompt.userChoice.then(function(result) {
-                    if (result.outcome === 'accepted') {
-                        console.log('✅ App installed successfully!');
-                        hideInstallBanner();
-                    } else {
-                        console.log('❌ User declined install');
-                        hideInstallBanner();
-                        sessionStorage.setItem('installDeclined', 'true');
-                    }
-                    window.deferredPrompt = null;
-                });
-                return;
-            }
-            
-            // No install prompt available
-            console.log('❌ No install prompt available');
-            hideInstallBanner();
-            sessionStorage.setItem('installDeclined', 'true');
-        });
+        if (installBtn) {
+            installBtn.addEventListener('click', function() {
+                console.log('📲 Install button clicked');
+                
+                if (isAppInstalled()) {
+                    console.log('⏭️ Already installed');
+                    hideBanner();
+                    return;
+                }
+                
+                if (deferredPrompt) {
+                    console.log('📲 Showing native install prompt');
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then(function(result) {
+                        if (result.outcome === 'accepted') {
+                            console.log('✅ App installed successfully!');
+                            hideBanner();
+                            sessionStorage.removeItem('installDeclined');
+                        } else {
+                            console.log('❌ User declined');
+                            hideBanner();
+                            sessionStorage.setItem('installDeclined', 'true');
+                        }
+                        deferredPrompt = null;
+                    });
+                } else {
+                    console.log('❌ No deferredPrompt available');
+                    hideBanner();
+                    sessionStorage.setItem('installDeclined', 'true');
+                }
+            });
+        }
         
         // ============================================
         // CANCEL BUTTON
         // ============================================
-        document.getElementById('cancelInstallBtn').addEventListener('click', function() {
-            console.log('❌ User clicked Not Now');
-            hideInstallBanner();
-            sessionStorage.setItem('installDeclined', 'true');
-        });
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function() {
+                console.log('❌ User cancelled');
+                hideBanner();
+                sessionStorage.setItem('installDeclined', 'true');
+            });
+        }
         
         // ============================================
-        // CAPTURE INSTALL PROMPT
+        // CAPTURE INSTALL PROMPT - THIS IS KEY
         // ============================================
         window.addEventListener('beforeinstallprompt', function(e) {
             console.log('📲 beforeinstallprompt event FIRED!');
             e.preventDefault();
-            window.deferredPrompt = e;
-            
-            console.log('✅ deferredPrompt is now available');
-            
-            // Show banner after a short delay
-            setTimeout(function() {
-                showInstallBanner();
-            }, 1000);
+            deferredPrompt = e;
+            console.log('✅ deferredPrompt saved');
+            showBanner();
         });
         
         // ============================================
-        // APP INSTALLED EVENT
+        // APP INSTALLED
         // ============================================
         window.addEventListener('appinstalled', function() {
             console.log('✅ App installed successfully!');
-            hideInstallBanner();
+            hideBanner();
         });
         
         // ============================================
-        // CHECK PWA REQUIREMENTS ON LOAD
+        // CHECK ON LOAD
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
             console.log('📄 DOM loaded');
             
-            // Check PWA requirements
-            const requirements = checkPWARequirements();
+            if (isAppInstalled()) {
+                console.log('✅ App already installed - hiding banner');
+                hideBanner();
+                return;
+            }
             
-            // Wait 3 seconds, then check if deferredPrompt exists
+            console.log('🔍 Checking PWA status...');
+            console.log('   - HTTPS:', window.location.protocol === 'https:' ? '✅' : '❌');
+            console.log('   - Manifest:', document.querySelector('link[rel="manifest"]') ? '✅' : '❌');
+            console.log('   - Service Worker:', 'serviceWorker' in navigator ? '✅' : '❌');
+            
+            // Show banner if deferredPrompt exists
             setTimeout(function() {
-                if (window.deferredPrompt) {
-                    console.log('✅ deferredPrompt is available - app is installable');
-                    showInstallBanner();
+                if (deferredPrompt) {
+                    console.log('✅ deferredPrompt exists - showing banner');
+                    showBanner();
                 } else {
-                    console.log('❌ deferredPrompt is NOT available');
-                    console.log('💡 This means the browser is not allowing installation.');
-                    console.log('🔍 Possible reasons:');
-                    console.log('   - App already installed');
-                    console.log('   - User previously declined');
-                    console.log('   - Browser does not support PWA');
-                    console.log('   - Not meeting PWA criteria');
-                    
-                    // Check if already installed
-                    if (isAppInstalled()) {
-                        console.log('✅ App is already installed - banner hidden');
-                        hideInstallBanner();
-                    } else {
-                        console.log('📲 App is not installed but prompt not available');
-                        // Don't show banner if no deferredPrompt
-                        hideInstallBanner();
-                    }
+                    console.log('⏳ deferredPrompt not yet available');
+                    // Try again after 5 seconds
+                    setTimeout(function() {
+                        if (deferredPrompt) {
+                            console.log('✅ deferredPrompt now exists - showing banner');
+                            showBanner();
+                        } else {
+                            console.log('❌ deferredPrompt still not available');
+                            console.log('💡 This means Chrome is not allowing installation.');
+                            console.log('🔍 Possible reasons:');
+                            console.log('   - User declined before (Chrome remembers)');
+                            console.log('   - App was installed before');
+                            console.log('   - Chrome settings blocking it');
+                            hideBanner();
+                        }
+                    }, 5000);
                 }
-            }, 3000);
+            }, 2000);
         });
         
-        // Check when user comes back to page
+        // Check when user comes back
         document.addEventListener('visibilitychange', function() {
             if (!document.hidden) {
                 console.log('👁️ Page became visible');
-                setTimeout(function() {
-                    if (window.deferredPrompt && !isAppInstalled()) {
-                        showInstallBanner();
-                    } else {
-                        hideInstallBanner();
-                    }
-                }, 500);
+                if (deferredPrompt && !isAppInstalled()) {
+                    showBanner();
+                }
             }
         });
         
         // ============================================
-        // SERVICE WORKER
+        // SERVICE WORKER WITH VERSIONING
         // ============================================
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/tadaa-marketplace/sw.js')
                     .then(function(reg) {
-                        console.log('✅ Service Worker registered successfully');
+                        console.log('✅ Service Worker registered');
                     })
                     .catch(function(err) {
-                        console.log('❌ Service Worker registration failed:', err);
+                        console.log('❌ Service Worker error:', err);
                     });
             });
         }
         
-        console.log('✅ Tadaa! PWA ready with debug logging');
-        console.log('📱 Open the console to see install status');
+        console.log('✅ Tadaa! PWA ready');
     </script>
 </body>
 </html>
