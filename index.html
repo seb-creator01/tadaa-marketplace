@@ -38,6 +38,21 @@
 </head>
 <body>
     <div id="app">
+        <!-- Install App Banner -->
+        <div id="installBanner" style="display:none; background:#FFD700; padding:12px 20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; position:sticky; top:0; z-index:99;">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span style="font-size:28px;">📲</span>
+                <div>
+                    <span style="font-weight:700; font-size:16px; color:#000;">Install Tadaa! App</span>
+                    <span style="font-size:13px; color:#333; display:block;">Get the best shopping experience</span>
+                </div>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button id="installBtn" style="background:#000; color:#FFD700; border:none; padding:10px 20px; border-radius:50px; font-weight:700; cursor:pointer; font-size:14px;">📲 Install</button>
+                <button id="cancelInstallBtn" style="background:transparent; color:#000; border:2px solid #000; padding:10px 20px; border-radius:50px; cursor:pointer; font-size:14px;">Not Now</button>
+            </div>
+        </div>
+        
         <!-- Header will be injected here -->
         <header id="main-header"></header>
         
@@ -61,24 +76,144 @@
     <script src="/tadaa-marketplace/assets/js/customer/app.js"></script>
     
     <!-- ============================================
-         REGISTER SERVICE WORKER (PWA)
+         PWA INSTALL & SERVICE WORKER
          ============================================ -->
     <script>
         // ============================================
-        // REGISTER SERVICE WORKER (PWA)
+        // PWA INSTALL PROMPT
+        // ============================================
+        let deferredPrompt;
+        const installBanner = document.getElementById('installBanner');
+        const installBtn = document.getElementById('installBtn');
+        const cancelBtn = document.getElementById('cancelInstallBtn');
+
+        function showInstallBanner() {
+            if (installBanner) {
+                installBanner.style.display = 'flex';
+            }
+        }
+
+        function hideInstallBanner() {
+            if (installBanner) {
+                installBanner.style.display = 'none';
+            }
+        }
+
+        function isAppInstalled() {
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                return true;
+            }
+            if (window.navigator.standalone) {
+                return true;
+            }
+            return false;
+        }
+
+        // ============================================
+        // INSTALL EVENT
+        // ============================================
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('📲 Install prompt available');
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            if (!isAppInstalled()) {
+                showInstallBanner();
+            }
+        });
+
+        // ============================================
+        // INSTALL BUTTON
+        // ============================================
+        if (installBtn) {
+            installBtn.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const result = await deferredPrompt.userChoice;
+                    console.log('✅ User choice:', result.outcome);
+                    
+                    if (result.outcome === 'accepted') {
+                        console.log('✅ App installed!');
+                        hideInstallBanner();
+                    } else {
+                        console.log('❌ User declined install');
+                        hideInstallBanner();
+                        sessionStorage.setItem('installDeclined', 'true');
+                    }
+                    deferredPrompt = null;
+                } else {
+                    alert('📲 Tap the three dots (⋮) and select "Install app"');
+                }
+            });
+        }
+
+        // ============================================
+        // CANCEL BUTTON
+        // ============================================
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                console.log('❌ User cancelled install');
+                hideInstallBanner();
+                sessionStorage.setItem('installDeclined', 'true');
+            });
+        }
+
+        // ============================================
+        // APP INSTALLED
+        // ============================================
+        window.addEventListener('appinstalled', (event) => {
+            console.log('✅ Tadaa! app installed successfully!');
+            hideInstallBanner();
+            showToast('🎉 Thank you for installing Tadaa!');
+        });
+
+        // ============================================
+        // CHECK BANNER
+        // ============================================
+        function checkInstallBanner() {
+            if (isAppInstalled()) {
+                hideInstallBanner();
+                return;
+            }
+            if (sessionStorage.getItem('installDeclined') === 'true') {
+                hideInstallBanner();
+                return;
+            }
+            if (deferredPrompt) {
+                showInstallBanner();
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+                background: #000; color: #fff; padding: 16px 24px;
+                border-radius: 12px; z-index: 9999;
+                font-family: 'Cormorant Garamond', serif;
+                font-size: 16px; text-align: center;
+                animation: slideInUp 0.5s ease;
+                max-width: 90%;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.5s';
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+
+        // ============================================
+        // SERVICE WORKER
         // ============================================
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/tadaa-marketplace/sw.js')
                     .then((registration) => {
-                        console.log('✅ Service Worker registered successfully!');
-                        console.log('📱 App can now be installed!');
-                        
-                        // Check for updates
+                        console.log('✅ Service Worker registered');
                         registration.addEventListener('updatefound', () => {
                             const newWorker = registration.installing;
-                            console.log('🔄 New Service Worker installing...');
-                            
                             newWorker.addEventListener('statechange', () => {
                                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                                     console.log('🔄 Update available!');
@@ -91,17 +226,13 @@
                         console.log('❌ Service Worker registration failed:', error);
                     });
             });
-        } else {
-            console.log('❌ Service Workers not supported in this browser');
         }
-        
+
         // ============================================
-        // SHOW UPDATE NOTIFICATION
+        // UPDATE NOTIFICATION
         // ============================================
         function showUpdateNotification() {
-            // Check if notification already exists
             if (document.querySelector('.update-notification')) return;
-            
             const updateDiv = document.createElement('div');
             updateDiv.className = 'update-notification';
             updateDiv.style.cssText = `
@@ -112,24 +243,13 @@
                 display: flex; align-items: center; gap: 16px;
                 font-family: 'Cormorant Garamond', serif;
                 max-width: 90%;
-                animation: slideInUp 0.5s ease;
             `;
             updateDiv.innerHTML = `
                 🔄 New version available!
-                <button onclick="location.reload()" style="
-                    background: #000; color: #fff; border: none;
-                    padding: 8px 20px; border-radius: 8px; cursor: pointer;
-                    font-weight: 600; font-size: 14px;
-                    font-family: 'Cormorant Garamond', serif;
-                ">Update Now</button>
-                <button onclick="this.parentElement.remove()" style="
-                    background: none; border: none; font-size: 20px;
-                    cursor: pointer; color: #000;
-                ">✕</button>
+                <button onclick="location.reload()" style="background:#000; color:#fff; border:none; padding:8px 20px; border-radius:8px; cursor:pointer; font-weight:600; font-size:14px; font-family:'Cormorant Garamond', serif;">Update Now</button>
+                <button onclick="this.parentElement.remove()" style="background:none; border:none; font-size:20px; cursor:pointer; color:#000;">✕</button>
             `;
             document.body.appendChild(updateDiv);
-            
-            // Auto hide after 30 seconds
             setTimeout(() => {
                 if (updateDiv.parentNode) {
                     updateDiv.style.opacity = '0';
@@ -138,8 +258,21 @@
                 }
             }, 30000);
         }
-        
-        // Add animation style for notification
+
+        // ============================================
+        // INIT
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(checkInstallBanner, 1000);
+        });
+
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                checkInstallBanner();
+            }
+        });
+
+        // Animation style
         const style = document.createElement('style');
         style.textContent = `
             @keyframes slideInUp {
@@ -148,8 +281,8 @@
             }
         `;
         document.head.appendChild(style);
-        
-        console.log('✅ Tadaa! PWA ready to install!');
+
+        console.log('✅ Tadaa! PWA ready with install button!');
     </script>
 </body>
 </html>
