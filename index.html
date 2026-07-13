@@ -37,46 +37,71 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     
     <style>
-        /* Loading animation */
-        #app { opacity: 1; transition: opacity 0.5s ease; }
-        
-        /* Install banner */
-        #installBanner { 
-            display: none !important; 
-            background: #FFD700; 
-            padding: 12px 20px; 
-            align-items: center; 
-            justify-content: space-between; 
-            flex-wrap: wrap; 
-            gap: 12px; 
-            position: sticky; 
-            top: 0; 
+        /* Install Banner - Simple Version */
+        #installBanner {
+            display: none;
+            background: #FFD700;
+            padding: 12px 20px;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            position: sticky;
+            top: 0;
             z-index: 99;
+            border-bottom: 2px solid #000;
         }
-        #installBanner.show { 
-            display: flex !important; 
+        #installBanner.show {
+            display: flex !important;
         }
-        
-        @keyframes slideInUp {
-            from { opacity: 0; transform: translateX(-50%) translateY(30px); }
-            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        #installBanner button {
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: 'Cormorant Garamond', serif;
+        }
+        .btn-install {
+            background: #000;
+            color: #FFD700;
+        }
+        .btn-install:hover {
+            background: #1a1a1a;
+        }
+        .btn-cancel {
+            background: transparent;
+            color: #000;
+            border: 2px solid #000 !important;
+        }
+        .btn-cancel:hover {
+            background: #000;
+            color: #fff;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        #installBanner.show {
+            animation: slideDown 0.5s ease;
         }
     </style>
 </head>
 <body>
     <div id="app">
-        <!-- Install App Banner -->
+        <!-- Install Banner - SIMPLE VERSION -->
         <div id="installBanner">
             <div style="display:flex; align-items:center; gap:12px;">
                 <span style="font-size:28px;">📲</span>
                 <div>
                     <span style="font-weight:700; font-size:16px; color:#000;">Install Tadaa! App</span>
-                    <span style="font-size:13px; color:#333; display:block;">Get the best shopping experience</span>
+                    <span style="font-size:12px; color:#333; display:block;">Add to home screen for faster shopping</span>
                 </div>
             </div>
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                <button id="installBtn" style="background:#000; color:#FFD700; border:none; padding:10px 20px; border-radius:50px; font-weight:700; cursor:pointer; font-size:14px;">📲 Install</button>
-                <button id="cancelInstallBtn" style="background:transparent; color:#000; border:2px solid #000; padding:10px 20px; border-radius:50px; cursor:pointer; font-size:14px;">Not Now</button>
+                <button class="btn-install" id="installBtn">📲 Install</button>
+                <button class="btn-cancel" id="cancelInstallBtn">Not Now</button>
             </div>
         </div>
         
@@ -103,252 +128,154 @@
     <script src="/tadaa-marketplace/assets/js/customer/app.js"></script>
     
     <!-- ============================================
-         PWA INSTALL & SERVICE WORKER
+         SIMPLE PWA INSTALL
          ============================================ -->
     <script>
-        console.log('🚀 Tadaa! PWA script loaded');
-        
-        // ============================================
-        // DOM ELEMENTS
-        // ============================================
-        const installBanner = document.getElementById('installBanner');
-        const installBtn = document.getElementById('installBtn');
-        const cancelBtn = document.getElementById('cancelInstallBtn');
-        
-        let deferredPrompt = null;
-        let installBannerShown = false;
+        console.log('🚀 Tadaa! PWA loaded');
         
         // ============================================
         // CHECK IF APP IS INSTALLED
         // ============================================
         function isAppInstalled() {
-            if (window.matchMedia('(display-mode: standalone)').matches) {
-                console.log('✅ App is installed (standalone mode)');
-                return true;
-            }
-            if (window.navigator.standalone) {
-                console.log('✅ App is installed (iOS standalone)');
-                return true;
-            }
+            if (window.matchMedia('(display-mode: standalone)').matches) return true;
+            if (window.navigator.standalone) return true;
             return false;
         }
         
         // ============================================
-        // SHOW / HIDE BANNER
+        // SHOW INSTALL BANNER
         // ============================================
         function showInstallBanner() {
-            if (installBannerShown) return;
-            if (isAppInstalled()) return;
-            if (sessionStorage.getItem('installDeclined') === 'true') return;
+            const banner = document.getElementById('installBanner');
+            if (!banner) return;
             
+            // Don't show if already installed
+            if (isAppInstalled()) {
+                console.log('✅ App already installed, hiding banner');
+                banner.classList.remove('show');
+                return;
+            }
+            
+            // Don't show if user declined this session
+            if (sessionStorage.getItem('installDeclined') === 'true') {
+                console.log('⏭️ User declined this session');
+                banner.classList.remove('show');
+                return;
+            }
+            
+            // Show the banner
             console.log('📲 Showing install banner');
-            installBanner.classList.add('show');
-            installBannerShown = true;
+            banner.classList.add('show');
         }
         
+        // ============================================
+        // HIDE INSTALL BANNER
+        // ============================================
         function hideInstallBanner() {
-            console.log('🙈 Hiding install banner');
-            installBanner.classList.remove('show');
+            const banner = document.getElementById('installBanner');
+            if (banner) {
+                banner.classList.remove('show');
+            }
         }
-        
-        // ============================================
-        // INSTALL EVENT LISTENER
-        // ============================================
-        window.addEventListener('beforeinstallprompt', function(e) {
-            console.log('📲 Install prompt event fired!');
-            e.preventDefault();
-            deferredPrompt = e;
-            
-            // Show banner after a short delay
-            setTimeout(showInstallBanner, 1000);
-        });
         
         // ============================================
         // INSTALL BUTTON
         // ============================================
-        if (installBtn) {
-            installBtn.addEventListener('click', async function() {
-                console.log('📲 Install button clicked');
-                
-                if (deferredPrompt) {
-                    // Show the native install prompt
-                    deferredPrompt.prompt();
-                    const result = await deferredPrompt.userChoice;
-                    
+        document.getElementById('installBtn').addEventListener('click', function() {
+            console.log('📲 Install button clicked');
+            
+            // Try the native install prompt first
+            if (window.deferredPrompt) {
+                window.deferredPrompt.prompt();
+                window.deferredPrompt.userChoice.then(function(result) {
                     if (result.outcome === 'accepted') {
-                        console.log('✅ User accepted install');
+                        console.log('✅ App installed!');
                         hideInstallBanner();
                     } else {
-                        console.log('❌ User declined install');
+                        console.log('❌ User declined');
                         hideInstallBanner();
                         sessionStorage.setItem('installDeclined', 'true');
                     }
-                    deferredPrompt = null;
-                } else {
-                    // Fallback for browsers without install prompt
-                    alert('📲 Tap the three dots (⋮) and select "Install app" or "Add to Home screen"');
-                    hideInstallBanner();
-                    sessionStorage.setItem('installDeclined', 'true');
-                }
-            });
-        }
+                    window.deferredPrompt = null;
+                });
+                return;
+            }
+            
+            // Fallback: Show instructions
+            var message = '📲 To install Tadaa! on your phone:\n\n';
+            message += '• On Android: Tap the three dots (⋮) → "Install app"\n';
+            message += '• On iPhone: Tap the share icon (□↑) → "Add to Home Screen"\n\n';
+            message += 'This will add Tadaa! to your home screen like a real app!';
+            
+            alert(message);
+            hideInstallBanner();
+            sessionStorage.setItem('installDeclined', 'true');
+        });
         
         // ============================================
         // CANCEL BUTTON
         // ============================================
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', function() {
-                console.log('❌ User clicked Not Now');
-                hideInstallBanner();
-                sessionStorage.setItem('installDeclined', 'true');
-            });
-        }
-        
-        // ============================================
-        // APP INSTALLED EVENT
-        // ============================================
-        window.addEventListener('appinstalled', function() {
-            console.log('✅ App installed successfully!');
+        document.getElementById('cancelInstallBtn').addEventListener('click', function() {
+            console.log('❌ User clicked Not Now');
             hideInstallBanner();
-            showToast('🎉 Thank you for installing Tadaa!');
+            sessionStorage.setItem('installDeclined', 'true');
         });
         
         // ============================================
-        // CHECK ON PAGE LOAD
+        // CAPTURE INSTALL PROMPT
         // ============================================
-        function checkBannerOnLoad() {
-            console.log('🔍 Checking banner status...');
+        window.addEventListener('beforeinstallprompt', function(e) {
+            console.log('📲 Install prompt captured');
+            e.preventDefault();
+            window.deferredPrompt = e;
             
-            if (isAppInstalled()) {
-                hideInstallBanner();
-                return;
-            }
-            
-            if (sessionStorage.getItem('installDeclined') === 'true') {
-                console.log('⏭️ User declined install this session');
-                hideInstallBanner();
-                return;
-            }
-            
-            if (deferredPrompt) {
-                showInstallBanner();
-            } else {
-                console.log('⏳ Waiting for install prompt event...');
-                // If no prompt event yet, try again later
-                setTimeout(function() {
-                    if (deferredPrompt) {
-                        showInstallBanner();
-                    } else {
-                        console.log('⚠️ No install prompt available. Showing fallback message.');
-                        // Show banner as fallback with manual install instructions
-                        showInstallBanner();
-                    }
-                }, 5000);
-            }
-        }
+            // Show banner after a delay
+            setTimeout(showInstallBanner, 1500);
+        });
         
         // ============================================
-        // TOAST NOTIFICATION
+        // APP INSTALLED
         // ============================================
-        function showToast(message) {
-            const toast = document.createElement('div');
-            toast.style.cssText = `
-                position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
-                background: #000; color: #fff; padding: 16px 24px;
-                border-radius: 12px; z-index: 9999;
-                font-family: 'Cormorant Garamond', serif;
-                font-size: 16px; text-align: center;
-                animation: slideInUp 0.5s ease;
-                max-width: 90%;
-            `;
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transition = 'opacity 0.5s';
-                setTimeout(() => toast.remove(), 500);
-            }, 3000);
-        }
+        window.addEventListener('appinstalled', function() {
+            console.log('✅ App installed!');
+            hideInstallBanner();
+        });
+        
+        // ============================================
+        // SHOW BANNER ON PAGE LOAD
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📄 DOM loaded');
+            
+            // Wait 2 seconds, then show banner
+            setTimeout(function() {
+                showInstallBanner();
+            }, 2000);
+        });
+        
+        // Check when user comes back
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                setTimeout(showInstallBanner, 500);
+            }
+        });
         
         // ============================================
         // SERVICE WORKER
         // ============================================
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
-                setTimeout(function() {
-                    navigator.serviceWorker.register('/tadaa-marketplace/sw.js')
-                        .then(function(registration) {
-                            console.log('✅ Service Worker registered');
-                            registration.addEventListener('updatefound', function() {
-                                const newWorker = registration.installing;
-                                newWorker.addEventListener('statechange', function() {
-                                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                        console.log('🔄 Update available!');
-                                        showUpdateNotification();
-                                    }
-                                });
-                            });
-                        })
-                        .catch(function(error) {
-                            console.log('❌ Service Worker registration failed:', error);
-                        });
-                }, 2000);
+                navigator.serviceWorker.register('/tadaa-marketplace/sw.js')
+                    .then(function(reg) {
+                        console.log('✅ Service Worker registered');
+                    })
+                    .catch(function(err) {
+                        console.log('❌ Service Worker error:', err);
+                    });
             });
         }
         
-        // ============================================
-        // UPDATE NOTIFICATION
-        // ============================================
-        function showUpdateNotification() {
-            if (document.querySelector('.update-notification')) return;
-            const updateDiv = document.createElement('div');
-            updateDiv.className = 'update-notification';
-            updateDiv.style.cssText = `
-                position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-                background: #FFD700; color: #000; padding: 16px 24px;
-                border-radius: 12px; font-weight: 600; z-index: 9999;
-                box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-                display: flex; align-items: center; gap: 16px;
-                font-family: 'Cormorant Garamond', serif;
-                max-width: 90%;
-                animation: slideInUp 0.5s ease;
-            `;
-            updateDiv.innerHTML = `
-                🔄 New version available!
-                <button onclick="location.reload()" style="background:#000; color:#fff; border:none; padding:8px 20px; border-radius:8px; cursor:pointer; font-weight:600; font-size:14px; font-family:'Cormorant Garamond', serif;">Update Now</button>
-                <button onclick="this.parentElement.remove()" style="background:none; border:none; font-size:20px; cursor:pointer; color:#000;">✕</button>
-            `;
-            document.body.appendChild(updateDiv);
-            setTimeout(() => {
-                if (updateDiv.parentNode) {
-                    updateDiv.style.opacity = '0';
-                    updateDiv.style.transition = 'opacity 0.5s';
-                    setTimeout(() => updateDiv.remove(), 500);
-                }
-            }, 30000);
-        }
-        
-        // ============================================
-        // INITIALIZE
-        // ============================================
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('📄 DOM loaded');
-            
-            // Check banner after 2 seconds (content loaded first)
-            setTimeout(function() {
-                checkBannerOnLoad();
-            }, 2000);
-        });
-        
-        // Check when user comes back to page
-        document.addEventListener('visibilitychange', function() {
-            if (!document.hidden) {
-                console.log('👁️ Page visible again');
-                setTimeout(checkBannerOnLoad, 500);
-            }
-        });
-        
-        console.log('✅ Tadaa! PWA ready - install banner will show after content loads');
+        console.log('✅ Tadaa! PWA ready - banner will show in 2 seconds');
     </script>
 </body>
 </html>
