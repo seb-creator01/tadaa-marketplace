@@ -302,7 +302,7 @@
         };
 
         // ============================================
-        // PRODUCTS - FULLY WORKING
+        // PRODUCTS - WITH DELIVERY FEE
         // ============================================
         async function loadProducts() {
             pageContent.innerHTML = `
@@ -324,6 +324,7 @@
                         <th>Name</th>
                         <th>Category</th>
                         <th>Price</th>
+                        <th>Delivery Fee</th>
                         <th>Stock</th>
                         <th>Actions</th>
                     </tr>`;
@@ -335,6 +336,7 @@
                         <td><strong>${data.name}</strong></td>
                         <td>${data.categoryName || 'Uncategorized'}</td>
                         <td>₦${data.price?.toLocaleString() || 0}</td>
+                        <td>₦${data.deliveryFee || 100}</td>
                         <td>${data.inStock ? '✅ In Stock' : '❌ Out of Stock'}</td>
                         <td>
                             <button class="btn btn-warning btn-sm" onclick="editProduct('${doc.id}')">✏️ Edit</button>
@@ -348,7 +350,7 @@
         }
 
         // ============================================
-        // ADD PRODUCT
+        // ADD PRODUCT - WITH DELIVERY FEE
         // ============================================
         window.showAddProduct = function() {
             loadCategoriesForSelect();
@@ -360,6 +362,7 @@
                     <div class="form-group"><label>Description</label><input type="text" id="prodDesc" placeholder="Brief description"></div>
                     <div class="form-group"><label>Price (₦) *</label><input type="number" id="prodPrice" placeholder="e.g., 2000"></div>
                     <div class="form-group"><label>Compare Price</label><input type="number" id="prodCompare" placeholder="e.g., 2500"></div>
+                    <div class="form-group"><label>Delivery Fee per item (₦)</label><input type="number" id="prodDeliveryFee" placeholder="e.g., 500" value="100"></div>
                     <div class="form-group"><label>Category *</label><select id="prodCategory" style="width:100%; padding:10px; border:2px solid #e5e7eb; border-radius:8px;"></select></div>
                     <div class="form-group"><label>Stock Count</label><input type="number" id="prodStock" value="0"></div>
                     <div class="form-group"><label>Discount (%)</label><input type="number" id="prodDiscount" value="0"></div>
@@ -412,13 +415,14 @@
         };
 
         // ============================================
-        // SAVE PRODUCT
+        // SAVE PRODUCT - WITH DELIVERY FEE
         // ============================================
         window.saveProduct = async function() {
             const name = document.getElementById('prodName').value.trim();
             const desc = document.getElementById('prodDesc').value.trim();
             const price = parseFloat(document.getElementById('prodPrice').value);
             const compare = parseFloat(document.getElementById('prodCompare').value) || 0;
+            const deliveryFee = parseFloat(document.getElementById('prodDeliveryFee').value) || 100;
             const cat = document.getElementById('prodCategory').value;
             const stock = parseInt(document.getElementById('prodStock').value) || 0;
             const discount = parseInt(document.getElementById('prodDiscount').value) || 0;
@@ -432,6 +436,7 @@
             try {
                 await db.collection('products').add({
                     name, description: desc, price, comparePrice: compare,
+                    deliveryFee: deliveryFee,
                     categoryId: cat, categoryName: catName,
                     images: image ? [image] : [],
                     inStock: stock > 0, stockCount: stock, discount,
@@ -443,7 +448,7 @@
         };
 
         // ============================================
-        // EDIT PRODUCT
+        // EDIT PRODUCT - WITH DELIVERY FEE
         // ============================================
         window.editProduct = function(id) {
             db.collection('products').doc(id).get().then(doc => {
@@ -463,6 +468,7 @@
                             <div class="form-group"><label>Description</label><input type="text" id="editDesc" value="${d.description || ''}"></div>
                             <div class="form-group"><label>Price (₦) *</label><input type="number" id="editPrice" value="${d.price || 0}"></div>
                             <div class="form-group"><label>Compare Price</label><input type="number" id="editCompare" value="${d.comparePrice || 0}"></div>
+                            <div class="form-group"><label>Delivery Fee per item (₦)</label><input type="number" id="editDeliveryFee" value="${d.deliveryFee || 100}"></div>
                             <div class="form-group"><label>Category *</label><select id="editCategory">${opts}</select></div>
                             <div class="form-group"><label>Stock</label><input type="number" id="editStock" value="${d.stockCount || 0}"></div>
                             <div class="form-group"><label>Discount (%)</label><input type="number" id="editDiscount" value="${d.discount || 0}"></div>
@@ -498,13 +504,14 @@
         };
 
         // ============================================
-        // UPDATE PRODUCT
+        // UPDATE PRODUCT - WITH DELIVERY FEE
         // ============================================
         window.updateProduct = function(id) {
             const name = document.getElementById('editName').value.trim();
             const desc = document.getElementById('editDesc').value.trim();
             const price = parseFloat(document.getElementById('editPrice').value);
             const compare = parseFloat(document.getElementById('editCompare').value) || 0;
+            const deliveryFee = parseFloat(document.getElementById('editDeliveryFee').value) || 100;
             const cat = document.getElementById('editCategory').value;
             const stock = parseInt(document.getElementById('editStock').value) || 0;
             const discount = parseInt(document.getElementById('editDiscount').value) || 0;
@@ -514,6 +521,7 @@
                 const catName = c.exists ? c.data().name : '';
                 return db.collection('products').doc(id).update({
                     name, description: desc, price, comparePrice: compare,
+                    deliveryFee: deliveryFee,
                     categoryId: cat, categoryName: catName,
                     images: image ? [image] : [],
                     inStock: stock > 0, stockCount: stock, discount
@@ -931,7 +939,7 @@
                         <div class="settings-full"><h4 style="border-bottom:2px solid #FFD700; padding-bottom:8px; margin-top:20px;">🚚 Delivery Settings</h4></div>
                         
                         <div class="form-group">
-                            <label>Delivery Fee (₦ per item)</label>
+                            <label>Default Delivery Fee (₦ per item)</label>
                             <input type="number" id="setDeliveryFee" value="${settings.deliveryFee || 100}">
                             <small style="color:#6B7280;">Default fee if product doesn't have its own</small>
                         </div>
@@ -1023,7 +1031,7 @@
         };
 
         window.loadPage = loadPage;
-        console.log('✅ Admin dashboard with full settings!');
+        console.log('✅ Admin dashboard with delivery fee!');
     </script>
 </body>
 </html>
