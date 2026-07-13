@@ -1,6 +1,5 @@
 // ============================================
 // TADAA! - SERVICE WORKER
-// Handles Offline & Updates
 // ============================================
 
 const CACHE_NAME = 'tadaa-v1';
@@ -28,7 +27,6 @@ const FILES_TO_CACHE = [
 // ============================================
 self.addEventListener('install', (event) => {
     console.log('🔧 Service Worker: Installing...');
-    
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then((cache) => {
@@ -50,7 +48,6 @@ self.addEventListener('install', (event) => {
 // ============================================
 self.addEventListener('activate', (event) => {
     console.log('🚀 Service Worker: Activating...');
-    
     event.waitUntil(
         caches.keys().then((cacheNames) => {
             return Promise.all(
@@ -73,7 +70,6 @@ self.addEventListener('activate', (event) => {
 // FETCH - Serve from cache or network
 // ============================================
 self.addEventListener('fetch', (event) => {
-    // Skip cross-origin requests
     if (!event.request.url.startsWith(self.location.origin)) {
         return;
     }
@@ -81,28 +77,20 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
         caches.match(event.request)
             .then((cachedResponse) => {
-                // Return cached version if available
                 if (cachedResponse) {
-                    // Check for updates in background
                     fetch(event.request)
                         .then((networkResponse) => {
-                            // Update cache with new version
                             caches.open(CACHE_NAME)
                                 .then((cache) => {
                                     cache.put(event.request, networkResponse);
                                 });
                         })
-                        .catch(() => {
-                            // Network request failed, cache is fine
-                        });
-                    
+                        .catch(() => {});
                     return cachedResponse;
                 }
                 
-                // Not in cache, fetch from network
                 return fetch(event.request)
                     .then((networkResponse) => {
-                        // Cache the response for next time
                         const responseClone = networkResponse.clone();
                         caches.open(CACHE_NAME)
                             .then((cache) => {
@@ -111,7 +99,6 @@ self.addEventListener('fetch', (event) => {
                         return networkResponse;
                     })
                     .catch(() => {
-                        // Fallback if network fails
                         return caches.match('/tadaa-marketplace/index.html');
                     });
             })
