@@ -1,5 +1,5 @@
 // ============================================
-// TADAA! - CUSTOMER WEBSITE (WITH PER-PRODUCT DELIVERY)
+// TADAA! - CUSTOMER WEBSITE (FULLY RESPONSIVE)
 // ============================================
 
 // ===== Firebase Config =====
@@ -33,7 +33,6 @@ let settings = {};
 let cart = [];
 let currentCategory = 'all';
 let searchTerm = '';
-let isModalOpen = false;
 
 // ============================================
 // LOAD CART
@@ -258,7 +257,7 @@ function renderCategories() {
 }
 
 // ============================================
-// RENDER PRODUCTS - WITH PER-PRODUCT DELIVERY FEE
+// RENDER PRODUCTS - FULLY RESPONSIVE
 // ============================================
 function renderProducts() {
     const productsDiv = document.getElementById('products-section');
@@ -287,12 +286,12 @@ function renderProducts() {
     }
     
     let html = `
-        <div style="max-width:1200px; margin:0 auto; padding:0 20px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
-                <h2 style="font-family:'Cormorant Garamond', serif; font-size:28px; color:#1F2937; margin:0;">🛍️ Products</h2>
-                <span style="color:#6B7280; font-size:14px;">${filteredProducts.length} products</span>
+        <div style="max-width:1200px; margin:0 auto; padding:0 12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:8px;">
+                <h2 style="font-family:'Cormorant Garamond', serif; font-size:22px; color:#1F2937; margin:0;">🛍️ Products</h2>
+                <span style="color:#6B7280; font-size:13px;">${filteredProducts.length} products</span>
             </div>
-            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:16px;">
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:12px;">
     `;
     
     filteredProducts.forEach(product => {
@@ -302,39 +301,38 @@ function renderProducts() {
         const discountedPrice = discount > 0 ? product.price * (1 - discount / 100) : product.price;
         const cartItem = cart.find(item => item.id === product.id);
         const qty = cartItem ? cartItem.quantity : 0;
-        // PER-PRODUCT DELIVERY FEE
         const productDeliveryFee = product.deliveryFee || settings.deliveryFee || 100;
         const deliveryDisplay = productDeliveryFee > 0 ? `Delivery: ₦${productDeliveryFee}/item` : 'Free Delivery';
         
         html += `
-            <div style="background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06); transition:transform 0.3s, box-shadow 0.3s; cursor:pointer;" onclick="viewProduct('${product.id}')" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.12)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)'">
+            <div style="background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,0.06); transition:transform 0.2s, box-shadow 0.2s; cursor:pointer;" onclick="viewProduct('${product.id}')" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 4px rgba(0,0,0,0.06)'">
                 <div style="position:relative; padding-bottom:100%; background:#f3f4f6;">
-                    ${imageUrl ? `<img src="${imageUrl}" alt="${product.name}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; transition:transform 0.3s;" loading="lazy">` : '<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:40px;">📷</div>'}
-                    ${discount > 0 ? `<div style="position:absolute; top:8px; right:8px; background:#EF4444; color:#fff; padding:2px 10px; border-radius:50px; font-size:12px; font-weight:700;">${discount}% OFF</div>` : ''}
-                    ${!inStock ? `<div style="position:absolute; bottom:8px; left:8px; right:8px; background:rgba(0,0,0,0.7); color:#fff; text-align:center; padding:4px; border-radius:8px; font-size:12px;">Out of Stock</div>` : ''}
-                    ${qty > 0 ? `<div style="position:absolute; top:8px; left:8px; background:#10B981; color:#fff; padding:2px 10px; border-radius:50px; font-size:10px; font-weight:700;">${qty} in Cart</div>` : ''}
+                    ${imageUrl ? `<img src="${imageUrl}" alt="${product.name}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover;" loading="lazy">` : '<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:32px;">📷</div>'}
+                    ${discount > 0 ? `<div style="position:absolute; top:6px; right:6px; background:#EF4444; color:#fff; padding:2px 8px; border-radius:50px; font-size:10px; font-weight:700;">${discount}% OFF</div>` : ''}
+                    ${!inStock ? `<div style="position:absolute; bottom:6px; left:6px; right:6px; background:rgba(0,0,0,0.7); color:#fff; text-align:center; padding:3px; border-radius:6px; font-size:10px;">Out of Stock</div>` : ''}
+                    ${qty > 0 ? `<div style="position:absolute; top:6px; left:6px; background:#10B981; color:#fff; padding:2px 8px; border-radius:50px; font-size:9px; font-weight:700;">${qty} in Cart</div>` : ''}
                 </div>
                 
-                <div style="padding:12px;">
-                    <h3 style="font-size:14px; font-weight:600; margin:0 0 4px; color:#1F2937; line-height:1.3;">${product.name}</h3>
-                    <p style="font-size:12px; color:#6B7280; margin:0 0 8px;">${product.categoryName || 'Uncategorized'}</p>
+                <div style="padding:10px;">
+                    <h3 style="font-size:13px; font-weight:600; margin:0 0 2px; color:#1F2937; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${product.name}</h3>
+                    <p style="font-size:10px; color:#6B7280; margin:0 0 4px;">${product.categoryName || 'Uncategorized'}</p>
                     
-                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:2px;">
-                        <span style="font-size:18px; font-weight:700; color:#000;">₦${Math.round(discountedPrice).toLocaleString()}</span>
-                        ${discount > 0 ? `<span style="font-size:12px; color:#9CA3AF; text-decoration:line-through;">₦${product.price.toLocaleString()}</span>` : ''}
+                    <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
+                        <span style="font-size:16px; font-weight:700; color:#000;">₦${Math.round(discountedPrice).toLocaleString()}</span>
+                        ${discount > 0 ? `<span style="font-size:10px; color:#9CA3AF; text-decoration:line-through;">₦${product.price.toLocaleString()}</span>` : ''}
                     </div>
                     
-                    <div style="font-size:11px; color:#6B7280; margin-bottom:6px;">
+                    <div style="font-size:9px; color:#6B7280; margin-bottom:4px;">
                         🚚 ${deliveryDisplay}
                     </div>
                     
                     ${inStock ? `
-                    <div style="font-size:12px; color:#6B7280; margin-top:6px; margin-bottom:4px; font-weight:600;">📦 Quantity</div>
-                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                        <button onclick="event.stopPropagation(); updateProductQuantity('${product.id}', -1)" style="background:#f3f4f6; border:2px solid #d1d5db; padding:6px 14px; border-radius:8px; cursor:pointer; font-size:18px; font-weight:700; ${qty === 0 ? 'opacity:0.4; cursor:not-allowed;' : ''}" ${qty === 0 ? 'disabled' : ''}>−</button>
-                        <span style="min-width:32px; text-align:center; font-size:18px; font-weight:700; padding:0 4px;">${qty}</span>
-                        <button onclick="event.stopPropagation(); updateProductQuantity('${product.id}', 1)" style="background:#f3f4f6; border:2px solid #d1d5db; padding:6px 14px; border-radius:8px; cursor:pointer; font-size:18px; font-weight:700;">+</button>
-                        <button onclick="event.stopPropagation(); addToCart('${product.id}')" style="flex:1; background:#FFD700; color:#000; border:none; padding:8px 12px; border-radius:8px; font-weight:600; font-size:13px; cursor:pointer; transition:background 0.3s; min-width:65px;" onmouseover="this.style.background='#E6C200'" onmouseout="this.style.background='#FFD700'">
+                    <div style="font-size:10px; color:#6B7280; margin-top:4px; margin-bottom:2px; font-weight:600;">Qty</div>
+                    <div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
+                        <button onclick="event.stopPropagation(); updateProductQuantity('${product.id}', -1)" style="background:#f3f4f6; border:1px solid #d1d5db; padding:4px 10px; border-radius:6px; cursor:pointer; font-size:14px; font-weight:700; ${qty === 0 ? 'opacity:0.4; cursor:not-allowed;' : ''}" ${qty === 0 ? 'disabled' : ''}>−</button>
+                        <span style="min-width:24px; text-align:center; font-size:14px; font-weight:600;">${qty}</span>
+                        <button onclick="event.stopPropagation(); updateProductQuantity('${product.id}', 1)" style="background:#f3f4f6; border:1px solid #d1d5db; padding:4px 10px; border-radius:6px; cursor:pointer; font-size:14px; font-weight:700;">+</button>
+                        <button onclick="event.stopPropagation(); addToCart('${product.id}')" style="flex:1; background:#FFD700; color:#000; border:none; padding:4px 8px; border-radius:6px; font-weight:600; font-size:11px; cursor:pointer; transition:background 0.2s; min-width:50px;" onmouseover="this.style.background='#E6C200'" onmouseout="this.style.background='#FFD700'">
                             ${qty > 0 ? '🔄 Update' : 'Add +'}
                         </button>
                     </div>
@@ -417,7 +415,6 @@ function viewProduct(productId) {
     const discountedPrice = discount > 0 ? product.price * (1 - discount / 100) : product.price;
     const inStock = product.inStock !== false && (product.stockCount || 0) > 0;
     const maxStock = product.stockCount || 999;
-    // PER-PRODUCT DELIVERY FEE
     const productDeliveryFee = product.deliveryFee || settings.deliveryFee || 100;
     
     closeModal();
@@ -616,7 +613,7 @@ function updateCartCount() {
 }
 
 // ============================================
-// RENDER CART SIDEBAR CONTENT - WITH PER-PRODUCT DELIVERY
+// RENDER CART SIDEBAR CONTENT
 // ============================================
 function renderCartSidebarContent() {
     let sidebar = document.getElementById('cartSidebar');
@@ -650,10 +647,8 @@ function renderCartSidebarContent() {
         return;
     }
     
-    // Calculate subtotal
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     
-    // Calculate delivery fee - PER PRODUCT
     let totalDelivery = 0;
     cart.forEach(item => {
         const productDeliveryFee = item.deliveryFee || settings.deliveryFee || 100;
@@ -834,4 +829,4 @@ document.addEventListener('DOMContentLoaded', () => {
     loadData();
 });
 
-console.log('✅ Tadaa! Website with per-product delivery ready!');
+console.log('✅ Tadaa! Website with responsive design ready!');
