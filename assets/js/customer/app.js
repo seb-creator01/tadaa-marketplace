@@ -666,15 +666,15 @@ function updateCartCount() {
 }
 
 // ============================================
-// RENDER CART SIDEBAR CONTENT
+// RENDER CART SIDEBAR CONTENT - FIXED FOR IPHONE SAFE AREA
 // ============================================
 function renderCartSidebarContent() {
     let sidebar = document.getElementById('cartSidebar');
     if (!sidebar) {
         sidebar = document.createElement('div');
         sidebar.id = 'cartSidebar';
-        // FIXED: Added 100vh and 100dvh for iPhone Safari/PWA support
-        sidebar.style.cssText = `position:fixed; top:0; right:-400px; width:380px; height:100%; height:100vh; height:100dvh; background:var(--bg-card); z-index:1500; transition:right 0.4s cubic-bezier(0.4,0,0.2,1); box-shadow:-4px 0 24px var(--shadow-color); display:flex; flex-direction:column;`;
+        // FIXED: Added 100dvh with -webkit-fill-available fallback for iPhone Safari/PWA
+        sidebar.style.cssText = `position:fixed; top:0; right:-400px; width:380px; height:100%; height:100vh; height:100dvh; min-height:-webkit-fill-available; background:var(--bg-card); z-index:1500; transition:right 0.4s cubic-bezier(0.4,0,0.2,1); box-shadow:-4px 0 24px var(--shadow-color); display:flex; flex-direction:column;`;
         document.body.appendChild(sidebar);
         
         const overlay = document.createElement('div');
@@ -688,7 +688,7 @@ function renderCartSidebarContent() {
     
     if (cart.length === 0) {
         sidebar.innerHTML = `
-            <div style="padding:20px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+            <div style="padding:20px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
                 <h3 style="margin:0; font-family:'Cormorant Garamond', serif; color:var(--text-primary);">🛒 Your Cart</h3>
                 <button onclick="closeCartSidebar()" style="background:none; border:none; font-size:24px; cursor:pointer; color:var(--text-secondary);">✕</button>
             </div>
@@ -754,7 +754,8 @@ function renderCartSidebarContent() {
     
     cartHtml += `
         </div>
-        <div style="padding:16px 20px; border-top:2px solid var(--border-color); flex-shrink:0; background:var(--bg-input); border-radius:0 0 16px 16px;">
+        <!-- FIXED: Added safe-area padding for iPhone Safari bottom toolbar -->
+        <div style="padding:16px 20px; padding-bottom:calc(16px + env(safe-area-inset-bottom, 0px)); padding-bottom:calc(16px + constant(safe-area-inset-bottom, 0px)); border-top:2px solid var(--border-color); flex-shrink:0; background:var(--bg-input); border-radius:0 0 16px 16px;">
             <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
                 <span style="color:var(--text-secondary);">Subtotal</span>
                 <span style="font-weight:600; color:var(--text-primary);">₦${subtotal.toLocaleString()}</span>
