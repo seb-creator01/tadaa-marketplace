@@ -287,7 +287,7 @@ function renderCategories() {
 }
 
 // ============================================
-// RENDER PRODUCTS
+// RENDER PRODUCTS - FIXED: Two Column Grid
 // ============================================
 function renderProducts() {
     const productsDiv = document.getElementById('products-section');
@@ -321,7 +321,7 @@ function renderProducts() {
                 <h2 style="font-family:'Cormorant Garamond', serif; font-size:22px; color:var(--text-primary); margin:0;">🛍️ Products</h2>
                 <span style="color:var(--text-secondary); font-size:13px;">${filteredProducts.length} products</span>
             </div>
-            <div class="stagger-children" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:12px;">
+            <div class="stagger-children" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;">
     `;
     
     filteredProducts.forEach((product, index) => {
@@ -435,7 +435,7 @@ function toggleSearch() {
 }
 
 // ============================================
-// VIEW PRODUCT
+// VIEW PRODUCT - FIXED: Better Modal Layout
 // ============================================
 function viewProduct(productId) {
     // Close any existing modal first
@@ -465,14 +465,14 @@ function viewProduct(productId) {
             <div style="border-radius:16px; overflow:hidden; background:#f3f4f6; margin-bottom:16px;">
                 ${imageUrl ? `<img src="${imageUrl}" alt="${product.name}" style="width:100%; height:auto; max-height:300px; object-fit:cover;">` : '<div style="padding:60px; text-align:center; font-size:48px;">📷</div>'}
             </div>
-            <h2 style="font-family:'Cormorant Garamond', serif; font-size:24px; margin:0 0 8px; color:var(--text-primary);">${product.name}</h2>
-            <p style="color:var(--text-secondary); margin:0 0 12px;">${product.categoryName || 'Uncategorized'}</p>
+            <h2 style="font-family:'Cormorant Garamond', serif; font-size:24px; margin:0 0 4px; color:var(--text-primary);">${product.name}</h2>
+            <p style="color:var(--text-secondary); margin:0 0 4px; font-size:14px;">${product.categoryName || 'Uncategorized'}</p>
+            <p style="color:var(--text-muted); margin:0 0 12px; font-size:14px; line-height:1.4;">${product.description || 'No description available.'}</p>
             <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
                 <span style="font-size:28px; font-weight:700; color:var(--text-primary);">₦${Math.round(discountedPrice).toLocaleString()}</span>
                 ${discount > 0 ? `<span style="font-size:16px; color:var(--text-muted); text-decoration:line-through;">₦${product.price.toLocaleString()}</span>` : ''}
                 ${discount > 0 ? `<span style="background:#EF4444; color:#fff; padding:2px 12px; border-radius:50px; font-size:12px; font-weight:700;">${discount}% OFF</span>` : ''}
             </div>
-            <p style="color:var(--text-secondary); margin:0 0 16px;">${product.description || 'No description available.'}</p>
             <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
                 <span style="color:var(--text-secondary); font-size:14px;">Stock: ${inStock ? `✅ ${product.stockCount || 0} available` : '❌ Out of Stock'}</span>
             </div>
