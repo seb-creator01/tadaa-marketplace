@@ -11,70 +11,17 @@
     <script src="https://js.paystack.co/v1/inline.js"></script>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
-        html { font-size:16px; -webkit-text-size-adjust:100%; }
-        body { 
-            font-family:'Cormorant Garamond', serif; 
-            background:#f3f4f6; 
-            padding:12px; 
-            min-height:100vh; 
-            min-height:100dvh;
-            overflow-x:hidden;
-            width:100%;
-            max-width:100%;
-        }
-        .container { 
-            max-width:900px; 
-            width:100%;
-            margin:0 auto; 
-            padding:0 4px; 
-            overflow-x:hidden;
-        }
-        .back-btn { 
-            background:none; 
-            border:none; 
-            color:#FFD700; 
-            font-size:18px; 
-            cursor:pointer; 
-            margin-bottom:16px; 
-            padding:8px 0;
-            display:inline-block;
-        }
-        .page-title {
-            font-size:28px;
-            margin-bottom:4px;
-            color:#000;
-        }
-        .page-subtitle {
-            color:#6B7280;
-            margin-bottom:16px;
-            font-size:16px;
-        }
-        .grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
-        .card { background:#fff; border-radius:16px; padding:20px; box-shadow:0 2px 12px rgba(0,0,0,0.08); }
-        .card h3 { font-size:18px; margin-bottom:14px; }
-        .form-group { margin-bottom:14px; }
-        .form-group label { display:block; font-weight:600; margin-bottom:4px; font-size:14px; }
-        .form-group input, .form-group textarea { 
-            width:100%; 
-            padding:12px; 
-            border:2px solid #E5E7EB; 
-            border-radius:10px; 
-            font-size:16px; 
-            font-family:'Cormorant Garamond', serif;
-        }
+        body { font-family:'Cormorant Garamond', serif; background:#f3f4f6; padding:20px; }
+        .container { max-width:900px; margin:0 auto; }
+        .back-btn { background:none; border:none; color:#FFD700; font-size:18px; cursor:pointer; margin-bottom:20px; }
+        .grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+        .card { background:#fff; border-radius:16px; padding:24px; box-shadow:0 2px 12px rgba(0,0,0,0.08); }
+        .card h3 { font-size:20px; margin-bottom:16px; }
+        .form-group { margin-bottom:16px; }
+        .form-group label { display:block; font-weight:600; margin-bottom:4px; }
+        .form-group input, .form-group textarea { width:100%; padding:12px; border:2px solid #E5E7EB; border-radius:10px; font-size:16px; }
         .form-group textarea { min-height:80px; resize:vertical; }
-        .btn-primary { 
-            width:100%; 
-            background:#FFD700; 
-            color:#000; 
-            border:none; 
-            padding:14px; 
-            border-radius:12px; 
-            font-size:17px; 
-            font-weight:700; 
-            cursor:pointer;
-            font-family:'Cormorant Garamond', serif;
-        }
+        .btn-primary { width:100%; background:#FFD700; color:#000; border:none; padding:16px; border-radius:12px; font-size:18px; font-weight:700; cursor:pointer; }
         .btn-primary:hover { background:#E6C200; }
         .btn-primary:disabled { opacity:0.6; cursor:not-allowed; }
         .error { background:#FEE2E2; color:#DC2626; padding:12px; border-radius:10px; display:none; margin-bottom:16px; }
@@ -82,15 +29,14 @@
         /* ===== ORDER ITEMS ROWS ===== */
         .order-item {
             display: flex;
-            gap: 14px;
-            padding: 14px 0;
+            gap: 16px;
+            padding: 16px 0;
             border-bottom: 1px solid #F3F4F6;
             align-items: center;
-            width:100%;
         }
         .order-item img {
-            width: 55px;
-            height: 55px;
+            width: 60px;
+            height: 60px;
             border-radius: 8px;
             object-fit: cover;
             background: #f3f4f6;
@@ -99,14 +45,12 @@
         .order-item .info {
             flex: 1;
             min-width: 0;
-            overflow:hidden;
         }
         .order-item .info .item-name {
             font-weight: 600;
             font-size: 14px;
             color: #000;
             margin: 0 0 2px;
-            word-break:break-word;
         }
         .order-item .info .item-details {
             font-size: 12px;
@@ -124,160 +68,39 @@
             font-size: 14px;
             white-space: nowrap;
             color: #000;
-            text-align: right;
-            flex-shrink:0;
         }
         
-        .summary-row { display:flex; justify-content:space-between; padding:4px 0; font-size:15px; }
-        .total-row { 
-            display:flex; 
-            justify-content:space-between; 
-            border-top:2px solid #E5E7EB; 
-            padding-top:12px; 
-            margin-top:8px; 
-            font-size:20px; 
-            font-weight:700; 
-        }
+        .summary-row { display:flex; justify-content:space-between; padding:4px 0; }
+        .total-row { display:flex; justify-content:space-between; border-top:2px solid #E5E7EB; padding-top:12px; margin-top:8px; font-size:20px; font-weight:700; }
         .total-row span:last-child { color:#FFD700; }
-        .free-badge { background:#D1FAE5; color:#065F46; padding:8px 12px; border-radius:8px; text-align:center; font-weight:600; margin:8px 0; font-size:14px; }
+        .free-badge { background:#D1FAE5; color:#065F46; padding:8px 12px; border-radius:8px; text-align:center; font-weight:600; margin:8px 0; }
         .loading-spinner { display:inline-block; width:20px; height:20px; border:3px solid #f3f4f6; border-top:3px solid #FFD700; border-radius:50%; animation:spin 0.8s linear infinite; margin-right:10px; vertical-align:middle; }
         @keyframes spin { 0% { transform:rotate(0deg); } 100% { transform:rotate(360deg); } }
         
-        /* ===== RESPONSIVE - ALL DEVICES ===== */
-        @media (max-width:1024px) {
-            .grid { gap:16px; }
-        }
-        
+        /* ===== RESPONSIVE ===== */
         @media (max-width:768px) { 
-            .grid { 
-                grid-template-columns:1fr; 
-                gap:16px; 
-            }
-            body { 
-                padding:8px; 
-            }
-            .card { 
-                padding:16px !important; 
-            }
-            .page-title { 
-                font-size:24px !important; 
-            }
-            .order-item { 
-                gap:12px; 
-                padding:12px 0; 
-            }
-            .order-item img { 
-                width:48px; 
-                height:48px; 
-            }
-            .order-item .info .item-name { 
-                font-size:13px; 
-            }
-            .order-item .price { 
-                font-size:13px; 
-            }
-            .container {
-                padding:0 2px;
-            }
-            .back-btn {
-                font-size:16px;
-                margin-bottom:12px;
-            }
-            .btn-primary {
-                font-size:16px;
-                padding:14px;
-            }
-            .total-row {
-                font-size:18px;
-            }
-            #orderItems {
-                max-height:250px !important;
-            }
+            .grid { grid-template-columns:1fr; gap:16px; }
+            body { padding:12px; }
+            .card { padding:16px !important; }
+            h1 { font-size:24px !important; }
+            .order-item { gap:12px; padding:12px 0; }
+            .order-item img { width:50px; height:50px; }
+            .order-item .info .item-name { font-size:13px; }
+            .order-item .price { font-size:13px; }
         }
         
         @media (max-width:480px) {
-            body { padding:6px; }
+            body { padding:8px; }
             .card { padding:14px !important; border-radius:12px; }
             .order-item { gap:10px; padding:10px 0; }
             .order-item img { width:42px; height:42px; }
             .order-item .info .item-name { font-size:12px; }
-            .order-item .info .item-details { font-size:11px; }
             .order-item .price { font-size:12px; }
             .summary-row { font-size:14px; }
             .total-row { font-size:17px; }
-            .page-title { font-size:20px !important; }
+            h1 { font-size:20px !important; }
             .form-group input, .form-group textarea { padding:10px; font-size:15px; }
             .btn-primary { font-size:15px; padding:12px; }
-            .container { padding:0; }
-        }
-        
-        /* ===== IPHONE SAFARI FIXES ===== */
-        @supports (-webkit-touch-callout: none) {
-            body {
-                padding: 8px !important;
-                overflow-x: hidden !important;
-                width: 100% !important;
-                max-width: 100% !important;
-            }
-            .container {
-                width: 100% !important;
-                max-width: 100% !important;
-                padding: 0 4px !important;
-                overflow-x: hidden !important;
-            }
-            .grid {
-                gap: 12px !important;
-            }
-            .card {
-                padding: 14px !important;
-                border-radius: 14px !important;
-            }
-            .order-item {
-                gap: 10px !important;
-                padding: 10px 0 !important;
-            }
-            .order-item img {
-                width: 40px !important;
-                height: 40px !important;
-                flex-shrink: 0 !important;
-            }
-            .order-item .info .item-name {
-                font-size: 12px !important;
-                word-break: break-word !important;
-            }
-            .order-item .price {
-                font-size: 12px !important;
-                flex-shrink: 0 !important;
-            }
-            .page-title {
-                font-size: 22px !important;
-            }
-            .summary-row {
-                font-size: 14px !important;
-            }
-            .total-row {
-                font-size: 17px !important;
-            }
-            .btn-primary {
-                font-size: 15px !important;
-                padding: 12px !important;
-            }
-            .order-item .info {
-                overflow: hidden !important;
-            }
-            .form-group input, .form-group textarea {
-                font-size: 16px !important;
-            }
-        }
-        
-        /* ===== IPHONE NOTCH SAFE AREA ===== */
-        @supports (padding: max(0px)) {
-            body {
-                padding-left: max(12px, env(safe-area-inset-left));
-                padding-right: max(12px, env(safe-area-inset-right));
-                padding-top: max(12px, env(safe-area-inset-top));
-                padding-bottom: max(12px, env(safe-area-inset-bottom));
-            }
         }
         
         input, textarea, select {
@@ -309,8 +132,8 @@
 
 <div class="container" id="checkoutContainer">
     <button class="back-btn" onclick="window.location.href='/tadaa-marketplace/'">← Back to Shopping</button>
-    <h1 class="page-title">🛒 Checkout</h1>
-    <p class="page-subtitle">Enter your details to complete your order</p>
+    <h1 style="font-size:32px; margin-bottom:8px;">🛒 Checkout</h1>
+    <p style="color:#6B7280; margin-bottom:24px;">Enter your details to complete your order</p>
     
     <div class="grid">
         <div>
@@ -328,7 +151,7 @@
                     <div class="form-group">
                         <label>Email Address <span style="color:#9CA3AF; font-weight:400;">(Optional)</span></label>
                         <input type="email" id="emailAddress" placeholder="e.g., john@example.com">
-                        <small style="color:#6B7280; font-size:12px;">We'll send your order confirmation here</small>
+                        <small style="color:#6B7280;">We'll send your order confirmation here</small>
                     </div>
                     <div class="form-group">
                         <label>Delivery Address *</label>
@@ -405,7 +228,7 @@ function displayOrderSummary() {
         const itemTotal = item.price * item.quantity;
         return `
         <div class="order-item">
-            ${item.images && item.images.length > 0 ? `<img src="${item.images[0]}" alt="${item.name}">` : '<div style="width:55px;height:55px;border-radius:8px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">📷</div>'}
+            ${item.images && item.images.length > 0 ? `<img src="${item.images[0]}" alt="${item.name}">` : '<div style="width:60px;height:60px;border-radius:8px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">📷</div>'}
             <div class="info">
                 <p class="item-name">${item.name}</p>
                 <p class="item-details">Qty: ${item.quantity} × ₦${item.price.toLocaleString()}</p>
