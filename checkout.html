@@ -51,10 +51,18 @@
             font-weight: 600;
             font-size: 14px;
             color: #000;
+            margin: 0 0 2px;
         }
         .order-item .info .item-details {
             font-size: 12px;
             color: #6B7280;
+            margin: 0;
+        }
+        .order-item .info .item-price {
+            font-size: 13px;
+            font-weight: 600;
+            color: #000;
+            margin: 2px 0 0;
         }
         .order-item .price {
             font-weight: 600;
@@ -184,16 +192,19 @@ function displayOrderSummary() {
     const deliveryCharge = isFreeDelivery ? 0 : deliveryFee;
     const total = subtotal + deliveryCharge;
     
-    document.getElementById('orderItems').innerHTML = cart.map(item => `
+    document.getElementById('orderItems').innerHTML = cart.map(item => {
+        const itemTotal = item.price * item.quantity;
+        return `
         <div class="order-item">
             ${item.images && item.images.length > 0 ? `<img src="${item.images[0]}" alt="${item.name}">` : '<div style="width:60px;height:60px;border-radius:8px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">📷</div>'}
             <div class="info">
                 <p class="item-name">${item.name}</p>
                 <p class="item-details">Qty: ${item.quantity} × ₦${item.price.toLocaleString()}</p>
+                <p class="item-price">₦${itemTotal.toLocaleString()}</p>
             </div>
-            <div class="price">₦${(item.price * item.quantity).toLocaleString()}</div>
+            <div class="price">₦${itemTotal.toLocaleString()}</div>
         </div>
-    `).join('');
+    `}).join('');
     
     document.getElementById('subtotalDisplay').textContent = `₦${subtotal.toLocaleString()}`;
     document.getElementById('deliveryDisplay').textContent = isFreeDelivery ? '🎉 FREE' : `₦${deliveryCharge.toLocaleString()} (${totalItems} items × ₦${perItemDelivery})`;
