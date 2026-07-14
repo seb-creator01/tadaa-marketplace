@@ -18,15 +18,15 @@
             padding:12px; 
             min-height:100vh; 
             min-height:100dvh;
-            display:flex;
-            justify-content:center;
-            align-items:flex-start;
+            overflow-x:hidden;
+            width:100%;
         }
         .container { 
             max-width:900px; 
             width:100%;
             margin:0 auto; 
             padding:0 4px; 
+            overflow-x:hidden;
         }
         .back-btn { 
             background:none; 
@@ -78,13 +78,14 @@
         .btn-primary:disabled { opacity:0.6; cursor:not-allowed; }
         .error { background:#FEE2E2; color:#DC2626; padding:12px; border-radius:10px; display:none; margin-bottom:16px; }
         
-        /* ===== FIXED ORDER ITEMS ROWS ===== */
+        /* ===== ORDER ITEMS ROWS ===== */
         .order-item {
             display: flex;
             gap: 14px;
             padding: 14px 0;
             border-bottom: 1px solid #F3F4F6;
             align-items: center;
+            width:100%;
         }
         .order-item img {
             width: 55px;
@@ -97,12 +98,14 @@
         .order-item .info {
             flex: 1;
             min-width: 0;
+            overflow:hidden;
         }
         .order-item .info .item-name {
             font-weight: 600;
             font-size: 14px;
             color: #000;
             margin: 0 0 2px;
+            word-break:break-word;
         }
         .order-item .info .item-details {
             font-size: 12px;
@@ -121,6 +124,7 @@
             white-space: nowrap;
             color: #000;
             text-align: right;
+            flex-shrink:0;
         }
         
         .summary-row { display:flex; justify-content:space-between; padding:4px 0; font-size:15px; }
@@ -138,7 +142,11 @@
         .loading-spinner { display:inline-block; width:20px; height:20px; border:3px solid #f3f4f6; border-top:3px solid #FFD700; border-radius:50%; animation:spin 0.8s linear infinite; margin-right:10px; vertical-align:middle; }
         @keyframes spin { 0% { transform:rotate(0deg); } 100% { transform:rotate(360deg); } }
         
-        /* ===== RESPONSIVE - FITS ALL SCREENS PERFECTLY ===== */
+        /* ===== RESPONSIVE - ALL DEVICES ===== */
+        @media (max-width:1024px) {
+            .grid { gap:16px; }
+        }
+        
         @media (max-width:768px) { 
             .grid { 
                 grid-template-columns:1fr; 
@@ -187,8 +195,8 @@
         }
         
         @media (max-width:480px) {
-            body { padding:4px; }
-            .card { padding:12px !important; border-radius:12px; }
+            body { padding:6px; }
+            .card { padding:14px !important; border-radius:12px; }
             .order-item { gap:10px; padding:10px 0; }
             .order-item img { width:42px; height:42px; }
             .order-item .info .item-name { font-size:12px; }
@@ -199,6 +207,72 @@
             .page-title { font-size:20px !important; }
             .form-group input, .form-group textarea { padding:10px; font-size:15px; }
             .btn-primary { font-size:15px; padding:12px; }
+            .container { padding:0; }
+        }
+        
+        /* ===== IPHONE SAFARI FIXES ===== */
+        @supports (-webkit-touch-callout: none) {
+            body {
+                padding: 10px !important;
+                overflow-x: hidden !important;
+                width: 100% !important;
+            }
+            .container {
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 4px !important;
+                overflow-x: hidden !important;
+            }
+            .card {
+                padding: 14px !important;
+                border-radius: 14px !important;
+            }
+            .order-item {
+                gap: 10px !important;
+                padding: 10px 0 !important;
+            }
+            .order-item img {
+                width: 45px !important;
+                height: 45px !important;
+                flex-shrink: 0 !important;
+            }
+            .order-item .info .item-name {
+                font-size: 13px !important;
+                word-break: break-word !important;
+            }
+            .order-item .price {
+                font-size: 12px !important;
+                flex-shrink: 0 !important;
+            }
+            .grid {
+                gap: 14px !important;
+            }
+            h1 {
+                font-size: 22px !important;
+            }
+            .summary-row {
+                font-size: 14px !important;
+            }
+            .total-row {
+                font-size: 17px !important;
+            }
+            .btn-primary {
+                font-size: 15px !important;
+                padding: 14px !important;
+            }
+            .order-item .info {
+                overflow: hidden !important;
+            }
+        }
+        
+        /* ===== IPHONE NOTCH SAFE AREA ===== */
+        @supports (padding: max(0px)) {
+            body {
+                padding-left: max(12px, env(safe-area-inset-left));
+                padding-right: max(12px, env(safe-area-inset-right));
+                padding-top: max(12px, env(safe-area-inset-top));
+                padding-bottom: max(12px, env(safe-area-inset-bottom));
+            }
         }
         
         input, textarea, select {
@@ -206,7 +280,6 @@
             max-width: 100%;
         }
         
-        /* Scrollable order items */
         #orderItems {
             max-height:300px;
             overflow-y:auto;
