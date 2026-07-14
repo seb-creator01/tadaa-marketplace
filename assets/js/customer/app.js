@@ -875,6 +875,81 @@ window.closeCartSidebar = closeCartSidebar;
 window.toggleTheme = toggleTheme;
 
 // ============================================
+// DETECT BROWSER & SHOW INSTALL INSTRUCTIONS
+// ============================================
+function getBrowserInfo() {
+    const ua = navigator.userAgent;
+    const isSamsung = ua.includes('Samsung') || ua.includes('SM-');
+    const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
+    const isChrome = /chrome/i.test(ua) && !ua.includes('Samsung');
+    const isIOS = /iphone|ipad|ipod/i.test(ua);
+    const isAndroid = /android/i.test(ua);
+    
+    return { isSamsung, isSafari, isChrome, isIOS, isAndroid };
+}
+
+function showInstallInstructions() {
+    const browser = getBrowserInfo();
+    const banner = document.getElementById('installBanner');
+    if (!banner) return;
+    
+    // Hide if app is already installed
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+        banner.classList.remove('show');
+        return;
+    }
+    
+    // Show different messages based on browser
+    if (browser.isSamsung || browser.isSafari || browser.isIOS) {
+        const installBtn = document.getElementById('installBtn');
+        const cancelBtn = document.getElementById('cancelInstallBtn');
+        
+        if (installBtn) {
+            installBtn.textContent = '📱 Install App';
+            installBtn.onclick = function() {
+                const instructions = document.createElement('div');
+                instructions.id = 'installInstructions';
+                instructions.style.cssText = `
+                    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                    background: rgba(0,0,0,0.8); z-index: 10000;
+                    display: flex; align-items: center; justify-content: center;
+                    padding: 20px;
+                `;
+                instructions.innerHTML = `
+                    <div style="background: #fff; border-radius: 24px; max-width: 400px; width: 100%; padding: 32px; text-align: center; position: relative;">
+                        <button onclick="this.closest('#installInstructions').remove()" style="position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">✕</button>
+                        <div style="font-size: 48px; margin-bottom: 16px;">📱</div>
+                        <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 24px; color: #000; margin: 0 0 8px;">Install Tadaa!</h2>
+                        <p style="color: #666; margin-bottom: 20px; line-height: 1.5;">Get the full app experience on your device</p>
+                        <div style="text-align: left; background: #f5f5f5; padding: 16px; border-radius: 12px; margin-bottom: 20px;">
+                            <p style="font-weight: 600; margin: 0 0 8px; color: #000;">${browser.isSafari || browser.isIOS ? '📲 On iPhone/iPad:' : '📲 On Samsung Internet:'}</p>
+                            <ol style="margin: 0; padding-left: 20px; color: #333; line-height: 2;">
+                                ${browser.isSafari || browser.isIOS ? `
+                                    <li>Tap the <strong>Share</strong> icon <span style="font-size:18px;">⬆️</span></li>
+                                    <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
+                                    <li>Tap <strong>"Add"</strong> in the top right</li>
+                                ` : `
+                                    <li>Tap the <strong>☰</strong> menu icon</li>
+                                    <li>Select <strong>"Add to Home Screen"</strong></li>
+                                    <li>Tap <strong>"Add"</strong> to install</li>
+                                `}
+                            </ol>
+                        </div>
+                        <button onclick="this.closest('#installInstructions').remove()" style="background: #FFD700; color: #000; border: none; padding: 12px 32px; border-radius: 12px; font-weight: 600; font-size: 16px; cursor: pointer;">Got it!</button>
+                    </div>
+                `;
+                document.body.appendChild(instructions);
+            };
+        }
+        
+        banner.classList.add('show');
+        return true;
+    }
+    
+    return false;
+}
+
+// ============================================
 // INITIALIZE
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
