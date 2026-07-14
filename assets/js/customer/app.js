@@ -287,7 +287,7 @@ function renderCategories() {
 }
 
 // ============================================
-// RENDER PRODUCTS - FIXED: Two Column Grid
+// RENDER PRODUCTS
 // ============================================
 function renderProducts() {
     const productsDiv = document.getElementById('products-section');
@@ -435,7 +435,7 @@ function toggleSearch() {
 }
 
 // ============================================
-// VIEW PRODUCT - FIXED: Better Modal Layout
+// VIEW PRODUCT
 // ============================================
 function viewProduct(productId) {
     // Close any existing modal first
@@ -673,7 +673,8 @@ function renderCartSidebarContent() {
     if (!sidebar) {
         sidebar = document.createElement('div');
         sidebar.id = 'cartSidebar';
-        sidebar.style.cssText = `position:fixed; top:0; right:-400px; width:380px; height:100%; background:var(--bg-card); z-index:1500; transition:right 0.4s cubic-bezier(0.4,0,0.2,1); box-shadow:-4px 0 24px var(--shadow-color); display:flex; flex-direction:column;`;
+        // FIXED: Added 100vh and 100dvh for iPhone Safari/PWA support
+        sidebar.style.cssText = `position:fixed; top:0; right:-400px; width:380px; height:100%; height:100vh; height:100dvh; background:var(--bg-card); z-index:1500; transition:right 0.4s cubic-bezier(0.4,0,0.2,1); box-shadow:-4px 0 24px var(--shadow-color); display:flex; flex-direction:column;`;
         document.body.appendChild(sidebar);
         
         const overlay = document.createElement('div');
