@@ -345,7 +345,6 @@ function renderProducts() {
                 
                 <div style="padding:10px;">
                     <h3 style="font-size:13px; font-weight:600; margin:0 0 2px; color:var(--text-primary); line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${product.name}</h3>
-                    <p style="font-size:10px; color:var(--text-secondary); margin:0 0 4px;">${product.categoryName || 'Uncategorized'}</p>
                     <p style="font-size:11px; color:var(--text-muted); margin:0 0 4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.3;">${product.description || ''}</p>
                     
                     <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
