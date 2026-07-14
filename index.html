@@ -43,7 +43,7 @@
                 <span style="font-size:28px;">📲</span>
                 <div>
                     <span style="font-weight:700; font-size:16px; color:#000;">Install Tadaa! App</span>
-                    <span style="font-size:12px; color:#333; display:block;">Get the full app experience</span>
+                    <span style="font-size:12px; color:#333; display:block;" id="installSubtext">Get the full app experience</span>
                 </div>
             </div>
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -71,6 +71,21 @@
         const banner = document.getElementById('installBanner');
         const installBtn = document.getElementById('installBtn');
         const cancelBtn = document.getElementById('cancelInstallBtn');
+        const installSubtext = document.getElementById('installSubtext');
+        
+        // ============================================
+        // DETECT BROWSER
+        // ============================================
+        function getBrowserInfo() {
+            const ua = navigator.userAgent;
+            const isSamsung = ua.includes('Samsung') || ua.includes('SM-');
+            const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
+            const isChrome = /chrome/i.test(ua) && !ua.includes('Samsung');
+            const isIOS = /iphone|ipad|ipod/i.test(ua);
+            const isAndroid = /android/i.test(ua);
+            
+            return { isSamsung, isSafari, isChrome, isIOS, isAndroid };
+        }
         
         // ============================================
         // CHECK IF APP IS INSTALLED
@@ -94,11 +109,18 @@
             if (!banner) return;
             if (isAppInstalled()) { banner.classList.remove('show'); return; }
             if (sessionStorage.getItem('installDeclined') === 'true') { banner.classList.remove('show'); return; }
-            if (!deferredPrompt) { 
-                console.log('⏳ No deferredPrompt, banner hidden');
-                banner.classList.remove('show'); 
-                return; 
+            
+            const browser = getBrowserInfo();
+            
+            // For Chrome Android - use deferredPrompt
+            if (browser.isChrome && browser.isAndroid) {
+                if (!deferredPrompt) {
+                    console.log('⏳ No deferredPrompt, banner hidden');
+                    banner.classList.remove('show');
+                    return;
+                }
             }
+            
             console.log('📲 Showing install banner');
             banner.classList.add('show');
             installBannerShown = true;
@@ -109,11 +131,84 @@
         }
         
         // ============================================
-        // INSTALL BUTTON - ONLY PROMPT, NO ALERTS
+        // SHOW INSTALL INSTRUCTIONS
+        // ============================================
+        function showInstallInstructions() {
+            const browser = getBrowserInfo();
+            
+            const instructions = document.createElement('div');
+            instructions.id = 'installInstructions';
+            instructions.style.cssText = `
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0,0,0,0.8); z-index: 10000;
+                display: flex; align-items: center; justify-content: center;
+                padding: 20px;
+            `;
+            instructions.innerHTML = `
+                <div style="background: #fff; border-radius: 24px; max-width: 400px; width: 100%; padding: 32px; text-align: center; position: relative;">
+                    <button onclick="this.closest('#installInstructions').remove()" style="position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">✕</button>
+                    <div style="font-size: 48px; margin-bottom: 16px;">📱</div>
+                    <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 24px; color: #000; margin: 0 0 8px;">Install Tadaa!</h2>
+                    <p style="color: #666; margin-bottom: 20px; line-height: 1.5;">Get the full app experience on your device</p>
+                    <div style="text-align: left; background: #f5f5f5; padding: 16px; border-radius: 12px; margin-bottom: 20px;">
+                        <p style="font-weight: 600; margin: 0 0 8px; color: #000;">${browser.isSafari || browser.isIOS ? '📲 On iPhone/iPad:' : '📲 On Samsung Internet:'}</p>
+                        <ol style="margin: 0; padding-left: 20px; color: #333; line-height: 2;">
+                            ${browser.isSafari || browser.isIOS ? `
+                                <li>Tap the <strong>Share</strong> icon <span style="font-size:18px;">⬆️</span></li>
+                                <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
+                                <li>Tap <strong>"Add"</strong> in the top right</li>
+                            ` : `
+                                <li>Tap the <strong>☰</strong> menu icon</li>
+                                <li>Select <strong>"Add to Home Screen"</strong></li>
+                                <li>Tap <strong>"Add"</strong> to install</li>
+                            `}
+                        </ol>
+                    </div>
+                    <button onclick="this.closest('#installInstructions').remove()" style="background: #FFD700; color: #000; border: none; padding: 12px 32px; border-radius: 12px; font-weight: 600; font-size: 16px; cursor: pointer;">Got it!</button>
+                </div>
+            `;
+            document.body.appendChild(instructions);
+        }
+        
+        // ============================================
+        // CHECK AND SHOW CORRECT BANNER
+        // ============================================
+        function checkAndShowInstallBanner() {
+            const browser = getBrowserInfo();
+            
+            // If already installed, hide banner
+            if (isAppInstalled()) {
+                banner.classList.remove('show');
+                return;
+            }
+            
+            // For Chrome Android - use beforeinstallprompt
+            if (browser.isChrome && browser.isAndroid) {
+                if (deferredPrompt) {
+                    banner.classList.add('show');
+                    if (installBtn) installBtn.textContent = '📲 Install';
+                    if (installSubtext) installSubtext.textContent = 'Get the full app experience';
+                }
+                return;
+            }
+            
+            // For Samsung Internet and iPhone - show instructions
+            if (browser.isSamsung || browser.isSafari || browser.isIOS) {
+                banner.classList.add('show');
+                if (installBtn) installBtn.textContent = '📱 Install App';
+                if (installSubtext) installSubtext.textContent = 'Add to your home screen';
+                return;
+            }
+        }
+        
+        // ============================================
+        // INSTALL BUTTON
         // ============================================
         if (installBtn) {
             installBtn.addEventListener('click', function() {
                 console.log('📲 Install button clicked');
+                
+                const browser = getBrowserInfo();
                 
                 if (isAppInstalled()) {
                     console.log('⏭️ Already installed');
@@ -121,25 +216,31 @@
                     return;
                 }
                 
-                if (deferredPrompt) {
-                    console.log('📲 Showing native install prompt');
-                    deferredPrompt.prompt();
-                    deferredPrompt.userChoice.then(function(result) {
-                        if (result.outcome === 'accepted') {
-                            console.log('✅ App installed successfully!');
-                            hideBanner();
-                            sessionStorage.removeItem('installDeclined');
-                        } else {
-                            console.log('❌ User declined');
-                            hideBanner();
-                            sessionStorage.setItem('installDeclined', 'true');
-                        }
-                        deferredPrompt = null;
-                    });
+                // For Chrome Android - use native prompt
+                if (browser.isChrome && browser.isAndroid) {
+                    if (deferredPrompt) {
+                        console.log('📲 Showing native install prompt');
+                        deferredPrompt.prompt();
+                        deferredPrompt.userChoice.then(function(result) {
+                            if (result.outcome === 'accepted') {
+                                console.log('✅ App installed successfully!');
+                                hideBanner();
+                                sessionStorage.removeItem('installDeclined');
+                            } else {
+                                console.log('❌ User declined');
+                                hideBanner();
+                                sessionStorage.setItem('installDeclined', 'true');
+                            }
+                            deferredPrompt = null;
+                        });
+                    } else {
+                        console.log('❌ No deferredPrompt available');
+                        hideBanner();
+                        sessionStorage.setItem('installDeclined', 'true');
+                    }
                 } else {
-                    console.log('❌ No deferredPrompt available');
-                    hideBanner();
-                    sessionStorage.setItem('installDeclined', 'true');
+                    // For Samsung/iPhone - show instructions
+                    showInstallInstructions();
                 }
             });
         }
@@ -163,7 +264,7 @@
             e.preventDefault();
             deferredPrompt = e;
             console.log('✅ deferredPrompt saved');
-            showBanner();
+            checkAndShowInstallBanner();
         });
         
         // ============================================
@@ -191,26 +292,24 @@
             console.log('   - Manifest:', document.querySelector('link[rel="manifest"]') ? '✅' : '❌');
             console.log('   - Service Worker:', 'serviceWorker' in navigator ? '✅' : '❌');
             
-            // Show banner if deferredPrompt exists
+            // Show the correct banner based on browser
             setTimeout(function() {
                 if (deferredPrompt) {
                     console.log('✅ deferredPrompt exists - showing banner');
-                    showBanner();
+                    checkAndShowInstallBanner();
                 } else {
                     console.log('⏳ deferredPrompt not yet available');
+                    // Try showing instructions for non-Chrome browsers
+                    checkAndShowInstallBanner();
                     // Try again after 5 seconds
                     setTimeout(function() {
                         if (deferredPrompt) {
                             console.log('✅ deferredPrompt now exists - showing banner');
-                            showBanner();
+                            checkAndShowInstallBanner();
                         } else {
                             console.log('❌ deferredPrompt still not available');
-                            console.log('💡 This means Chrome is not allowing installation.');
-                            console.log('🔍 Possible reasons:');
-                            console.log('   - User declined before (Chrome remembers)');
-                            console.log('   - App was installed before');
-                            console.log('   - Chrome settings blocking it');
-                            hideBanner();
+                            // Try showing instructions for non-Chrome browsers again
+                            checkAndShowInstallBanner();
                         }
                     }, 5000);
                 }
@@ -221,8 +320,8 @@
         document.addEventListener('visibilitychange', function() {
             if (!document.hidden) {
                 console.log('👁️ Page became visible');
-                if (deferredPrompt && !isAppInstalled()) {
-                    showBanner();
+                if (!isAppInstalled()) {
+                    checkAndShowInstallBanner();
                 }
             }
         });
