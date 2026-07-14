@@ -637,3 +637,32 @@ a:hover {
         font-size: 22px;
     }
 }
+/* ============================================
+   CHECKOUT PAGE - Prevent Mobile Zoom
+   ============================================ */
+
+/* Force input font size to prevent iOS/Android zoom */
+input,
+textarea,
+select {
+    font-size: 16px !important;
+}
+
+/* Better mobile padding */
+@media (max-width: 768px) {
+    body {
+        padding: 12px;
+    }
+    
+    .card {
+        padding: 16px !important;
+    }
+    
+    .grid {
+        gap: 12px !important;
+    }
+    
+    h1 {
+        font-size: 24px !important;
+    }
+}
