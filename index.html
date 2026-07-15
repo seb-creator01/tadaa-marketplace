@@ -10,13 +10,13 @@
     <meta property="og:title" content="Tadaa! - Premium Online Marketplace" />
     <meta property="og:description" content="Shop premium products at Tadaa!" />
     
-    <link rel="manifest" href="/tadaa-marketplace/manifest.json" />
+    <link rel="manifest" href="./manifest.json" />
     <meta name="theme-color" content="#FFD700" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     
-    <link rel="icon" href="/tadaa-marketplace/favicon.ico" />
-    <link rel="stylesheet" href="/tadaa-marketplace/assets/css/main.css" />
+    <link rel="icon" href="./favicon.ico" />
+    <link rel="stylesheet" href="./assets/css/main.css" />
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&display=swap" rel="stylesheet">
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -157,7 +157,7 @@
         <footer id="main-footer"></footer>
     </div>
     
-    <script src="/tadaa-marketplace/assets/js/customer/app.js"></script>
+    <script src="./assets/js/customer/app.js"></script>
     
     <script>
         console.log('🚀 Tadaa! PWA loaded');
@@ -428,7 +428,7 @@
         // ============================================
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/tadaa-marketplace/sw.js')
+                navigator.serviceWorker.register('./sw.js')
                     .then(function(reg) {
                         console.log('✅ Service Worker registered');
                     })
