@@ -18,6 +18,28 @@ const db = firebase.firestore();
 console.log('🛒 Tadaa! Customer Website Loaded');
 
 // ============================================
+// SPLASH SCREEN CONTROL
+// ============================================
+
+function hideSplashScreen() {
+    const splash = document.getElementById('splashScreen');
+    if (splash) {
+        splash.classList.add('hidden');
+        // Remove from DOM after animation completes
+        setTimeout(function() {
+            splash.style.display = 'none';
+        }, 800);
+    }
+}
+
+// Show splash screen if it exists (it's already visible by default)
+// This function is called when data is fully loaded
+function showContent() {
+    // Hide splash screen with smooth transition
+    hideSplashScreen();
+}
+
+// ============================================
 // DOM ELEMENTS
 // ============================================
 const appContainer = document.getElementById('app');
@@ -114,6 +136,8 @@ function showMaintenancePage() {
             </div>
         </div>
     `;
+    // Hide splash even on maintenance page
+    showContent();
 }
 
 // ============================================
@@ -150,6 +174,9 @@ async function loadData() {
         renderWebsite();
         updateCartCount();
         
+        // ===== HIDE SPLASH SCREEN - DATA IS READY =====
+        showContent();
+        
     } catch (error) {
         console.error('❌ Error loading data:', error);
         if (appContainer) {
@@ -161,6 +188,8 @@ async function loadData() {
                 </div>
             `;
         }
+        // Hide splash even on error so user can see the error message
+        showContent();
     }
 }
 
