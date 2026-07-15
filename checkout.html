@@ -365,6 +365,7 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
     const deliveryCharge = isFreeDelivery ? 0 : (perItemDelivery * totalItems);
     const total = subtotal + deliveryCharge;
     const orderId = generateOrderId();
+    const now = new Date().toISOString();
     
     orderData = {
         orderId: orderId,
@@ -403,9 +404,21 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
             amountPaid: 0,
             paidAt: null
         },
-        status: 'pending',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        status: 'Payment Confirmed',
+        trackingHistory: [
+            {
+                status: "Order Placed",
+                timestamp: now,
+                note: "Order has been placed successfully"
+            },
+            {
+                status: "Payment Confirmed",
+                timestamp: now,
+                note: "Payment has been confirmed"
+            }
+        ],
+        createdAt: now,
+        updatedAt: now
     };
     
     try {
@@ -436,7 +449,8 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
             },
             callback: function(response) {
                 console.log('✅ Payment success:', response);
-                window.location.href = `/tadaa-marketplace/payment-success.html?order=${orderId}&reference=${response.reference}&amount=${total}`;
+                // Redirect to tracking page instead of payment-success
+                window.location.href = `/tadaa-marketplace/tracking.html?order=${orderId}`;
             },
             onClose: function() {
                 console.log('❌ Payment window closed');
