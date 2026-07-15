@@ -836,7 +836,7 @@ function closeCartSidebar() {
 }
 
 // ============================================
-// CHECKOUT
+// CHECKOUT - FIXED PATH
 // ============================================
 function checkout() {
     if (cart.length === 0) {
@@ -844,7 +844,7 @@ function checkout() {
         return;
     }
     closeCartSidebar();
-    window.location.href = '/tadaa-marketplace/checkout.html';
+    window.location.href = './checkout.html';
 }
 
 // ============================================
