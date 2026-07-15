@@ -131,7 +131,7 @@
 <body>
 
 <div class="container" id="checkoutContainer">
-    <button class="back-btn" onclick="window.location.href='/tadaa-marketplace/'">← Back to Shopping</button>
+    <button class="back-btn" onclick="window.location.href='./'">← Back to Shopping</button>
     <h1 style="font-size:32px; margin-bottom:8px;">🛒 Checkout</h1>
     <p style="color:#6B7280; margin-bottom:24px;">Enter your details to complete your order</p>
     
@@ -204,7 +204,7 @@ async function loadCheckoutData() {
     try {
         const saved = localStorage.getItem('tadaa_cart');
         if (saved) { cart = JSON.parse(saved); }
-        if (cart.length === 0) { window.location.href = '/tadaa-marketplace/'; return; }
+        if (cart.length === 0) { window.location.href = './'; return; }
         const settingsDoc = await db.collection('siteSettings').doc('settings').get();
         settings = settingsDoc.data() || {};
         displayOrderSummary();
@@ -329,8 +329,8 @@ function showPaymentCancelled(orderId) {
                     <p style="margin:4px 0;"><strong>Status:</strong> Pending payment</p>
                 </div>
                 <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:20px;">
-                    <button onclick="window.location.href='/tadaa-marketplace/checkout.html'" style="background:#FFD700; color:#000; border:none; padding:12px 24px; border-radius:50px; font-size:16px; font-weight:600; cursor:pointer;">🔄 Try Again</button>
-                    <button onclick="window.location.href='/tadaa-marketplace/'" style="background:#1A56DB; color:#fff; border:none; padding:12px 24px; border-radius:50px; font-size:16px; font-weight:600; cursor:pointer;">🏠 Go Home</button>
+                    <button onclick="window.location.href='./checkout.html'" style="background:#FFD700; color:#000; border:none; padding:12px 24px; border-radius:50px; font-size:16px; font-weight:600; cursor:pointer;">🔄 Try Again</button>
+                    <button onclick="window.location.href='./'" style="background:#1A56DB; color:#fff; border:none; padding:12px 24px; border-radius:50px; font-size:16px; font-weight:600; cursor:pointer;">🏠 Go Home</button>
                 </div>
             </div>
         </div>
@@ -450,7 +450,7 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
             callback: function(response) {
                 console.log('✅ Payment success:', response);
                 // Redirect to tracking page instead of payment-success
-                window.location.href = `/tadaa-marketplace/tracking.html?order=${orderId}`;
+                window.location.href = `./tracking.html?order=${orderId}`;
             },
             onClose: function() {
                 console.log('❌ Payment window closed');
