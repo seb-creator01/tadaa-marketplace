@@ -2,10 +2,11 @@
    TADAA! - MAIN STYLES
    Premium Design + Dark/Light Mode + Animations
    Colors: Yellow (#FFD700), Blue (#1A56DB), Black (#000000)
-   Font: Cormorant Garamond
+   Font: Inter (Body) + Cormorant Garamond (Header Only)
    ============================================ */
 
-/* ===== Import Google Font ===== */
+/* ===== Import Google Fonts ===== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&display=swap');
 
 /* ============================================
@@ -71,7 +72,8 @@
     --transition-slow: 0.5s ease;
     
     /* Fonts */
-    --font-family: 'Cormorant Garamond', Georgia, serif;
+    --font-family-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-family-header: 'Cormorant Garamond', Georgia, serif;
 }
 
 /* ============================================
@@ -113,30 +115,41 @@ html {
 }
 
 body {
-    font-family: var(--font-family);
+    font-family: var(--font-family-body);
     background: var(--bg-primary);
     color: var(--text-primary);
     line-height: 1.6;
     min-height: 100vh;
     overflow-x: hidden;
     transition: background 0.3s ease, color 0.3s ease;
+    font-weight: 500;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 /* ============================================
    TYPOGRAPHY
    ============================================ */
 h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-family);
+    font-family: var(--font-family-body);
     font-weight: 700;
     line-height: 1.2;
     color: var(--text-primary);
     transition: color 0.3s ease;
+    letter-spacing: -0.02em;
+}
+
+p {
+    font-family: var(--font-family-body);
+    font-weight: 500;
+    line-height: 1.7;
 }
 
 a {
     color: var(--color-blue);
     text-decoration: none;
     transition: color var(--transition-fast);
+    font-family: var(--font-family-body);
 }
 
 a:hover {
@@ -144,11 +157,16 @@ a:hover {
 }
 
 /* ============================================
-   TADAA! TITLE WITH BLACK EXCLAMATION
+   TADAA! TITLE - KEEP CORMORANT GARAMOND
    ============================================ */
-.tadaa-title {
-    font-family: var(--font-family);
-    font-weight: 700;
+.tadaa-title,
+header .tadaa-title,
+#main-header .tadaa-title,
+nav .tadaa-title,
+[class*="tadaa-title"] {
+    font-family: var(--font-family-header) !important;
+    font-weight: 700 !important;
+    letter-spacing: normal !important;
 }
 
 .tadaa-title .exclamation {
@@ -176,9 +194,9 @@ a:hover {
     padding: 12px 24px;
     border: none;
     border-radius: var(--radius-full);
-    font-family: var(--font-family);
+    font-family: var(--font-family-body);
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     transition: all var(--transition-normal);
     text-align: center;
@@ -452,6 +470,7 @@ a:hover {
    ============================================ */
 .category-btn {
     transition: all 0.3s ease;
+    font-weight: 600;
 }
 
 .category-btn:hover {
@@ -646,6 +665,7 @@ input,
 textarea,
 select {
     font-size: 16px !important;
+    font-family: var(--font-family-body);
 }
 
 /* Better mobile padding */
@@ -719,6 +739,7 @@ select {
     .order-item .info .item-name {
         font-size: 13px !important;
         word-break: break-word !important;
+        font-family: var(--font-family-body);
     }
     
     .order-item .price {
@@ -815,7 +836,7 @@ body.checkout-page {
 }
 
 /* ============================================
-   MAKE ALL TEXT CLEARER AND BOLDER
+   MAKE ALL TEXT CLEARER AND BOLDER WITH INTER
    (Keep Tadaa! Header Unchanged)
    ============================================ */
 
@@ -832,10 +853,10 @@ p {
     line-height: 1.7 !important;
 }
 
-/* Make all headings bolder (except header) */
+/* Make all headings bolder */
 h1, h2, h3, h4, h5, h6 {
     font-weight: 700 !important;
-    letter-spacing: 0.02em;
+    letter-spacing: -0.02em;
 }
 
 /* Product names */
@@ -878,12 +899,14 @@ button {
 }
 
 /* ===== EXCLUDE HEADER "Tadaa!" ===== */
-/* Keep the header Tadaa! text as is - unchanged */
+/* Keep the header Tadaa! text as Cormorant Garamond - unchanged */
 nav .tadaa-title,
 header .tadaa-title,
 #main-header .tadaa-title,
-[style*="font-family:'Cormorant Garamond'"] h1,
-header h1 {
+header h1,
+nav h1,
+[class*="tadaa-title"] {
+    font-family: 'Cormorant Garamond', Georgia, serif !important;
     font-weight: 700 !important;
     letter-spacing: normal !important;
 }
