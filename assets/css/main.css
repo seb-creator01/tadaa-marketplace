@@ -656,6 +656,7 @@ nav .tadaa-title,
         font-size: 22px;
     }
 }
+
 /* ============================================
    CHECKOUT PAGE - Prevent Mobile Zoom
    ============================================ */
@@ -684,97 +685,6 @@ select {
     
     h1 {
         font-size: 24px !important;
-    }
-}
-/* ============================================
-   IPHONE SAFARI FIXES
-   ============================================ */
-
-/* Target iPhone Safari specifically */
-@supports (-webkit-touch-callout: none) {
-    
-    /* Fix body scaling on iPhone */
-    body {
-        -webkit-text-size-adjust: 100% !important;
-        text-size-adjust: 100% !important;
-        min-height: -webkit-fill-available !important;
-        padding: 10px !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        overflow-x: hidden !important;
-    }
-    
-    /* Fix container on iPhone */
-    .container {
-        width: 100% !important;
-        max-width: 100% !important;
-        padding: 0 6px !important;
-        overflow-x: hidden !important;
-    }
-    
-    /* Fix grid on iPhone */
-    .grid {
-        gap: 14px !important;
-    }
-    
-    /* Fix cards on iPhone */
-    .card {
-        padding: 14px !important;
-        border-radius: 14px !important;
-        overflow: hidden !important;
-    }
-    
-    /* Fix order items on iPhone */
-    .order-item {
-        gap: 10px !important;
-        padding: 10px 0 !important;
-    }
-    
-    .order-item img {
-        width: 45px !important;
-        height: 45px !important;
-        flex-shrink: 0 !important;
-    }
-    
-    .order-item .info .item-name {
-        font-size: 13px !important;
-        word-break: break-word !important;
-        font-family: var(--font-family-body);
-    }
-    
-    .order-item .price {
-        font-size: 13px !important;
-        flex-shrink: 0 !important;
-    }
-    
-    /* Fix buttons on iPhone */
-    .btn-primary {
-        font-size: 16px !important;
-        padding: 14px !important;
-    }
-    
-    /* Fix headings on iPhone */
-    h1, .page-title {
-        font-size: 24px !important;
-    }
-    
-    h3 {
-        font-size: 18px !important;
-    }
-    
-    /* Fix form inputs on iPhone */
-    input, textarea, select {
-        font-size: 16px !important;
-        padding: 12px !important;
-    }
-    
-    /* Fix totals on iPhone */
-    .summary-row {
-        font-size: 14px !important;
-    }
-    
-    .total-row {
-        font-size: 18px !important;
     }
 }
 
@@ -957,5 +867,152 @@ nav h1,
     
     .product-price {
         font-size: 15px !important;
+    }
+}
+
+/* ============================================
+   IPHONE SAFARI FIXES - CART & CHECKOUT
+   ============================================ */
+
+/* Target iPhone Safari specifically */
+@supports (-webkit-touch-callout: none) {
+    
+    /* ===== BODY - FORCE FULL WIDTH ===== */
+    body {
+        -webkit-text-size-adjust: 100% !important;
+        text-size-adjust: 100% !important;
+        min-height: -webkit-fill-available !important;
+        padding: 8px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+        position: relative !important;
+    }
+    
+    /* ===== CONTAINER - PREVENT OVERFLOW ===== */
+    .container {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 6px !important;
+        overflow-x: hidden !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* ===== CART SIDEBAR - FULL HEIGHT ===== */
+    #cartSidebar {
+        width: 100% !important;
+        max-width: 380px !important;
+        height: 100% !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        min-height: -webkit-fill-available !important;
+        overflow: hidden !important;
+    }
+    
+    /* ===== CART SIDEBAR CONTENT ===== */
+    #cartSidebar > div {
+        overflow-x: hidden !important;
+        word-break: break-word !important;
+    }
+    
+    /* ===== ORDER ITEMS ===== */
+    .order-item {
+        gap: 10px !important;
+        padding: 12px 0 !important;
+        flex-wrap: nowrap !important;
+        width: 100% !important;
+    }
+    
+    .order-item img {
+        width: 45px !important;
+        height: 45px !important;
+        flex-shrink: 0 !important;
+    }
+    
+    .order-item .info {
+        flex: 1 !important;
+        min-width: 0 !important;
+        overflow: hidden !important;
+    }
+    
+    .order-item .info .item-name {
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        word-break: break-word !important;
+        white-space: normal !important;
+    }
+    
+    .order-item .price {
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+    }
+    
+    /* ===== BUTTONS ===== */
+    .btn-primary,
+    .btn {
+        font-size: 16px !important;
+        padding: 14px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* ===== HEADINGS ===== */
+    h1, .page-title {
+        font-size: 24px !important;
+    }
+    
+    h3 {
+        font-size: 18px !important;
+    }
+    
+    /* ===== FORM INPUTS ===== */
+    input, textarea, select {
+        font-size: 16px !important;
+        padding: 12px !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* ===== TOTALS ===== */
+    .summary-row {
+        font-size: 14px !important;
+        flex-wrap: wrap !important;
+    }
+    
+    .total-row {
+        font-size: 18px !important;
+        flex-wrap: wrap !important;
+    }
+    
+    /* ===== CHECKOUT PAGE SPECIFIC ===== */
+    .grid {
+        gap: 14px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    .card {
+        padding: 14px !important;
+        border-radius: 14px !important;
+        overflow: hidden !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* ===== CART SIDEBAR FOOTER ===== */
+    #cartSidebar .cart-footer,
+    #cartSidebar > div:last-child {
+        padding: 16px 16px !important;
+        padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+        padding-bottom: calc(16px + constant(safe-area-inset-bottom, 0px)) !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* ===== FORCE NO HORIZONTAL SCROLL ===== */
+    * {
+        max-width: 100% !important;
+        box-sizing: border-box !important;
     }
 }
