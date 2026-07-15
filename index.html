@@ -33,9 +33,106 @@
         .btn-cancel:hover { background: #000; color: #fff; }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
         #installBanner.show { animation: slideDown 0.5s ease; }
+        
+        /* ===== SPLASH SCREEN STYLES ===== */
+        #splashScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #000000;
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+        #splashScreen.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .splash-container {
+            text-align: center;
+            padding: 20px;
+            animation: splashPulse 2s ease-in-out infinite;
+        }
+        @keyframes splashPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+        .splash-brand {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 56px;
+            font-weight: 700;
+            color: #FFD700;
+            letter-spacing: 2px;
+            display: block;
+        }
+        .splash-exclamation {
+            color: #FFFFFF;
+        }
+        .splash-loader {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 215, 0, 0.2);
+            border-radius: 10px;
+            margin: 24px auto 16px;
+            overflow: hidden;
+            position: relative;
+        }
+        .splash-loader-bar {
+            width: 40%;
+            height: 100%;
+            background: #FFD700;
+            border-radius: 10px;
+            animation: splashLoader 1.2s ease-in-out infinite;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        @keyframes splashLoader {
+            0% { left: -40%; width: 40%; }
+            50% { width: 60%; }
+            100% { left: 100%; width: 40%; }
+        }
+        .splash-subtitle {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 14px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin: 0;
+        }
+        @media (max-width: 768px) {
+            .splash-brand { font-size: 40px; }
+            .splash-loader { width: 160px; }
+            .splash-subtitle { font-size: 12px; letter-spacing: 3px; }
+        }
+        @media (max-width: 480px) {
+            .splash-brand { font-size: 32px; }
+            .splash-loader { width: 140px; }
+            .splash-subtitle { font-size: 10px; letter-spacing: 2px; }
+        }
     </style>
 </head>
 <body>
+    
+    <!-- ===== SPLASH SCREEN ===== -->
+    <div id="splashScreen">
+        <div class="splash-container">
+            <div class="splash-logo">
+                <span class="splash-brand">Tadaa<span class="splash-exclamation">!</span></span>
+            </div>
+            <div class="splash-loader">
+                <div class="splash-loader-bar"></div>
+            </div>
+            <p class="splash-subtitle">Your premium online marketplace</p>
+        </div>
+    </div>
+    
     <div id="app">
         <!-- Install Banner -->
         <div id="installBanner">
