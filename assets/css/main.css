@@ -813,3 +813,126 @@ body.checkout-page {
         padding: 0 4px;
     }
 }
+
+/* ============================================
+   MAKE ALL TEXT CLEARER AND BOLDER
+   (Keep Tadaa! Header Unchanged)
+   ============================================ */
+
+/* Make body text bolder and clearer */
+body {
+    font-weight: 500 !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Make all paragraphs bolder */
+p {
+    font-weight: 500 !important;
+    line-height: 1.7 !important;
+}
+
+/* Make all headings bolder (except header) */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700 !important;
+    letter-spacing: 0.02em;
+}
+
+/* Product names */
+.product-card h3,
+.product-name,
+.item-name {
+    font-weight: 700 !important;
+}
+
+/* Product prices */
+.product-price,
+.price,
+.item-price {
+    font-weight: 700 !important;
+}
+
+/* Category names */
+.category-btn {
+    font-weight: 600 !important;
+}
+
+/* Cart items */
+.cart-item p,
+.order-item .info .item-name {
+    font-weight: 600 !important;
+}
+
+/* Button text */
+.btn,
+button {
+    font-weight: 700 !important;
+}
+
+/* Description text */
+.description,
+.product-description,
+.item-details {
+    font-weight: 500 !important;
+    line-height: 1.6 !important;
+}
+
+/* ===== EXCLUDE HEADER "Tadaa!" ===== */
+/* Keep the header Tadaa! text as is - unchanged */
+nav .tadaa-title,
+header .tadaa-title,
+#main-header .tadaa-title,
+[style*="font-family:'Cormorant Garamond'"] h1,
+header h1 {
+    font-weight: 700 !important;
+    letter-spacing: normal !important;
+}
+
+/* ===== MOBILE TEXT SIZE ===== */
+@media (max-width: 768px) {
+    body {
+        font-size: 16px !important;
+    }
+    
+    p {
+        font-size: 15px !important;
+    }
+    
+    .product-card h3 {
+        font-size: 14px !important;
+        font-weight: 700 !important;
+    }
+    
+    .product-price {
+        font-size: 16px !important;
+        font-weight: 700 !important;
+    }
+    
+    .category-btn {
+        font-size: 14px !important;
+        font-weight: 600 !important;
+    }
+    
+    .btn {
+        font-size: 16px !important;
+        font-weight: 700 !important;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        font-size: 15px !important;
+    }
+    
+    p {
+        font-size: 14px !important;
+    }
+    
+    .product-card h3 {
+        font-size: 13px !important;
+    }
+    
+    .product-price {
+        font-size: 15px !important;
+    }
+}
