@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Order Tracking - Tadaa!</title>
-    <link rel="stylesheet" href="/tadaa-marketplace/assets/css/main.css">
+    <link rel="stylesheet" href="./assets/css/main.css">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -480,7 +480,7 @@
                         <div class="error-icon">🔍</div>
                         <h2>No Order ID</h2>
                         <p>Please provide a valid order ID to track your order.</p>
-                        <a href="/tadaa-marketplace/" class="btn-back">🏠 Go Home</a>
+                        <a href="./" class="btn-back">🏠 Go Home</a>
                     </div>
                 `;
                 return;
@@ -497,7 +497,7 @@
                             <h2>Order Not Found</h2>
                             <p>We couldn't find an order with ID: ${orderId}</p>
                             <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
-                                <a href="/tadaa-marketplace/" class="btn-back">🏠 Go Home</a>
+                                <a href="./" class="btn-back">🏠 Go Home</a>
                                 <button onclick="location.reload()" class="btn-back" style="background:var(--bg-input); color:var(--text-primary);">🔄 Try Again</button>
                             </div>
                         </div>
@@ -541,7 +541,7 @@
                         <h2>Something Went Wrong</h2>
                         <p>${error.message || 'Failed to load order data. Please try again.'}</p>
                         <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
-                            <a href="/tadaa-marketplace/" class="btn-back">🏠 Go Home</a>
+                            <a href="./" class="btn-back">🏠 Go Home</a>
                             <button onclick="location.reload()" class="btn-back" style="background:var(--bg-input); color:var(--text-primary);">🔄 Try Again</button>
                         </div>
                     </div>
