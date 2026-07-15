@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Order Tracking - Tadaa!</title>
+    <link rel="stylesheet" href="/tadaa-marketplace/assets/css/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <style>
+        /* ===== TRACKING PAGE STYLES ===== */
+        .tracking-page {
+            background: var(--bg-primary);
+            min-height: 100vh;
+            padding: 20px;
+            font-family: 'Cormorant Garamond', serif;
+        }
+        
+        .tracking-container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        /* Header */
+        .tracking-header {
+            text-align: center;
+            padding: 20px 0 30px;
+        }
+        
+        .tracking-header .order-id {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+        
+        .tracking-header .status-badge {
+            display: inline-block;
+            padding: 6px 20px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 14px;
+            margin-top: 8px;
+            background: #FFD700;
+            color: #000;
+        }
+        
+        .tracking-header .status-badge.delivered {
+            background: #10B981;
+            color: #fff;
+        }
+        
+        .tracking-header .status-badge.cancelled {
+            background: #EF4444;
+            color: #fff;
+        }
+        
+        /* ===== VERTICAL TIMELINE ===== */
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+        
+        /* Vertical Line */
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 28px;
+            top: 20px;
+            bottom: 20px;
+            width: 3px;
+            background: var(--border-color);
+            border-radius: 10px;
+        }
+        
+        /* Timeline Item */
+        .timeline-item {
+            display: flex;
+            gap: 20px;
+            padding: 16px 0;
+            position: relative;
+        }
+        
+        /* Circle Indicator */
+        .timeline-circle {
+            width: 48px;
+            height: 48px;
+            min-width: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            background: var(--bg-card);
+            border: 3px solid var(--border-color);
+            color: var(--text-muted);
+            transition: all 0.4s ease;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .timeline-circle.completed {
+            background: #FFD700;
+            border-color: #FFD700;
+            color: #000;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        }
+        
+        .timeline-circle.completed.delivered {
+            background: #10B981;
+            border-color: #10B981;
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        
+        .timeline-circle.completed.cancelled {
+            background: #EF4444;
+            border-color: #EF4444;
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+        
+        .timeline-circle.active {
+            border-color: #FFD700;
+            background: #FFD700;
+            color: #000;
+            box-shadow: 0 0 0 8px rgba(255, 215, 0, 0.2);
+            animation: pulseCircle 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulseCircle {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 0 12px rgba(255, 215, 0, 0.05);
+            }
+        }
+        
+        /* Content */
+        .timeline-content {
+            flex: 1;
+            padding-top: 6px;
+        }
+        
+        .timeline-content .status-name {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0 0 2px;
+        }
+        
+        .timeline-content .status-name.pending {
+            color: var(--text-muted);
+        }
+        
+        .timeline-content .status-time {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+        
+        .timeline-content .status-note {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin: 4px 0 0;
+            opacity: 0.8;
+        }
+        
+        /* ===== ORDER SUMMARY CARD ===== */
+        .order-summary-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .order-summary-card .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 14px;
+        }
+        
+        .order-summary-card .summary-row.total {
+            border-top: 2px solid var(--border-color);
+            padding-top: 12px;
+            margin-top: 8px;
+            font-weight: 700;
+            font-size: 18px;
+        }
+        
+        /* ===== LOADING ===== */
+        .tracking-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            gap: 16px;
+        }
+        
+        .tracking-loading .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border-color);
+            border-top-color: #FFD700;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* ===== ERROR ===== */
+        .tracking-error {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .tracking-error .error-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        .tracking-error h2 {
+            font-size: 22px;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        
+        .tracking-error p {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+        
+        .btn-back {
+            background: #FFD700;
+            color: #000;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-back:hover {
+            background: #E6C200;
+        }
+        
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .tracking-page {
+                padding: 12px;
+            }
+            
+            .timeline::before {
+                left: 22px;
+            }
+            
+            .timeline-circle {
+                width: 40px;
+                height: 40px;
+                min-width: 40px;
+                font-size: 16px;
+            }
+            
+            .timeline-content .status-name {
+                font-size: 15px;
+            }
+            
+            .tracking-header h1 {
+                font-size: 24px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .timeline::before {
+                left: 18px;
+            }
+            
+            .timeline-circle {
+                width: 34px;
+                height: 34px;
+                min-width: 34px;
+                font-size: 14px;
+            }
+            
+            .timeline-content .status-name {
+                font-size: 14px;
+            }
+            
+            .timeline-content .status-time {
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="tracking-page" id="trackingPage">
+        <div class="tracking-container">
+            
+            <!-- Header -->
+            <div class="tracking-header">
+                <h1 style="font-family:'Cormorant Garamond', serif; font-size:32px; margin:0; color:var(--text-primary);">📦 Order Tracking</h1>
+                <p class="order-id" id="orderIdDisplay">Order #TAD-XXXXXX</p>
+                <div class="status-badge" id="statusBadge">Loading...</div>
+            </div>
+            
+            <!-- Timeline -->
+            <div id="timelineContainer">
+                <div class="tracking-loading">
+                    <div class="spinner"></div>
+                    <p style="color:var(--text-secondary);">Loading your order status...</p>
+                </div>
+            </div>
+            
+            <!-- Order Summary -->
+            <div class="order-summary-card" id="orderSummary" style="display:none;">
+                <h3 style="font-family:'Cormorant Garamond', serif; font-size:18px; margin:0 0 12px;">📋 Order Summary</h3>
+                <div id="summaryContent">
+                    <div class="summary-row"><span>Items</span><span id="itemCount">0</span></div>
+                    <div class="summary-row"><span>Subtotal</span><span id="summarySubtotal">₦0</span></div>
+                    <div class="summary-row"><span>Delivery</span><span id="summaryDelivery">₦0</span></div>
+                    <div class="summary-row total"><span>Total</span><span id="summaryTotal" style="color:#FFD700;">₦0</span></div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // FIREBASE CONFIG
+        // ============================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDCXnlAqyt2512HlvBOsSfMZ6O-xg0c94Y",
+            authDomain: "tadaa-marketplace.firebaseapp.com",
+            projectId: "tadaa-marketplace",
+            storageBucket: "tadaa-marketplace.firebasestorage.app",
+            messagingSenderId: "56983478470",
+            appId: "1:56983478470:web:0efdf7f44b19e88a6237c7"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // ============================================
+        // STATUS DEFINITIONS
+        // ============================================
+        const STATUSES = [
+            'Order Placed',
+            'Payment Confirmed',
+            'Processing',
+            'Packed',
+            'Shipped',
+            'Out for Delivery',
+            'Delivered',
+            'Cancelled'
+        ];
+
+        const STATUS_ICONS = {
+            'Order Placed': '📋',
+            'Payment Confirmed': '💳',
+            'Processing': '⚙️',
+            'Packed': '📦',
+            'Shipped': '🚚',
+            'Out for Delivery': '🚗',
+            'Delivered': '✅',
+            'Cancelled': '❌'
+        };
+
+        // ============================================
+        // GET ORDER ID FROM URL
+        // ============================================
+        function getOrderIdFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('order') || params.get('id');
+        }
+
+        // ============================================
+        // FORMAT DATE
+        // ============================================
+        function formatDate(timestamp) {
+            if (!timestamp) return '';
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleString('en-NG', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // ============================================
+        // RENDER TIMELINE
+        // ============================================
+        function renderTimeline(order) {
+            const container = document.getElementById('timelineContainer');
+            
+            if (!order || !order.trackingHistory || order.trackingHistory.length === 0) {
+                container.innerHTML = `
+                    <div class="tracking-error">
+                        <div class="error-icon">📭</div>
+                        <h2>No Tracking History</h2>
+                        <p>This order doesn't have any tracking information yet.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const history = order.trackingHistory;
+            const currentStatus = order.status;
+
+            let html = `<div class="timeline">`;
+            
+            STATUSES.forEach(status => {
+                const historyItem = history.find(h => h.status === status);
+                const isCompleted = !!historyItem;
+                const isActive = status === currentStatus;
+                const isDelivered = status === 'Delivered';
+                const isCancelled = status === 'Cancelled';
+                
+                let circleClass = 'timeline-circle';
+                if (isCompleted) {
+                    circleClass += ' completed';
+                    if (isDelivered) circleClass += ' delivered';
+                    if (isCancelled) circleClass += ' cancelled';
+                } else if (isActive) {
+                    circleClass += ' active';
+                }
+                
+                let statusClass = 'status-name';
+                if (!isCompleted) statusClass += ' pending';
+                
+                const icon = STATUS_ICONS[status] || '📌';
+                const time = historyItem ? formatDate(historyItem.timestamp) : '';
+                const note = historyItem?.note || '';
+                
+                html += `
+                    <div class="timeline-item">
+                        <div class="${circleClass}">
+                            ${isCompleted ? icon : '○'}
+                        </div>
+                        <div class="timeline-content">
+                            <p class="${statusClass}">${status}</p>
+                            ${time ? `<p class="status-time">${time}</p>` : ''}
+                            ${note ? `<p class="status-note">${note}</p>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        // ============================================
+        // LOAD ORDER DATA
+        // ============================================
+        async function loadOrder(orderId) {
+            const container = document.getElementById('timelineContainer');
+            const orderIdDisplay = document.getElementById('orderIdDisplay');
+            const statusBadge = document.getElementById('statusBadge');
+            const orderSummary = document.getElementById('orderSummary');
+            
+            if (!orderId) {
+                container.innerHTML = `
+                    <div class="tracking-error">
+                        <div class="error-icon">🔍</div>
+                        <h2>No Order ID</h2>
+                        <p>Please provide a valid order ID to track your order.</p>
+                        <a href="/tadaa-marketplace/" class="btn-back">🏠 Go Home</a>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                const ordersRef = db.collection('orders');
+                const snapshot = await ordersRef.where('orderId', '==', orderId).get();
+                
+                if (snapshot.empty) {
+                    container.innerHTML = `
+                        <div class="tracking-error">
+                            <div class="error-icon">📭</div>
+                            <h2>Order Not Found</h2>
+                            <p>We couldn't find an order with ID: ${orderId}</p>
+                            <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+                                <a href="/tadaa-marketplace/" class="btn-back">🏠 Go Home</a>
+                                <button onclick="location.reload()" class="btn-back" style="background:var(--bg-input); color:var(--text-primary);">🔄 Try Again</button>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const doc = snapshot.docs[0];
+                const order = { id: doc.id, ...doc.data() };
+                
+                // Update header
+                orderIdDisplay.textContent = `Order #${order.orderId || orderId}`;
+                
+                // Update status badge
+                const status = order.status || 'Order Placed';
+                statusBadge.textContent = status;
+                statusBadge.className = 'status-badge';
+                if (status === 'Delivered') statusBadge.classList.add('delivered');
+                if (status === 'Cancelled') statusBadge.classList.add('cancelled');
+                
+                // Render timeline
+                renderTimeline(order);
+                
+                // Render order summary
+                const items = order.items || [];
+                const subtotal = order.totals?.subtotal || 0;
+                const delivery = order.totals?.deliveryFee || 0;
+                const total = order.totals?.grandTotal || subtotal + delivery;
+                
+                document.getElementById('itemCount').textContent = items.length;
+                document.getElementById('summarySubtotal').textContent = `₦${subtotal.toLocaleString()}`;
+                document.getElementById('summaryDelivery').textContent = `₦${delivery.toLocaleString()}`;
+                document.getElementById('summaryTotal').textContent = `₦${total.toLocaleString()}`;
+                orderSummary.style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error loading order:', error);
+                container.innerHTML = `
+                    <div class="tracking-error">
+                        <div class="error-icon">😅</div>
+                        <h2>Something Went Wrong</h2>
+                        <p>${error.message || 'Failed to load order data. Please try again.'}</p>
+                        <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+                            <a href="/tadaa-marketplace/" class="btn-back">🏠 Go Home</a>
+                            <button onclick="location.reload()" class="btn-back" style="background:var(--bg-input); color:var(--text-primary);">🔄 Try Again</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // ============================================
+        // INITIALIZE
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            const orderId = getOrderIdFromURL();
+            loadOrder(orderId);
+        });
+    </script>
+</body>
+</html>
