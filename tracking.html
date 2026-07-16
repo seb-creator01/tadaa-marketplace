@@ -726,7 +726,7 @@
         }
 
         // ============================================
-        // LOAD ORDERS BY PHONE NUMBER
+        // LOAD ORDERS BY PHONE NUMBER - FIXED (No Index Required)
         // ============================================
         async function loadOrdersByPhone(phone) {
             const container = document.getElementById('timelineContainer');
@@ -749,14 +749,24 @@
                 // Clean phone number for search (remove spaces)
                 const phoneClean = phone.replace(/\s/g, '');
                 
-                // Search for orders with this phone number
+                // Search for orders with this phone number - NO orderBy (avoids index requirement)
                 const ordersRef = db.collection('orders');
                 const snapshot = await ordersRef
                     .where('customer.phoneNumber', '==', phoneClean)
-                    .orderBy('createdAt', 'desc')
                     .get();
                 
-                if (snapshot.empty) {
+                // Sort manually after getting results
+                const orders = [];
+                snapshot.forEach(doc => {
+                    orders.push({ id: doc.id, ...doc.data() });
+                });
+                orders.sort((a, b) => {
+                    const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
+                    const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+                    return dateB - dateA; // Descending (newest first)
+                });
+                
+                if (orders.length === 0) {
                     container.innerHTML = `
                         <div class="tracking-error">
                             <div class="error-icon">📭</div>
@@ -770,11 +780,6 @@
                     `;
                     return;
                 }
-
-                const orders = [];
-                snapshot.forEach(doc => {
-                    orders.push({ id: doc.id, ...doc.data() });
-                });
                 
                 // Update header
                 orderIdDisplay.textContent = `📱 ${orders.length} orders for ${phone}`;
@@ -793,7 +798,10 @@
                         <div class="error-icon">😅</div>
                         <h2>Something Went Wrong</h2>
                         <p>${error.message || 'Failed to load order data. Please try again.'}</p>
-                        <a href="./tracking.html" class="btn-back">🔙 Try Again</a>
+                        <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+                            <a href="./" class="btn-back">🏠 Go Home</a>
+                            <a href="./tracking.html" class="btn-back" style="background:var(--bg-input); color:var(--text-primary);">🔙 Try Again</a>
+                        </div>
                     </div>
                 `;
             }
