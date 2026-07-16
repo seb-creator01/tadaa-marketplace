@@ -2,21 +2,21 @@
     "name": "Tadaa! Marketplace",
     "short_name": "Tadaa!",
     "description": "Premium online marketplace for quality products",
-    "start_url": "/tadaa-marketplace/",
+    "start_url": "./",
     "display": "standalone",
     "background_color": "#000000",
     "theme_color": "#FFD700",
     "orientation": "portrait",
-    "scope": "/tadaa-marketplace/",
+    "scope": "./",
     "icons": [
         {
-            "src": "/tadaa-marketplace/logo/tadaa-icon-192.png",
+            "src": "./logo/tadaa-icon-192.png",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "any maskable"
         },
         {
-            "src": "/tadaa-marketplace/logo/tadaa-icon-512.png",
+            "src": "./logo/tadaa-icon-512.png",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any maskable"
