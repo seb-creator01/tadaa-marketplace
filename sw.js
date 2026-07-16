@@ -6,20 +6,20 @@ const CACHE_NAME = 'tadaa-v1';
 
 // Files to cache for offline use
 const FILES_TO_CACHE = [
-    '/tadaa-marketplace/',
-    '/tadaa-marketplace/index.html',
-    '/tadaa-marketplace/admin.html',
-    '/tadaa-marketplace/checkout.html',
-    '/tadaa-marketplace/dashboard.html',
-    '/tadaa-marketplace/order-status.html',
-    '/tadaa-marketplace/payment-success.html',
-    '/tadaa-marketplace/assets/css/main.css',
-    '/tadaa-marketplace/assets/css/admin.css',
-    '/tadaa-marketplace/assets/js/customer/app.js',
-    '/tadaa-marketplace/assets/js/config/firebase.js',
-    '/tadaa-marketplace/manifest.json',
-    '/tadaa-marketplace/logo/tadaa-icon-192.png',
-    '/tadaa-marketplace/logo/tadaa-icon-512.png'
+    './',
+    './index.html',
+    './admin.html',
+    './checkout.html',
+    './dashboard.html',
+    './tracking.html',
+    './payment-success.html',
+    './assets/css/main.css',
+    './assets/css/admin.css',
+    './assets/js/customer/app.js',
+    './assets/js/config/firebase.js',
+    './manifest.json',
+    './logo/tadaa-icon-192.png',
+    './logo/tadaa-icon-512.png'
 ];
 
 // ============================================
@@ -99,7 +99,7 @@ self.addEventListener('fetch', (event) => {
                         return networkResponse;
                     })
                     .catch(() => {
-                        return caches.match('/tadaa-marketplace/index.html');
+                        return caches.match('./index.html');
                     });
             })
     );
