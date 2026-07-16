@@ -40,6 +40,7 @@
         .btn-secondary { background: #e5e7eb; color: #000; }
         .btn-warning { background: #F59E0B; color: #fff; }
         .btn-danger { background: #EF4444; color: #fff; }
+        .btn-success { background: #10B981; color: #fff; }
         .admin-sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 220px; background: #000; color: #fff; padding: 20px 0; overflow-y: auto; }
         .admin-sidebar-brand { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 16px; }
         .admin-sidebar-brand .brand-text { font-size: 24px; color: #FFD700; font-weight: 700; font-family: 'Cormorant Garamond', serif; }
@@ -74,6 +75,9 @@
         .settings-check { display: flex; align-items: center; gap: 12px; }
         .settings-check label { margin: 0; }
         .settings-check input { width: auto; }
+        /* Fix Status Button */
+        .fix-status-btn { background: #8B5CF6; color: #fff; border: none; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; margin-top: 4px; width: 100%; }
+        .fix-status-btn:hover { background: #7C3AED; }
     </style>
 </head>
 <body>
@@ -542,7 +546,7 @@
         };
 
         // ============================================
-        // ORDERS - WITH TRACKING HISTORY FIX
+        // ORDERS - WITH TRACKING HISTORY FIX + FIX STATUS BUTTON
         // ============================================
         async function loadOrders() {
             pageContent.innerHTML = `
@@ -632,6 +636,9 @@
                                 <option value="cancelled" ${orderStatus === 'cancelled' ? 'selected' : ''}>Cancelled</option>
                             </select>
                             <br>
+                            <!-- FIX STATUS BUTTON - For old orders with duplicate payment status -->
+                            <button onclick="fixOrderStatus('${order.id}')" class="fix-status-btn">🔧 Fix Status</button>
+                            <br>
                             <button onclick="deleteOrder('${order.id}', '${order.orderId}')" style="background:#EF4444; color:#fff; border:none; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:12px; margin-top:4px; width:100%;">🗑️ Delete</button>
                         </td>
                     </tr>
@@ -657,6 +664,36 @@
             container.innerHTML = html;
         }
 
+        // ============================================
+        // FIX ORDER STATUS - Cleans up duplicate payment status
+        // ============================================
+        window.fixOrderStatus = async function(orderId) {
+            if (!confirm('🔧 Fix payment status for this order?')) return;
+            try {
+                const orderRef = db.collection('orders').doc(orderId);
+                const doc = await orderRef.get();
+                const data = doc.data();
+                
+                // Check if payment has duplicate status
+                if (data.payment && typeof data.payment === 'object') {
+                    // Get the correct status from the order status
+                    const correctStatus = data.status || 'pending';
+                    
+                    // Update payment status to match order status
+                    await orderRef.update({
+                        'payment.status': correctStatus
+                    });
+                    
+                    alert(`✅ Payment status fixed! Set to: ${correctStatus}`);
+                    loadOrders();
+                } else {
+                    alert('ℹ️ No payment status issues found.');
+                }
+            } catch (e) {
+                alert('❌ Error: ' + e.message);
+            }
+        };
+
         window.deleteOrder = async function(orderId, orderIdDisplay) {
             if (!confirm(`⚠️ Delete order ${orderIdDisplay}?`)) return;
             try {
@@ -672,7 +709,7 @@
         };
 
         // ============================================
-        // UPDATE ORDER STATUS - WITH TRACKING HISTORY FIX
+        // UPDATE ORDER STATUS - WITH TRACKING HISTORY FIX + AUTO CLEANUP
         // ============================================
         window.updateOrderStatus = async function(orderId, newStatus) {
             if (!confirm(`Update order status to "${newStatus}"?`)) return;
@@ -681,6 +718,14 @@
                 const orderRef = db.collection('orders').doc(orderId);
                 const doc = await orderRef.get();
                 const data = doc.data();
+                
+                // ===== AUTO-CLEANUP: Fix duplicate payment status =====
+                if (data.payment && typeof data.payment === 'object') {
+                    // Update payment status to match the new status
+                    await orderRef.update({
+                        'payment.status': newStatus
+                    });
+                }
                 
                 // Get existing tracking history or create new array
                 const history = data.trackingHistory || [];
@@ -1062,4 +1107,3 @@
     </script>
 </body>
 </html>
-
