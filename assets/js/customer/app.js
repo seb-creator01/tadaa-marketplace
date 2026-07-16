@@ -980,6 +980,70 @@ function showInstallInstructions() {
 }
 
 // ============================================
+// TRACK ORDER FUNCTIONS
+// ============================================
+function findOrdersByPhone() {
+    const input = document.getElementById('trackPhoneInput');
+    const error = document.getElementById('trackError');
+    const phone = input?.value?.trim();
+    
+    if (!phone) {
+        if (error) {
+            error.textContent = 'Please enter your phone number';
+            error.style.display = 'block';
+        }
+        return;
+    }
+    
+    // Basic validation - Nigerian phone number format
+    const phoneClean = phone.replace(/\s/g, '');
+    if (!phoneClean.match(/^0[789][01]\d{8}$|^\+234[789][01]\d{8}$/)) {
+        if (error) {
+            error.textContent = 'Please enter a valid phone number (e.g., 08012345678)';
+            error.style.display = 'block';
+        }
+        return;
+    }
+    
+    if (error) {
+        error.style.display = 'none';
+    }
+    
+    // Redirect to tracking page with phone number
+    window.location.href = `./tracking.html?phone=${encodeURIComponent(phone)}`;
+}
+
+function trackByOrderId() {
+    const input = document.getElementById('trackOrderInput');
+    const error = document.getElementById('trackError');
+    const orderId = input?.value?.trim();
+    
+    if (!orderId) {
+        if (error) {
+            error.textContent = 'Please enter your Order ID';
+            error.style.display = 'block';
+        }
+        return;
+    }
+    
+    // Basic validation - should start with TAD-
+    if (!orderId.startsWith('TAD-')) {
+        if (error) {
+            error.textContent = 'Please enter a valid Order ID (e.g., TAD-20260716-123456)';
+            error.style.display = 'block';
+        }
+        return;
+    }
+    
+    if (error) {
+        error.style.display = 'none';
+    }
+    
+    // Redirect to tracking page with order ID
+    window.location.href = `./tracking.html?order=${orderId}`;
+}
+
+// ============================================
 // INITIALIZE
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
