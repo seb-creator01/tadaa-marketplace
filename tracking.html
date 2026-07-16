@@ -56,6 +56,41 @@
             color: #fff;
         }
         
+        .tracking-header .refresh-btn {
+            background: transparent;
+            border: 2px solid var(--border-color);
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 14px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            margin-top: 10px;
+            transition: all 0.3s ease;
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 600;
+        }
+        
+        .tracking-header .refresh-btn:hover {
+            background: var(--border-color);
+            border-color: #FFD700;
+        }
+        
+        .tracking-header .refresh-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .tracking-header .refresh-btn.refreshing {
+            background: #3B82F6;
+            border-color: #3B82F6;
+            color: #fff;
+        }
+        
+        .tracking-header .refresh-btn.success {
+            background: #10B981;
+            border-color: #10B981;
+            color: #fff;
+        }
+        
         /* ===== VERTICAL TIMELINE ===== */
         .timeline {
             position: relative;
@@ -350,6 +385,14 @@
             background: #E6C200;
         }
         
+        /* ===== AUTO-REFRESH INDICATOR ===== */
+        .auto-refresh-indicator {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            opacity: 0.7;
+        }
+        
         /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             .tracking-page {
@@ -412,6 +455,9 @@
                 <h1 style="font-family:'Cormorant Garamond', serif; font-size:32px; margin:0; color:var(--text-primary);">📦 Order Tracking</h1>
                 <p class="order-id" id="orderIdDisplay">Order #TAD-XXXXXX</p>
                 <div class="status-badge" id="statusBadge">Loading...</div>
+                <br>
+                <button class="refresh-btn" id="refreshBtn" onclick="handleRefresh()">🔄 Refresh Now</button>
+                <div class="auto-refresh-indicator" id="autoRefreshIndicator">Auto-refresh every 30 seconds</div>
             </div>
             
             <!-- Timeline -->
@@ -478,6 +524,15 @@
         };
 
         // ============================================
+        // STATE
+        // ============================================
+        let refreshInterval = null;
+        let currentOrderId = null;
+        let isRefreshing = false;
+        let currentOrderData = null;
+        let currentViewMode = 'single'; // 'single' or 'multiple'
+
+        // ============================================
         // GET PARAMS FROM URL
         // ============================================
         function getParamsFromURL() {
@@ -511,6 +566,103 @@
                 month: 'short',
                 year: 'numeric'
             });
+        }
+
+        // ============================================
+        // REFRESH FUNCTION
+        // ============================================
+        function handleRefresh() {
+            const btn = document.getElementById('refreshBtn');
+            
+            if (isRefreshing) return;
+            isRefreshing = true;
+            
+            // Show refreshing state
+            btn.textContent = '🔄 Refreshing...';
+            btn.classList.add('refreshing');
+            btn.disabled = true;
+            
+            if (currentViewMode === 'single' && currentOrderId) {
+                // Reload single order
+                loadOrder(currentOrderId).then(() => {
+                    isRefreshing = false;
+                    btn.textContent = '✅ Updated!';
+                    btn.classList.remove('refreshing');
+                    btn.classList.add('success');
+                    btn.disabled = false;
+                    
+                    setTimeout(() => {
+                        btn.textContent = '🔄 Refresh Now';
+                        btn.classList.remove('success');
+                    }, 2000);
+                }).catch(() => {
+                    isRefreshing = false;
+                    btn.textContent = '🔄 Refresh Now';
+                    btn.classList.remove('refreshing');
+                    btn.disabled = false;
+                });
+            } else if (currentViewMode === 'multiple' && currentOrderId) {
+                // Reload multiple orders by phone
+                loadOrdersByPhone(currentOrderId).then(() => {
+                    isRefreshing = false;
+                    btn.textContent = '✅ Updated!';
+                    btn.classList.remove('refreshing');
+                    btn.classList.add('success');
+                    btn.disabled = false;
+                    
+                    setTimeout(() => {
+                        btn.textContent = '🔄 Refresh Now';
+                        btn.classList.remove('success');
+                    }, 2000);
+                }).catch(() => {
+                    isRefreshing = false;
+                    btn.textContent = '🔄 Refresh Now';
+                    btn.classList.remove('refreshing');
+                    btn.disabled = false;
+                });
+            } else {
+                // Fallback: reload page
+                location.reload();
+            }
+        }
+
+        // ============================================
+        // START / STOP AUTO-REFRESH
+        // ============================================
+        function startAutoRefresh(orderId, mode) {
+            currentOrderId = orderId;
+            currentViewMode = mode;
+            
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+            
+            refreshInterval = setInterval(() => {
+                if (!isRefreshing) {
+                    if (mode === 'single') {
+                        loadOrder(orderId);
+                    } else if (mode === 'multiple') {
+                        loadOrdersByPhone(orderId);
+                    }
+                }
+            }, 30000); // 30 seconds
+            
+            // Update indicator
+            const indicator = document.getElementById('autoRefreshIndicator');
+            if (indicator) {
+                indicator.textContent = 'Auto-refresh every 30 seconds 🔄';
+            }
+        }
+
+        function stopAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+                refreshInterval = null;
+            }
+            const indicator = document.getElementById('autoRefreshIndicator');
+            if (indicator) {
+                indicator.textContent = 'Auto-refresh stopped';
+            }
         }
 
         // ============================================
@@ -695,6 +847,7 @@
 
                 const doc = snapshot.docs[0];
                 const order = { id: doc.id, ...doc.data() };
+                currentOrderData = order;
                 
                 // Update header
                 orderIdDisplay.textContent = `Order #${order.orderId || orderId}`;
@@ -726,7 +879,7 @@
         }
 
         // ============================================
-        // LOAD ORDERS BY PHONE NUMBER - FIXED (No Index Required)
+        // LOAD ORDERS BY PHONE NUMBER
         // ============================================
         async function loadOrdersByPhone(phone) {
             const container = document.getElementById('timelineContainer');
@@ -849,6 +1002,7 @@
 
                 const doc = snapshot.docs[0];
                 const order = { id: doc.id, ...doc.data() };
+                currentOrderData = order;
                 
                 // Update header
                 orderIdDisplay.textContent = `Order #${order.orderId || orderId}`;
@@ -890,10 +1044,18 @@
             
             if (params.phone) {
                 // Load orders by phone number
-                loadOrdersByPhone(params.phone);
+                currentOrderId = params.phone;
+                currentViewMode = 'multiple';
+                loadOrdersByPhone(params.phone).then(() => {
+                    startAutoRefresh(params.phone, 'multiple');
+                });
             } else if (params.orderId) {
                 // Load single order by order ID
-                loadOrder(params.orderId);
+                currentOrderId = params.orderId;
+                currentViewMode = 'single';
+                loadOrder(params.orderId).then(() => {
+                    startAutoRefresh(params.orderId, 'single');
+                });
             } else {
                 // No params - show error
                 const container = document.getElementById('timelineContainer');
@@ -905,6 +1067,35 @@
                         <a href="./" class="btn-back">🏠 Go Home</a>
                     </div>
                 `;
+            }
+        });
+
+        // ============================================
+        // STOP AUTO-REFRESH ON PAGE UNLOAD
+        // ============================================
+        window.addEventListener('beforeunload', function() {
+            stopAutoRefresh();
+        });
+
+        // ============================================
+        // STOP AUTO-REFRESH WHEN PAGE IS HIDDEN
+        // ============================================
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                // Page hidden - slow down or stop refresh
+                if (refreshInterval) {
+                    clearInterval(refreshInterval);
+                    refreshInterval = null;
+                    const indicator = document.getElementById('autoRefreshIndicator');
+                    if (indicator) {
+                        indicator.textContent = 'Auto-refresh paused';
+                    }
+                }
+            } else {
+                // Page visible - restart auto-refresh
+                if (!refreshInterval && currentOrderId) {
+                    startAutoRefresh(currentOrderId, currentViewMode);
+                }
             }
         });
     </script>
