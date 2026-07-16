@@ -116,6 +116,114 @@
             .splash-loader { width: 140px; }
             .splash-subtitle { font-size: 10px; letter-spacing: 2px; }
         }
+
+        /* ===== TRACK ORDER SECTION STYLES ===== */
+        .track-section {
+            background: var(--bg-card);
+            border-radius: 16px;
+            margin: 20px auto;
+            max-width: 1200px;
+            padding: 32px 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+        .track-section .track-container {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .track-section .track-icon {
+            font-size: 40px;
+            margin-bottom: 8px;
+        }
+        .track-section .track-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 28px;
+            color: var(--text-primary);
+            margin: 0 0 8px;
+        }
+        .track-section .track-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        .track-section .track-input-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .track-section .track-input {
+            flex: 1;
+            min-width: 200px;
+            max-width: 350px;
+            padding: 14px 18px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 16px;
+            background: var(--bg-input);
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .track-section .track-input:focus {
+            border-color: #FFD700;
+        }
+        .track-section .track-btn {
+            background: #FFD700;
+            color: #000;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .track-section .track-btn:hover {
+            background: #E6C200;
+        }
+        .track-section .track-btn-outline {
+            background: transparent;
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .track-section .track-btn-outline:hover {
+            background: var(--border-color);
+        }
+        .track-section .track-divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 16px 0;
+        }
+        .track-section .track-divider-line {
+            flex: 1;
+            height: 1px;
+            background: var(--border-color);
+        }
+        .track-section .track-divider-text {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        .track-section .track-error {
+            color: #EF4444;
+            margin-top: 10px;
+            display: none;
+            font-size: 14px;
+        }
+        @media (max-width: 480px) {
+            .track-section .track-title { font-size: 22px; }
+            .track-section .track-input { min-width: 100%; max-width: 100%; }
+            .track-section .track-btn { width: 100%; }
+            .track-section .track-btn-outline { width: 100%; }
+        }
     </style>
 </head>
 <body>
@@ -151,6 +259,37 @@
         
         <header id="main-header"></header>
         <section id="hero-section"></section>
+
+        <!-- ===== TRACK YOUR ORDER SECTION ===== -->
+        <section class="track-section" id="trackOrderSection">
+            <div class="track-container">
+                <div class="track-icon">📦</div>
+                <h2 class="track-title">Track Your Order</h2>
+                <p class="track-subtitle">Enter your phone number to see all your orders</p>
+                
+                <!-- Phone Number Input -->
+                <div class="track-input-group">
+                    <input type="tel" class="track-input" id="trackPhoneInput" placeholder="e.g., 08012345678">
+                    <button class="track-btn" onclick="findOrdersByPhone()">🔍 Find My Orders</button>
+                </div>
+                
+                <!-- Or Divider -->
+                <div class="track-divider">
+                    <div class="track-divider-line"></div>
+                    <span class="track-divider-text">or</span>
+                    <div class="track-divider-line"></div>
+                </div>
+                
+                <!-- Order ID Input (Alternative) -->
+                <div class="track-input-group">
+                    <input type="text" class="track-input" id="trackOrderInput" placeholder="Order ID (e.g., TAD-20260716-123456)">
+                    <button class="track-btn-outline" onclick="trackByOrderId()">Track by Order ID</button>
+                </div>
+                
+                <div class="track-error" id="trackError"></div>
+            </div>
+        </section>
+
         <section id="announcement-section"></section>
         <section id="categories-section" style="padding: 30px 0;"></section>
         <section id="products-section" style="padding: 20px 0 40px;"></section>
@@ -437,6 +576,92 @@
                     });
             });
         }
+
+        // ============================================
+        // TRACK ORDER FUNCTIONS
+        // ============================================
+        function findOrdersByPhone() {
+            const input = document.getElementById('trackPhoneInput');
+            const error = document.getElementById('trackError');
+            const phone = input?.value?.trim();
+            
+            if (!phone) {
+                if (error) {
+                    error.textContent = 'Please enter your phone number';
+                    error.style.display = 'block';
+                }
+                return;
+            }
+            
+            // Basic validation - Nigerian phone number format
+            const phoneClean = phone.replace(/\s/g, '');
+            if (!phoneClean.match(/^0[789][01]\d{8}$|^\+234[789][01]\d{8}$/)) {
+                if (error) {
+                    error.textContent = 'Please enter a valid phone number (e.g., 08012345678)';
+                    error.style.display = 'block';
+                }
+                return;
+            }
+            
+            if (error) {
+                error.style.display = 'none';
+            }
+            
+            // Redirect to tracking page with phone number
+            window.location.href = `./tracking.html?phone=${encodeURIComponent(phone)}`;
+        }
+
+        function trackByOrderId() {
+            const input = document.getElementById('trackOrderInput');
+            const error = document.getElementById('trackError');
+            const orderId = input?.value?.trim();
+            
+            if (!orderId) {
+                if (error) {
+                    error.textContent = 'Please enter your Order ID';
+                    error.style.display = 'block';
+                }
+                return;
+            }
+            
+            // Basic validation - should start with TAD-
+            if (!orderId.startsWith('TAD-')) {
+                if (error) {
+                    error.textContent = 'Please enter a valid Order ID (e.g., TAD-20260716-123456)';
+                    error.style.display = 'block';
+                }
+                return;
+            }
+            
+            if (error) {
+                error.style.display = 'none';
+            }
+            
+            // Redirect to tracking page with order ID
+            window.location.href = `./tracking.html?order=${orderId}`;
+        }
+
+        // Allow Enter key to trigger tracking
+        document.addEventListener('DOMContentLoaded', function() {
+            const phoneInput = document.getElementById('trackPhoneInput');
+            const orderInput = document.getElementById('trackOrderInput');
+            
+            if (phoneInput) {
+                phoneInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        findOrdersByPhone();
+                    }
+                });
+            }
+            
+            if (orderInput) {
+                orderInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        trackByOrderId();
+                    }
+                });
+            }
+        });
         
         console.log('✅ Tadaa! PWA ready');
     </script>
