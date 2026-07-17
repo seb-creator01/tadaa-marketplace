@@ -709,45 +709,39 @@
         };
 
         // ============================================
-        // UPDATE ORDER STATUS - WITH TRACKING HISTORY FIX + AUTO CLEANUP
+        // UPDATE ORDER STATUS - SIMPLIFIED (SAME AS MANUAL ADD)
         // ============================================
         window.updateOrderStatus = async function(orderId, newStatus) {
             if (!confirm(`Update order status to "${newStatus}"?`)) return;
+            
             try {
-                // Get current order data
                 const orderRef = db.collection('orders').doc(orderId);
                 const doc = await orderRef.get();
                 const data = doc.data();
                 
-                // ===== AUTO-CLEANUP: Fix duplicate payment status =====
-                if (data.payment && typeof data.payment === 'object') {
-                    // Update payment status to match the new status
-                    await orderRef.update({
-                        'payment.status': newStatus
-                    });
-                }
+                // Get existing tracking history (or create empty array)
+                let history = data.trackingHistory || [];
                 
-                // Get existing tracking history or create new array
-                const history = data.trackingHistory || [];
-                
-                // Add new status to history
+                // Add new status to history (same format as manual add)
                 history.push({
                     status: newStatus,
                     timestamp: new Date().toISOString(),
-                    note: `Status updated to: ${newStatus}`
+                    note: `Order status updated to ${newStatus}`
                 });
                 
-                // Update order with new status and tracking history
+                // Update the order
                 await orderRef.update({
                     status: newStatus,
                     trackingHistory: history,
                     updatedAt: new Date().toISOString()
                 });
                 
-                alert('✅ Order status updated! Tracking history saved.');
-                loadOrders();
-            } catch (e) { 
-                alert('❌ Error: ' + e.message); 
+                alert(`✅ Order updated to "${newStatus}"! Tracking history saved.`);
+                loadOrders(); // Refresh the orders list
+                
+            } catch (error) {
+                console.error('Error updating order:', error);
+                alert('❌ Error: ' + error.message);
             }
         };
 
