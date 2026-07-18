@@ -27,7 +27,9 @@
         .order-details th, .order-details td { padding: 8px; text-align: left; border-bottom: 1px solid #e5e7eb; }
         .status-pending { background: #F59E0B; }
         .status-processing { background: #3B82F6; }
-        .status-shipped { background: #8B5CF6; }
+        .status-packed { background: #8B5CF6; }
+        .status-shipped { background: #06B6D4; }
+        .status-outdelivery { background: #F59E0B; }
         .status-delivered { background: #10B981; }
         .status-cancelled { background: #EF4444; }
         .filter-bar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
@@ -75,7 +77,6 @@
         .settings-check { display: flex; align-items: center; gap: 12px; }
         .settings-check label { margin: 0; }
         .settings-check input { width: auto; }
-        /* Fix Status Button */
         .fix-status-btn { background: #8B5CF6; color: #fff; border: none; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; margin-top: 4px; width: 100%; }
         .fix-status-btn:hover { background: #7C3AED; }
     </style>
@@ -391,9 +392,6 @@
             } catch (e) {}
         }
 
-        // ============================================
-        // CLOUDINARY UPLOAD
-        // ============================================
         window.uploadToCloudinary = function() {
             const input = document.createElement('input');
             input.type = 'file';
@@ -418,9 +416,6 @@
             input.click();
         };
 
-        // ============================================
-        // SAVE PRODUCT - WITH DELIVERY FEE
-        // ============================================
         window.saveProduct = async function() {
             const name = document.getElementById('prodName').value.trim();
             const desc = document.getElementById('prodDesc').value.trim();
@@ -451,9 +446,6 @@
             } catch(e) { alert('❌ Error: ' + e.message); }
         };
 
-        // ============================================
-        // EDIT PRODUCT - WITH DELIVERY FEE
-        // ============================================
         window.editProduct = function(id) {
             db.collection('products').doc(id).get().then(doc => {
                 if (!doc.exists) { alert('Not found'); return; }
@@ -507,9 +499,6 @@
             }).catch(e => alert('Error: ' + e.message));
         };
 
-        // ============================================
-        // UPDATE PRODUCT - WITH DELIVERY FEE
-        // ============================================
         window.updateProduct = function(id) {
             const name = document.getElementById('editName').value.trim();
             const desc = document.getElementById('editDesc').value.trim();
@@ -534,9 +523,6 @@
               .catch(e => alert('❌ Error: ' + e.message));
         };
 
-        // ============================================
-        // DELETE PRODUCT
-        // ============================================
         window.deleteProduct = function(id) {
             if (confirm('Delete this product?')) {
                 db.collection('products').doc(id).delete()
@@ -546,7 +532,7 @@
         };
 
         // ============================================
-        // ORDERS - WITH TRACKING HISTORY FIX + FIX STATUS BUTTON
+        // ORDERS - WITH ALL 8 STATUSES
         // ============================================
         async function loadOrders() {
             pageContent.innerHTML = `
@@ -558,7 +544,9 @@
                             <option value="all">All Status</option>
                             <option value="pending">Pending</option>
                             <option value="processing">Processing</option>
+                            <option value="packed">Packed</option>
                             <option value="shipped">Shipped</option>
+                            <option value="out for delivery">Out for Delivery</option>
                             <option value="delivered">Delivered</option>
                             <option value="cancelled">Cancelled</option>
                         </select>
@@ -619,6 +607,14 @@
                 const payStatus = order.payment?.status || 'pending';
                 const payColor = payStatus === 'paid' ? '#10B981' : payStatus === 'failed' ? '#EF4444' : '#F59E0B';
                 const orderStatus = order.status || 'pending';
+                let statusClass = '';
+                if (orderStatus === 'pending') statusClass = 'status-pending';
+                else if (orderStatus === 'processing') statusClass = 'status-processing';
+                else if (orderStatus === 'packed') statusClass = 'status-packed';
+                else if (orderStatus === 'shipped') statusClass = 'status-shipped';
+                else if (orderStatus === 'out for delivery') statusClass = 'status-outdelivery';
+                else if (orderStatus === 'delivered') statusClass = 'status-delivered';
+                else if (orderStatus === 'cancelled') statusClass = 'status-cancelled';
                 html += `
                     <tr class="order-row" onclick="toggleOrderDetails('${order.id}')">
                         <td><strong>${order.orderId || 'N/A'}</strong></td>
@@ -626,17 +622,18 @@
                         <td>${order.items?.length || 0} items</td>
                         <td>₦${order.totals?.grandTotal?.toLocaleString() || 0}</td>
                         <td><span class="badge" style="background:${payColor}">${payStatus}</span></td>
-                        <td><span class="badge status-${orderStatus}">${orderStatus}</span></td>
+                        <td><span class="badge ${statusClass}">${orderStatus}</span></td>
                         <td>
                             <select onchange="updateOrderStatus('${order.id}', this.value)" style="padding:4px 8px; border-radius:6px; border:1px solid #e5e7eb; margin-bottom:4px; width:100%;">
                                 <option value="pending" ${orderStatus === 'pending' ? 'selected' : ''}>Pending</option>
                                 <option value="processing" ${orderStatus === 'processing' ? 'selected' : ''}>Processing</option>
+                                <option value="packed" ${orderStatus === 'packed' ? 'selected' : ''}>Packed</option>
                                 <option value="shipped" ${orderStatus === 'shipped' ? 'selected' : ''}>Shipped</option>
+                                <option value="out for delivery" ${orderStatus === 'out for delivery' ? 'selected' : ''}>Out for Delivery</option>
                                 <option value="delivered" ${orderStatus === 'delivered' ? 'selected' : ''}>Delivered</option>
                                 <option value="cancelled" ${orderStatus === 'cancelled' ? 'selected' : ''}>Cancelled</option>
                             </select>
                             <br>
-                            <!-- FIX STATUS BUTTON - For old orders with duplicate payment status -->
                             <button onclick="fixOrderStatus('${order.id}')" class="fix-status-btn">🔧 Fix Status</button>
                             <br>
                             <button onclick="deleteOrder('${order.id}', '${order.orderId}')" style="background:#EF4444; color:#fff; border:none; padding:4px 12px; border-radius:6px; cursor:pointer; font-size:12px; margin-top:4px; width:100%;">🗑️ Delete</button>
@@ -664,9 +661,6 @@
             container.innerHTML = html;
         }
 
-        // ============================================
-        // FIX ORDER STATUS - Cleans up duplicate payment status
-        // ============================================
         window.fixOrderStatus = async function(orderId) {
             if (!confirm('🔧 Fix payment status for this order?')) return;
             try {
@@ -674,16 +668,11 @@
                 const doc = await orderRef.get();
                 const data = doc.data();
                 
-                // Check if payment has duplicate status
                 if (data.payment && typeof data.payment === 'object') {
-                    // Get the correct status from the order status
                     const correctStatus = data.status || 'pending';
-                    
-                    // Update payment status to match order status
                     await orderRef.update({
                         'payment.status': correctStatus
                     });
-                    
                     alert(`✅ Payment status fixed! Set to: ${correctStatus}`);
                     loadOrders();
                 } else {
@@ -709,7 +698,7 @@
         };
 
         // ============================================
-        // UPDATE ORDER STATUS - SIMPLIFIED (SAME AS MANUAL ADD)
+        // UPDATE ORDER STATUS - WITH ALL 8 STATUSES
         // ============================================
         window.updateOrderStatus = async function(orderId, newStatus) {
             if (!confirm(`Update order status to "${newStatus}"?`)) return;
@@ -719,17 +708,14 @@
                 const doc = await orderRef.get();
                 const data = doc.data();
                 
-                // Get existing tracking history (or create empty array)
                 let history = data.trackingHistory || [];
                 
-                // Add new status to history (same format as manual add)
                 history.push({
                     status: newStatus,
                     timestamp: new Date().toISOString(),
                     note: `Order status updated to ${newStatus}`
                 });
                 
-                // Update the order
                 await orderRef.update({
                     status: newStatus,
                     trackingHistory: history,
@@ -737,7 +723,7 @@
                 });
                 
                 alert(`✅ Order updated to "${newStatus}"! Tracking history saved.`);
-                loadOrders(); // Refresh the orders list
+                loadOrders();
                 
             } catch (error) {
                 console.error('Error updating order:', error);
@@ -916,7 +902,7 @@
         window.filterInventory = filterInventory;
 
         // ============================================
-        // SETTINGS - FULL VERSION
+        // SETTINGS
         // ============================================
         function loadSettings() {
             pageContent.innerHTML = `
@@ -1097,7 +1083,7 @@
         };
 
         window.loadPage = loadPage;
-        console.log('✅ Admin dashboard with tracking history fix!');
+        console.log('✅ Admin dashboard with all 8 statuses!');
     </script>
 </body>
 </html>
