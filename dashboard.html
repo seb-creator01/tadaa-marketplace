@@ -25,11 +25,12 @@
         .order-details { background: #f9fafb; padding: 16px; border-radius: 12px; margin-top: 12px; }
         .order-details table { width: 100%; }
         .order-details th, .order-details td { padding: 8px; text-align: left; border-bottom: 1px solid #e5e7eb; }
-        .status-pending { background: #F59E0B; }
-        .status-processing { background: #3B82F6; }
-        .status-packed { background: #8B5CF6; }
-        .status-shipped { background: #06B6D4; }
-        .status-outdelivery { background: #F59E0B; }
+        .status-order-placed { background: #F59E0B; }
+        .status-payment-confirmed { background: #3B82F6; }
+        .status-processing { background: #8B5CF6; }
+        .status-packed { background: #06B6D4; }
+        .status-shipped { background: #10B981; }
+        .status-out-delivery { background: #F59E0B; }
         .status-delivered { background: #10B981; }
         .status-cancelled { background: #EF4444; }
         .filter-bar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
@@ -226,7 +227,7 @@
                         <td>${data.customer?.fullName || 'Unknown'}</td>
                         <td>₦${data.totals?.grandTotal?.toLocaleString() || 0}</td>
                         <td><span class="badge" style="background:${payColor}">${data.payment?.status || 'pending'}</span></td>
-                        <td><span class="badge" style="background:${data.status === 'delivered' ? '#10B981' : '#3B82F6'}">${data.status || 'pending'}</span></td>
+                        <td><span class="badge" style="background:${data.status === 'Delivered' ? '#10B981' : '#3B82F6'}">${data.status || 'Order Placed'}</span></td>
                     </tr>`;
                 });
                 html += '</table>';
@@ -532,7 +533,7 @@
         };
 
         // ============================================
-        // ORDERS - WITH ALL 8 STATUSES
+        // ORDERS - WITH MATCHING STATUS NAMES
         // ============================================
         async function loadOrders() {
             pageContent.innerHTML = `
@@ -542,13 +543,14 @@
                         <input type="text" id="orderSearch" placeholder="Search by Order ID..." onkeyup="filterOrders()">
                         <select id="statusFilter" onchange="filterOrders()">
                             <option value="all">All Status</option>
-                            <option value="pending">Pending</option>
-                            <option value="processing">Processing</option>
-                            <option value="packed">Packed</option>
-                            <option value="shipped">Shipped</option>
-                            <option value="out for delivery">Out for Delivery</option>
-                            <option value="delivered">Delivered</option>
-                            <option value="cancelled">Cancelled</option>
+                            <option value="Order Placed">Order Placed</option>
+                            <option value="Payment Confirmed">Payment Confirmed</option>
+                            <option value="Processing">Processing</option>
+                            <option value="Packed">Packed</option>
+                            <option value="Shipped">Shipped</option>
+                            <option value="Out for Delivery">Out for Delivery</option>
+                            <option value="Delivered">Delivered</option>
+                            <option value="Cancelled">Cancelled</option>
                         </select>
                         <select id="paymentFilter" onchange="filterOrders()">
                             <option value="all">All Payment</option>
@@ -606,15 +608,16 @@
             filteredOrders.forEach(order => {
                 const payStatus = order.payment?.status || 'pending';
                 const payColor = payStatus === 'paid' ? '#10B981' : payStatus === 'failed' ? '#EF4444' : '#F59E0B';
-                const orderStatus = order.status || 'pending';
+                const orderStatus = order.status || 'Order Placed';
                 let statusClass = '';
-                if (orderStatus === 'pending') statusClass = 'status-pending';
-                else if (orderStatus === 'processing') statusClass = 'status-processing';
-                else if (orderStatus === 'packed') statusClass = 'status-packed';
-                else if (orderStatus === 'shipped') statusClass = 'status-shipped';
-                else if (orderStatus === 'out for delivery') statusClass = 'status-outdelivery';
-                else if (orderStatus === 'delivered') statusClass = 'status-delivered';
-                else if (orderStatus === 'cancelled') statusClass = 'status-cancelled';
+                if (orderStatus === 'Order Placed') statusClass = 'status-order-placed';
+                else if (orderStatus === 'Payment Confirmed') statusClass = 'status-payment-confirmed';
+                else if (orderStatus === 'Processing') statusClass = 'status-processing';
+                else if (orderStatus === 'Packed') statusClass = 'status-packed';
+                else if (orderStatus === 'Shipped') statusClass = 'status-shipped';
+                else if (orderStatus === 'Out for Delivery') statusClass = 'status-out-delivery';
+                else if (orderStatus === 'Delivered') statusClass = 'status-delivered';
+                else if (orderStatus === 'Cancelled') statusClass = 'status-cancelled';
                 html += `
                     <tr class="order-row" onclick="toggleOrderDetails('${order.id}')">
                         <td><strong>${order.orderId || 'N/A'}</strong></td>
@@ -625,13 +628,14 @@
                         <td><span class="badge ${statusClass}">${orderStatus}</span></td>
                         <td>
                             <select onchange="updateOrderStatus('${order.id}', this.value)" style="padding:4px 8px; border-radius:6px; border:1px solid #e5e7eb; margin-bottom:4px; width:100%;">
-                                <option value="pending" ${orderStatus === 'pending' ? 'selected' : ''}>Pending</option>
-                                <option value="processing" ${orderStatus === 'processing' ? 'selected' : ''}>Processing</option>
-                                <option value="packed" ${orderStatus === 'packed' ? 'selected' : ''}>Packed</option>
-                                <option value="shipped" ${orderStatus === 'shipped' ? 'selected' : ''}>Shipped</option>
-                                <option value="out for delivery" ${orderStatus === 'out for delivery' ? 'selected' : ''}>Out for Delivery</option>
-                                <option value="delivered" ${orderStatus === 'delivered' ? 'selected' : ''}>Delivered</option>
-                                <option value="cancelled" ${orderStatus === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                                <option value="Order Placed" ${orderStatus === 'Order Placed' ? 'selected' : ''}>Order Placed</option>
+                                <option value="Payment Confirmed" ${orderStatus === 'Payment Confirmed' ? 'selected' : ''}>Payment Confirmed</option>
+                                <option value="Processing" ${orderStatus === 'Processing' ? 'selected' : ''}>Processing</option>
+                                <option value="Packed" ${orderStatus === 'Packed' ? 'selected' : ''}>Packed</option>
+                                <option value="Shipped" ${orderStatus === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                                <option value="Out for Delivery" ${orderStatus === 'Out for Delivery' ? 'selected' : ''}>Out for Delivery</option>
+                                <option value="Delivered" ${orderStatus === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                                <option value="Cancelled" ${orderStatus === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
                             </select>
                             <br>
                             <button onclick="fixOrderStatus('${order.id}')" class="fix-status-btn">🔧 Fix Status</button>
@@ -669,7 +673,7 @@
                 const data = doc.data();
                 
                 if (data.payment && typeof data.payment === 'object') {
-                    const correctStatus = data.status || 'pending';
+                    const correctStatus = data.status || 'Order Placed';
                     await orderRef.update({
                         'payment.status': correctStatus
                     });
@@ -698,7 +702,7 @@
         };
 
         // ============================================
-        // UPDATE ORDER STATUS - WITH ALL 8 STATUSES
+        // UPDATE ORDER STATUS - WITH MATCHING STATUS NAMES
         // ============================================
         window.updateOrderStatus = async function(orderId, newStatus) {
             if (!confirm(`Update order status to "${newStatus}"?`)) return;
@@ -759,7 +763,7 @@
                         <td>${data.customer?.fullName || 'Unknown'}</td>
                         <td style="text-align:right;">₦${data.totals?.grandTotal?.toLocaleString() || 0}</td>
                         <td><span class="badge" style="background:${payColor}">${payStatus}</span></td>
-                        <td>${data.status || 'pending'}</td>
+                        <td>${data.status || 'Order Placed'}</td>
                     </tr>`;
                 });
                 html += '</tbody></table>';
@@ -1083,7 +1087,7 @@
         };
 
         window.loadPage = loadPage;
-        console.log('✅ Admin dashboard with all 8 statuses!');
+        console.log('✅ Admin dashboard with matching status names!');
     </script>
 </body>
 </html>
