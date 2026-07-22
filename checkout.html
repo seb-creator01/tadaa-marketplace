@@ -219,8 +219,9 @@ function displayOrderSummary() {
     const deliveryFee = perItemDelivery * totalItems;
     
     // ===== SHIPMENT FEE THRESHOLD =====
-    const freeThreshold = 15000; // ₦15,000 (changed from 5000)
-    const freeDeliveryEnabled = settings.freeDeliveryEnabled || false;
+    const freeThreshold = 15000; // ₦15,000
+    // FIXED: Check exact boolean value from Firebase
+    const freeDeliveryEnabled = settings.freeDeliveryEnabled === true;
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     
     // Check if free delivery applies
@@ -364,7 +365,8 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
     const perItemDelivery = settings.deliveryFee || 100;
     const freeThreshold = 15000; // ₦15,000
-    const freeDeliveryEnabled = settings.freeDeliveryEnabled || false;
+    // FIXED: Check exact boolean value from Firebase
+    const freeDeliveryEnabled = settings.freeDeliveryEnabled === true;
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const isFreeDelivery = freeDeliveryEnabled && subtotal >= freeThreshold;
     const deliveryCharge = isFreeDelivery ? 0 : (perItemDelivery * totalItems);
