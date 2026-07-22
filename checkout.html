@@ -218,17 +218,23 @@ function displayOrderSummary() {
     const perItemDelivery = settings.deliveryFee || 100;
     const deliveryFee = perItemDelivery * totalItems;
     
-    // ===== SHIPMENT FEE THRESHOLD =====
-    const freeThreshold = 15000; // ₦15,000
-    // FIXED: Check exact boolean value from Firebase
+    // ===== DELIVERY FEE CAP (₦10,000) =====
+    const deliveryCap = 10000;
+    const cappedDeliveryFee = Math.min(deliveryFee, deliveryCap);
+    
+    // ===== FREE DELIVERY THRESHOLD (₦15,000) =====
+    const freeThreshold = 15000;
     const freeDeliveryEnabled = settings.freeDeliveryEnabled === true;
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     
     // Check if free delivery applies
     const isFreeDelivery = freeDeliveryEnabled && subtotal >= freeThreshold;
-    const deliveryCharge = isFreeDelivery ? 0 : deliveryFee;
+    const deliveryCharge = isFreeDelivery ? 0 : cappedDeliveryFee;
     const total = subtotal + deliveryCharge;
     const remainingForFree = freeThreshold - subtotal;
+    
+    // Check if delivery was capped
+    const wasCapped = deliveryFee > deliveryCap;
     
     document.getElementById('orderItems').innerHTML = cart.map(item => {
         const itemTotal = item.price * item.quantity;
@@ -245,7 +251,16 @@ function displayOrderSummary() {
     `}).join('');
     
     document.getElementById('subtotalDisplay').textContent = `₦${subtotal.toLocaleString()}`;
-    document.getElementById('deliveryDisplay').textContent = isFreeDelivery ? '🎉 FREE' : `₦${deliveryCharge.toLocaleString()} (${totalItems} items × ₦${perItemDelivery})`;
+    
+    // Show delivery with cap info
+    if (isFreeDelivery) {
+        document.getElementById('deliveryDisplay').textContent = '🎉 FREE';
+    } else if (wasCapped) {
+        document.getElementById('deliveryDisplay').textContent = `₦${deliveryCharge.toLocaleString()} (capped from ₦${deliveryFee.toLocaleString()})`;
+    } else {
+        document.getElementById('deliveryDisplay').textContent = `₦${deliveryCharge.toLocaleString()} (${totalItems} items × ₦${perItemDelivery})`;
+    }
+    
     document.getElementById('totalDisplay').textContent = `₦${total.toLocaleString()}`;
     
     const badge = document.getElementById('freeDeliveryBadge');
@@ -274,6 +289,16 @@ function displayOrderSummary() {
         }
     } else {
         badge.style.display = 'none';
+    }
+    
+    // Show delivery cap info in a small note
+    const capNote = document.getElementById('deliveryCapNote');
+    if (!capNote) {
+        const note = document.createElement('div');
+        note.id = 'deliveryCapNote';
+        note.style.cssText = 'font-size:12px; color:#6B7280; margin-top:4px; text-align:center;';
+        note.textContent = `💰 Delivery capped at ₦${deliveryCap.toLocaleString()}`;
+        document.getElementById('orderSummary').appendChild(note);
     }
     
     document.getElementById('placeOrderBtn').textContent = `🛒 Place Order - ₦${total.toLocaleString()}`;
@@ -364,12 +389,17 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
     
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
     const perItemDelivery = settings.deliveryFee || 100;
-    const freeThreshold = 15000; // ₦15,000
-    // FIXED: Check exact boolean value from Firebase
+    const deliveryFee = perItemDelivery * totalItems;
+    
+    // ===== DELIVERY FEE CAP (₦10,000) =====
+    const deliveryCap = 10000;
+    const cappedDeliveryFee = Math.min(deliveryFee, deliveryCap);
+    
+    const freeThreshold = 15000;
     const freeDeliveryEnabled = settings.freeDeliveryEnabled === true;
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const isFreeDelivery = freeDeliveryEnabled && subtotal >= freeThreshold;
-    const deliveryCharge = isFreeDelivery ? 0 : (perItemDelivery * totalItems);
+    const deliveryCharge = isFreeDelivery ? 0 : cappedDeliveryFee;
     const total = subtotal + deliveryCharge;
     const orderId = generateOrderId();
     const now = new Date().toISOString();
@@ -402,7 +432,9 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
             isFree: isFreeDelivery,
             threshold: freeThreshold,
             perItem: perItemDelivery,
-            totalItems: totalItems
+            totalItems: totalItems,
+            wasCapped: deliveryFee > deliveryCap,
+            originalFee: deliveryFee
         },
         payment: {
             status: 'pending',
