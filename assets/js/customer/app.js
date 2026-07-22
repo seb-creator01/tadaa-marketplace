@@ -695,7 +695,7 @@ function updateCartCount() {
 }
 
 // ============================================
-// RENDER CART SIDEBAR CONTENT - WITH MINIMUM ORDER VALUE
+// RENDER CART SIDEBAR CONTENT - WITH DELIVERY CAP
 // ============================================
 function renderCartSidebarContent() {
     let sidebar = document.getElementById('cartSidebar');
@@ -735,19 +735,35 @@ function renderCartSidebarContent() {
     const minOrderValue = 30000; // ₦30,000
     const movMet = subtotal >= minOrderValue;
     
+    // ===== DELIVERY CALCULATION WITH CAP =====
     let totalDelivery = 0;
     cart.forEach(item => {
         const productDeliveryFee = item.deliveryFee || settings.deliveryFee || 100;
         totalDelivery += productDeliveryFee * item.quantity;
     });
     
+    // ===== DELIVERY FEE CAP (₦10,000) =====
+    const deliveryCap = 10000;
+    const cappedDelivery = Math.min(totalDelivery, deliveryCap);
+    const wasCapped = totalDelivery > deliveryCap;
+    
     const freeThreshold = settings.freeDeliveryThreshold || 5000;
-    const freeDeliveryEnabled = settings.freeDeliveryEnabled || false;
+    const freeDeliveryEnabled = settings.freeDeliveryEnabled === true;
     const isFreeDelivery = freeDeliveryEnabled && freeThreshold > 0 && subtotal >= freeThreshold;
-    const deliveryCharge = isFreeDelivery ? 0 : totalDelivery;
+    const deliveryCharge = isFreeDelivery ? 0 : cappedDelivery;
     const total = subtotal + deliveryCharge;
     const remainingForFree = freeThreshold - subtotal;
     const remainingForMOV = minOrderValue - subtotal;
+    
+    // Build delivery display text
+    let deliveryDisplayText = '';
+    if (isFreeDelivery) {
+        deliveryDisplayText = '🎉 FREE';
+    } else if (wasCapped) {
+        deliveryDisplayText = `₦${deliveryCharge.toLocaleString()} (capped from ₦${totalDelivery.toLocaleString()})`;
+    } else {
+        deliveryDisplayText = `₦${deliveryCharge.toLocaleString()}`;
+    }
     
     let cartHtml = `
         <div style="padding:20px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
@@ -787,7 +803,6 @@ function renderCartSidebarContent() {
     
     cartHtml += `
         </div>
-        <!-- FIXED: Added safe-area padding for iPhone Safari bottom toolbar -->
         <div style="padding:16px 20px; padding-bottom:calc(16px + env(safe-area-inset-bottom, 0px)); padding-bottom:calc(16px + constant(safe-area-inset-bottom, 0px)); border-top:2px solid var(--border-color); flex-shrink:0; background:var(--bg-input); border-radius:0 0 16px 16px;">
             <!-- Minimum Order Value Display -->
             <div style="padding:8px 0; margin-bottom:8px; border-bottom:1px solid var(--border-color);">
@@ -808,7 +823,7 @@ function renderCartSidebarContent() {
             </div>
             <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
                 <span style="color:var(--text-secondary);">Delivery</span>
-                <span style="font-weight:600; color:var(--text-primary);">${isFreeDelivery ? '🎉 FREE' : `₦${deliveryCharge.toLocaleString()}`}</span>
+                <span style="font-weight:600; color:var(--text-primary);">${deliveryDisplayText}</span>
             </div>
             ${isFreeDelivery ? `<div style="background:#D1FAE5; color:#065F46; padding:8px 12px; border-radius:8px; margin-bottom:8px; text-align:center; font-size:14px; font-weight:600;">🎉 You qualify for FREE delivery!</div>` : ''}
             ${!isFreeDelivery && freeDeliveryEnabled && remainingForFree > 0 ? `<div style="background:#FEF3C7; color:#92400E; padding:8px 12px; border-radius:8px; margin-bottom:8px; text-align:center; font-size:13px;">Add ₦${remainingForFree.toLocaleString()} more for FREE delivery</div>` : ''}
