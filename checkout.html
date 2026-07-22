@@ -217,12 +217,17 @@ function displayOrderSummary() {
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
     const perItemDelivery = settings.deliveryFee || 100;
     const deliveryFee = perItemDelivery * totalItems;
-    const freeThreshold = settings.freeDeliveryThreshold || 5000;
+    
+    // ===== SHIPMENT FEE THRESHOLD =====
+    const freeThreshold = 15000; // ₦15,000 (changed from 5000)
     const freeDeliveryEnabled = settings.freeDeliveryEnabled || false;
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const isFreeDelivery = freeDeliveryEnabled && freeThreshold > 0 && subtotal >= freeThreshold;
+    
+    // Check if free delivery applies
+    const isFreeDelivery = freeDeliveryEnabled && subtotal >= freeThreshold;
     const deliveryCharge = isFreeDelivery ? 0 : deliveryFee;
     const total = subtotal + deliveryCharge;
+    const remainingForFree = freeThreshold - subtotal;
     
     document.getElementById('orderItems').innerHTML = cart.map(item => {
         const itemTotal = item.price * item.quantity;
@@ -358,10 +363,10 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
     
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
     const perItemDelivery = settings.deliveryFee || 100;
-    const freeThreshold = settings.freeDeliveryThreshold || 5000;
+    const freeThreshold = 15000; // ₦15,000
     const freeDeliveryEnabled = settings.freeDeliveryEnabled || false;
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const isFreeDelivery = freeDeliveryEnabled && freeThreshold > 0 && subtotal >= freeThreshold;
+    const isFreeDelivery = freeDeliveryEnabled && subtotal >= freeThreshold;
     const deliveryCharge = isFreeDelivery ? 0 : (perItemDelivery * totalItems);
     const total = subtotal + deliveryCharge;
     const orderId = generateOrderId();
@@ -449,7 +454,6 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
             },
             callback: function(response) {
                 console.log('✅ Payment success:', response);
-                // Redirect to tracking page instead of payment-success
                 window.location.href = `./tracking.html?order=${orderId}`;
             },
             onClose: function() {
