@@ -695,14 +695,13 @@ function updateCartCount() {
 }
 
 // ============================================
-// RENDER CART SIDEBAR CONTENT - FIXED FOR IPHONE SAFE AREA
+// RENDER CART SIDEBAR CONTENT - WITH MINIMUM ORDER VALUE
 // ============================================
 function renderCartSidebarContent() {
     let sidebar = document.getElementById('cartSidebar');
     if (!sidebar) {
         sidebar = document.createElement('div');
         sidebar.id = 'cartSidebar';
-        // FIXED: Added 100dvh with -webkit-fill-available fallback for iPhone Safari/PWA
         sidebar.style.cssText = `position:fixed; top:0; right:-400px; width:380px; height:100%; height:100vh; height:100dvh; min-height:-webkit-fill-available; background:var(--bg-card); z-index:1500; transition:right 0.4s cubic-bezier(0.4,0,0.2,1); box-shadow:-4px 0 24px var(--shadow-color); display:flex; flex-direction:column;`;
         document.body.appendChild(sidebar);
         
@@ -732,6 +731,10 @@ function renderCartSidebarContent() {
     
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     
+    // ===== MINIMUM ORDER VALUE =====
+    const minOrderValue = 30000; // ₦30,000
+    const movMet = subtotal >= minOrderValue;
+    
     let totalDelivery = 0;
     cart.forEach(item => {
         const productDeliveryFee = item.deliveryFee || settings.deliveryFee || 100;
@@ -744,6 +747,7 @@ function renderCartSidebarContent() {
     const deliveryCharge = isFreeDelivery ? 0 : totalDelivery;
     const total = subtotal + deliveryCharge;
     const remainingForFree = freeThreshold - subtotal;
+    const remainingForMOV = minOrderValue - subtotal;
     
     let cartHtml = `
         <div style="padding:20px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
@@ -785,6 +789,19 @@ function renderCartSidebarContent() {
         </div>
         <!-- FIXED: Added safe-area padding for iPhone Safari bottom toolbar -->
         <div style="padding:16px 20px; padding-bottom:calc(16px + env(safe-area-inset-bottom, 0px)); padding-bottom:calc(16px + constant(safe-area-inset-bottom, 0px)); border-top:2px solid var(--border-color); flex-shrink:0; background:var(--bg-input); border-radius:0 0 16px 16px;">
+            <!-- Minimum Order Value Display -->
+            <div style="padding:8px 0; margin-bottom:8px; border-bottom:1px solid var(--border-color);">
+                <div style="display:flex; justify-content:space-between; font-size:14px;">
+                    <span style="color:var(--text-secondary);">Minimum Order:</span>
+                    <span style="font-weight:600; color:${movMet ? '#10B981' : '#EF4444'};">₦${minOrderValue.toLocaleString()}</span>
+                </div>
+                ${!movMet ? `<div style="background:#FEF3C7; color:#92400E; padding:6px 12px; border-radius:6px; margin-top:4px; font-size:12px; text-align:center;">
+                    Add ₦${remainingForMOV.toLocaleString()} more to meet minimum order
+                </div>` : `<div style="background:#D1FAE5; color:#065F46; padding:6px 12px; border-radius:6px; margin-top:4px; font-size:12px; text-align:center;">
+                    ✅ Minimum order met!
+                </div>`}
+            </div>
+            
             <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
                 <span style="color:var(--text-secondary);">Subtotal</span>
                 <span style="font-weight:600; color:var(--text-primary);">₦${subtotal.toLocaleString()}</span>
@@ -799,8 +816,8 @@ function renderCartSidebarContent() {
                 <span style="color:var(--text-secondary);">Total</span>
                 <span style="color:#FFD700; font-size:22px;">₦${total.toLocaleString()}</span>
             </div>
-            <button onclick="closeCartSidebar(); checkout();" style="width:100%; background:#FFD700; color:#000; border:none; padding:14px; border-radius:12px; font-size:18px; font-weight:700; cursor:pointer; margin-top:12px;" onmouseover="this.style.background='#E6C200'" onmouseout="this.style.background='#FFD700'">
-                🛒 Proceed to Checkout →
+            <button onclick="closeCartSidebar(); checkout();" style="width:100%; background:#FFD700; color:#000; border:none; padding:14px; border-radius:12px; font-size:18px; font-weight:700; cursor:pointer; margin-top:12px; ${!movMet ? 'opacity:0.5; cursor:not-allowed;' : ''}" onmouseover="this.style.background='#E6C200'" onmouseout="this.style.background='#FFD700'" ${!movMet ? 'disabled' : ''}>
+                ${!movMet ? `🛒 Add ₦${remainingForMOV.toLocaleString()} more` : '🛒 Proceed to Checkout →'}
             </button>
         </div>
     `;
@@ -836,13 +853,25 @@ function closeCartSidebar() {
 }
 
 // ============================================
-// CHECKOUT - FIXED PATH
+// CHECKOUT - WITH MINIMUM ORDER VALUE
 // ============================================
 function checkout() {
     if (cart.length === 0) {
         alert('🛒 Your cart is empty!');
         return;
     }
+    
+    // Calculate cart total
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const minOrderValue = 30000; // ₦30,000
+    
+    // Check minimum order value
+    if (subtotal < minOrderValue) {
+        const remaining = minOrderValue - subtotal;
+        alert(`📦 Minimum order value is ₦${minOrderValue.toLocaleString()}\n\nYour current total: ₦${subtotal.toLocaleString()}\nAdd ₦${remaining.toLocaleString()} more to checkout.`);
+        return;
+    }
+    
     closeCartSidebar();
     window.location.href = './checkout.html';
 }
