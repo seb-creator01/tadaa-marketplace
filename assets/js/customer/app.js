@@ -695,7 +695,7 @@ function updateCartCount() {
 }
 
 // ============================================
-// RENDER CART SIDEBAR CONTENT - WITH DELIVERY CAP
+// RENDER CART SIDEBAR CONTENT - FIXED (NO FLOATING CAP NOTE)
 // ============================================
 function renderCartSidebarContent() {
     let sidebar = document.getElementById('cartSidebar');
@@ -831,6 +831,7 @@ function renderCartSidebarContent() {
                 <span style="color:var(--text-secondary);">Total</span>
                 <span style="color:#FFD700; font-size:22px;">₦${total.toLocaleString()}</span>
             </div>
+            <!-- FIXED: Checkout button now works when MOV is met -->
             <button onclick="closeCartSidebar(); checkout();" style="width:100%; background:#FFD700; color:#000; border:none; padding:14px; border-radius:12px; font-size:18px; font-weight:700; cursor:pointer; margin-top:12px; ${!movMet ? 'opacity:0.5; cursor:not-allowed;' : ''}" onmouseover="this.style.background='#E6C200'" onmouseout="this.style.background='#FFD700'" ${!movMet ? 'disabled' : ''}>
                 ${!movMet ? `🛒 Add ₦${remainingForMOV.toLocaleString()} more` : '🛒 Proceed to Checkout →'}
             </button>
