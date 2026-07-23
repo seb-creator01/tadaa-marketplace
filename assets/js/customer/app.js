@@ -755,12 +755,10 @@ function renderCartSidebarContent() {
     const remainingForFree = freeThreshold - subtotal;
     const remainingForMOV = minOrderValue - subtotal;
     
-    // Build delivery display text
+    // Build delivery display text - REMOVED "(capped from X)" message
     let deliveryDisplayText = '';
     if (isFreeDelivery) {
         deliveryDisplayText = '🎉 FREE';
-    } else if (wasCapped) {
-        deliveryDisplayText = `₦${deliveryCharge.toLocaleString()} (capped from ₦${totalDelivery.toLocaleString()})`;
     } else {
         deliveryDisplayText = `₦${deliveryCharge.toLocaleString()}`;
     }
@@ -812,9 +810,7 @@ function renderCartSidebarContent() {
                 </div>
                 ${!movMet ? `<div style="background:#FEF3C7; color:#92400E; padding:6px 12px; border-radius:6px; margin-top:4px; font-size:12px; text-align:center;">
                     Add ₦${remainingForMOV.toLocaleString()} more to meet minimum order
-                </div>` : `<div style="background:#D1FAE5; color:#065F46; padding:6px 12px; border-radius:6px; margin-top:4px; font-size:12px; text-align:center;">
-                    ✅ Minimum order met!
-                </div>`}
+                </div>` : ''}
             </div>
             
             <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
