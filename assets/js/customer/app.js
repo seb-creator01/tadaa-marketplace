@@ -847,7 +847,7 @@ function renderCartSidebarContent() {
 }
 
 // ============================================
-// TOGGLE CART SIDEBAR
+// TOGGLE CART SIDEBAR - FIXED with cart-open class
 // ============================================
 function toggleCartSidebar() {
     const sidebar = document.getElementById('cartSidebar');
@@ -860,9 +860,14 @@ function toggleCartSidebar() {
         renderCartSidebarContent();
         sidebar.style.right = '0px';
         if (overlay) overlay.style.display = 'block';
+        // Add class to body when cart opens
+        document.body.classList.add('cart-open');
     }
 }
 
+// ============================================
+// CLOSE CART SIDEBAR - FIXED with cart-open class
+// ============================================
 function closeCartSidebar() {
     const sidebar = document.getElementById('cartSidebar');
     const overlay = document.getElementById('cartOverlay');
@@ -872,6 +877,8 @@ function closeCartSidebar() {
     if (overlay) {
         overlay.style.display = 'none';
     }
+    // Remove class when cart closes
+    document.body.classList.remove('cart-open');
 }
 
 // ============================================
