@@ -214,13 +214,27 @@ async function loadCheckoutData() {
 }
 
 function displayOrderSummary() {
-    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-    const perItemDelivery = settings.deliveryFee || 100;
-    const deliveryFee = perItemDelivery * totalItems;
+    // ===== CALCULATE DELIVERY PER ITEM (PRODUCT-SPECIFIC) =====
+    let totalDelivery = 0;
+    let totalItems = 0;
+    let deliveryBreakdown = [];
+    
+    cart.forEach(item => {
+        const itemDeliveryFee = item.deliveryFee || settings.deliveryFee || 100;
+        const itemDeliveryTotal = itemDeliveryFee * item.quantity;
+        totalDelivery += itemDeliveryTotal;
+        totalItems += item.quantity;
+        deliveryBreakdown.push({
+            name: item.name,
+            fee: itemDeliveryFee,
+            quantity: item.quantity,
+            total: itemDeliveryTotal
+        });
+    });
     
     // ===== DELIVERY FEE CAP (₦10,000) =====
     const deliveryCap = 10000;
-    const cappedDeliveryFee = Math.min(deliveryFee, deliveryCap);
+    const cappedDeliveryFee = Math.min(totalDelivery, deliveryCap);
     
     // ===== FREE DELIVERY THRESHOLD (₦15,000) =====
     const freeThreshold = 15000;
@@ -234,16 +248,18 @@ function displayOrderSummary() {
     const remainingForFree = freeThreshold - subtotal;
     
     // Check if delivery was capped
-    const wasCapped = deliveryFee > deliveryCap;
+    const wasCapped = totalDelivery > deliveryCap;
     
     document.getElementById('orderItems').innerHTML = cart.map(item => {
         const itemTotal = item.price * item.quantity;
+        const itemDeliveryFee = item.deliveryFee || settings.deliveryFee || 100;
         return `
         <div class="order-item">
             ${item.images && item.images.length > 0 ? `<img src="${item.images[0]}" alt="${item.name}">` : '<div style="width:60px;height:60px;border-radius:8px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">📷</div>'}
             <div class="info">
                 <p class="item-name">${item.name}</p>
                 <p class="item-details">Qty: ${item.quantity} × ₦${item.price.toLocaleString()}</p>
+                <p class="item-details" style="font-size:11px; color:#6B7280;">Delivery: ₦${itemDeliveryFee}/item</p>
                 <p class="item-price">₦${itemTotal.toLocaleString()}</p>
             </div>
             <div class="price">₦${itemTotal.toLocaleString()}</div>
@@ -253,14 +269,20 @@ function displayOrderSummary() {
     document.getElementById('subtotalDisplay').textContent = `₦${subtotal.toLocaleString()}`;
     
     // Show delivery with cap info
+    let deliveryDisplayText = '';
     if (isFreeDelivery) {
-        document.getElementById('deliveryDisplay').textContent = '🎉 FREE';
+        deliveryDisplayText = '🎉 FREE';
     } else if (wasCapped) {
-        document.getElementById('deliveryDisplay').textContent = `₦${deliveryCharge.toLocaleString()} (capped from ₦${deliveryFee.toLocaleString()})`;
+        deliveryDisplayText = `₦${deliveryCharge.toLocaleString()} (capped from ₦${totalDelivery.toLocaleString()})`;
     } else {
-        document.getElementById('deliveryDisplay').textContent = `₦${deliveryCharge.toLocaleString()} (${totalItems} items × ₦${perItemDelivery})`;
+        // Show breakdown of delivery fees by product
+        let breakdownText = deliveryBreakdown.map(d => 
+            `${d.name}: ${d.quantity} × ₦${d.fee} = ₦${d.total}`
+        ).join(', ');
+        deliveryDisplayText = `₦${deliveryCharge.toLocaleString()} (${breakdownText})`;
     }
     
+    document.getElementById('deliveryDisplay').textContent = deliveryDisplayText;
     document.getElementById('totalDisplay').textContent = `₦${total.toLocaleString()}`;
     
     const badge = document.getElementById('freeDeliveryBadge');
@@ -387,13 +409,18 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
     btn.innerHTML = '<span class="loading-spinner"></span> Processing...';
     btn.disabled = true;
     
-    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-    const perItemDelivery = settings.deliveryFee || 100;
-    const deliveryFee = perItemDelivery * totalItems;
+    // ===== CALCULATE DELIVERY PER ITEM (PRODUCT-SPECIFIC) =====
+    let totalDelivery = 0;
+    let totalItems = 0;
+    cart.forEach(item => {
+        const itemDeliveryFee = item.deliveryFee || settings.deliveryFee || 100;
+        totalDelivery += itemDeliveryFee * item.quantity;
+        totalItems += item.quantity;
+    });
     
     // ===== DELIVERY FEE CAP (₦10,000) =====
     const deliveryCap = 10000;
-    const cappedDeliveryFee = Math.min(deliveryFee, deliveryCap);
+    const cappedDeliveryFee = Math.min(totalDelivery, deliveryCap);
     
     const freeThreshold = 15000;
     const freeDeliveryEnabled = settings.freeDeliveryEnabled === true;
@@ -419,7 +446,8 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
             price: item.price,
             quantity: item.quantity,
             image: item.images && item.images.length > 0 ? item.images[0] : '',
-            total: item.price * item.quantity
+            total: item.price * item.quantity,
+            deliveryFee: item.deliveryFee || settings.deliveryFee || 100
         })),
         totals: {
             subtotal: subtotal,
@@ -431,10 +459,10 @@ document.getElementById('checkoutForm').addEventListener('submit', async (e) => 
             fee: deliveryCharge,
             isFree: isFreeDelivery,
             threshold: freeThreshold,
-            perItem: perItemDelivery,
+            perItem: settings.deliveryFee || 100,
             totalItems: totalItems,
-            wasCapped: deliveryFee > deliveryCap,
-            originalFee: deliveryFee
+            wasCapped: totalDelivery > deliveryCap,
+            originalFee: totalDelivery
         },
         payment: {
             status: 'pending',
