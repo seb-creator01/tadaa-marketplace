@@ -313,15 +313,8 @@ function displayOrderSummary() {
         badge.style.display = 'none';
     }
     
-    // Show delivery cap info in a small note
-    const capNote = document.getElementById('deliveryCapNote');
-    if (!capNote) {
-        const note = document.createElement('div');
-        note.id = 'deliveryCapNote';
-        note.style.cssText = 'font-size:12px; color:#6B7280; margin-top:4px; text-align:center;';
-        note.textContent = `💰 Delivery capped at ₦${deliveryCap.toLocaleString()}`;
-        document.getElementById('orderSummary').appendChild(note);
-    }
+    // ===== REMOVED: Delivery cap floating note =====
+    // No longer showing "Delivery capped at ₦10,000" at the bottom
     
     document.getElementById('placeOrderBtn').textContent = `🛒 Place Order - ₦${total.toLocaleString()}`;
 }
