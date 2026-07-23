@@ -695,7 +695,7 @@ function updateCartCount() {
 }
 
 // ============================================
-// RENDER CART SIDEBAR CONTENT - FIXED (NO FLOATING CAP NOTE)
+// RENDER CART SIDEBAR CONTENT - FIXED
 // ============================================
 function renderCartSidebarContent() {
     let sidebar = document.getElementById('cartSidebar');
@@ -831,8 +831,14 @@ function renderCartSidebarContent() {
                 <span style="color:var(--text-secondary);">Total</span>
                 <span style="color:#FFD700; font-size:22px;">₦${total.toLocaleString()}</span>
             </div>
-            <!-- FIXED: Checkout button now works when MOV is met -->
-            <button onclick="closeCartSidebar(); checkout();" style="width:100%; background:#FFD700; color:#000; border:none; padding:14px; border-radius:12px; font-size:18px; font-weight:700; cursor:pointer; margin-top:12px; ${!movMet ? 'opacity:0.5; cursor:not-allowed;' : ''}" onmouseover="this.style.background='#E6C200'" onmouseout="this.style.background='#FFD700'" ${!movMet ? 'disabled' : ''}>
+            
+            <!-- FIXED: Checkout button - entire button now works -->
+            <button 
+                onclick="event.stopPropagation(); closeCartSidebar(); checkout();" 
+                style="width:100%; background:#FFD700; color:#000; border:none; padding:14px; border-radius:12px; font-size:18px; font-weight:700; cursor:pointer; margin-top:12px; transition:background 0.2s; ${!movMet ? 'opacity:0.5; cursor:not-allowed;' : ''}" 
+                onmouseover="if(!this.disabled){this.style.background='#E6C200'}" 
+                onmouseout="if(!this.disabled){this.style.background='#FFD700'}" 
+                ${!movMet ? 'disabled' : ''}>
                 ${!movMet ? `🛒 Add ₦${remainingForMOV.toLocaleString()} more` : '🛒 Proceed to Checkout →'}
             </button>
         </div>
@@ -869,22 +875,11 @@ function closeCartSidebar() {
 }
 
 // ============================================
-// CHECKOUT - WITH MINIMUM ORDER VALUE
+// CHECKOUT - PROCEED TO CHECKOUT PAGE
 // ============================================
 function checkout() {
     if (cart.length === 0) {
         alert('🛒 Your cart is empty!');
-        return;
-    }
-    
-    // Calculate cart total
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const minOrderValue = 30000; // ₦30,000
-    
-    // Check minimum order value
-    if (subtotal < minOrderValue) {
-        const remaining = minOrderValue - subtotal;
-        alert(`📦 Minimum order value is ₦${minOrderValue.toLocaleString()}\n\nYour current total: ₦${subtotal.toLocaleString()}\nAdd ₦${remaining.toLocaleString()} more to checkout.`);
         return;
     }
     
