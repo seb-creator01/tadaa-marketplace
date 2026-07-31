@@ -57,6 +57,69 @@ let currentCategory = 'all';
 let searchTerm = '';
 
 // ============================================
+// OPTIMIZE CLOUDINARY IMAGES
+// ============================================
+function optimizeCloudinaryImage(url) {
+    if (!url) return url;
+    
+    // Check if it's a Cloudinary URL
+    if (url.includes('cloudinary.com')) {
+        // Check if URL already has transformations
+        if (url.includes('/upload/')) {
+            // Split the URL to add transformations
+            const parts = url.split('/upload/');
+            if (parts.length === 2) {
+                // Add optimization parameters:
+                // w_400 = width 400px (good for product thumbnails)
+                // c_fill = crop to fill
+                // q_auto = auto quality (optimizes file size)
+                // f_auto = auto format (serves WebP to supported browsers)
+                return `${parts[0]}/upload/w_400,h_400,c_fill,q_auto,f_auto/${parts[1]}`;
+            }
+        }
+    }
+    return url;
+}
+
+function optimizeCloudinaryImageLarge(url) {
+    if (!url) return url;
+    
+    // For modal/product detail view - larger size
+    if (url.includes('cloudinary.com')) {
+        if (url.includes('/upload/')) {
+            const parts = url.split('/upload/');
+            if (parts.length === 2) {
+                return `${parts[0]}/upload/w_600,h_600,c_fill,q_auto,f_auto/${parts[1]}`;
+            }
+        }
+    }
+    return url;
+}
+
+function optimizeCloudinaryImageCart(url) {
+    if (!url) return url;
+    
+    // For cart items - small size
+    if (url.includes('cloudinary.com')) {
+        if (url.includes('/upload/')) {
+            const parts = url.split('/upload/');
+            if (parts.length === 2) {
+                return `${parts[0]}/upload/w_100,h_100,c_fill,q_auto,f_auto/${parts[1]}`;
+            }
+        }
+    }
+    return url;
+}
+
+function optimizeProductImages() {
+    products.forEach(product => {
+        if (product.images && product.images.length > 0) {
+            product.images = product.images.map(img => optimizeCloudinaryImage(img));
+        }
+    });
+}
+
+// ============================================
 // THEME TOGGLE
 // ============================================
 function toggleTheme() {
@@ -168,6 +231,9 @@ async function loadData() {
         productsSnap.forEach(doc => {
             products.push({ id: doc.id, ...doc.data() });
         });
+        
+        // ===== OPTIMIZE CLOUDINARY IMAGES =====
+        optimizeProductImages();
         
         console.log('✅ Data loaded - Categories:', categories.length, 'Products:', products.length);
         
@@ -354,7 +420,14 @@ function renderProducts() {
     `;
     
     filteredProducts.forEach((product, index) => {
-        const imageUrl = product.images && product.images.length > 0 ? product.images[0] : '';
+        // Use optimized Cloudinary image
+        let imageUrl = product.images && product.images.length > 0 ? product.images[0] : '';
+        // If it's a Cloudinary URL, it's already optimized by optimizeProductImages()
+        // But also apply optimization directly in case it wasn't
+        if (imageUrl && imageUrl.includes('cloudinary.com')) {
+            imageUrl = optimizeCloudinaryImage(imageUrl);
+        }
+        
         const inStock = product.inStock !== false && (product.stockCount || 0) > 0;
         const discount = product.discount || 0;
         const discountedPrice = discount > 0 ? product.price * (1 - discount / 100) : product.price;
@@ -366,7 +439,7 @@ function renderProducts() {
         html += `
             <div class="product-card" style="background:var(--bg-card); border-radius:12px; overflow:hidden; box-shadow:var(--shadow-sm); border:1px solid var(--border-color); cursor:pointer; transition:all 0.3s cubic-bezier(0.4,0,0.2,1);" onclick="viewProduct('${product.id}')" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-lg)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-sm)'">
                 <div style="position:relative; padding-bottom:100%; background:#f3f4f6;">
-                    ${imageUrl ? `<img src="${imageUrl}" alt="${product.name}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; transition:transform 0.5s ease;" loading="lazy">` : '<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:32px;">📷</div>'}
+                    ${imageUrl ? `<img src="${imageUrl}" alt="${product.name}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; transition:transform 0.5s ease;" loading="lazy" decoding="async">` : '<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:32px;">📷</div>'}
                     ${discount > 0 ? `<div style="position:absolute; top:6px; right:6px; background:#EF4444; color:#fff; padding:2px 8px; border-radius:50px; font-size:10px; font-weight:700;">${discount}% OFF</div>` : ''}
                     ${!inStock ? `<div style="position:absolute; bottom:6px; left:6px; right:6px; background:rgba(0,0,0,0.7); color:#fff; text-align:center; padding:3px; border-radius:6px; font-size:10px;">Out of Stock</div>` : ''}
                     ${qty > 0 ? `<div style="position:absolute; top:6px; left:6px; background:#10B981; color:#fff; padding:2px 8px; border-radius:50px; font-size:9px; font-weight:700;">${qty} in Cart</div>` : ''}
@@ -472,7 +545,11 @@ function viewProduct(productId) {
     
     const product = products.find(p => p.id === productId);
     if (!product) return;
-    const imageUrl = product.images && product.images.length > 0 ? product.images[0] : '';
+    // Use larger optimized image for modal
+    let imageUrl = product.images && product.images.length > 0 ? product.images[0] : '';
+    if (imageUrl && imageUrl.includes('cloudinary.com')) {
+        imageUrl = optimizeCloudinaryImageLarge(imageUrl);
+    }
     const discount = product.discount || 0;
     const discountedPrice = discount > 0 ? product.price * (1 - discount / 100) : product.price;
     const inStock = product.inStock !== false && (product.stockCount || 0) > 0;
@@ -492,7 +569,7 @@ function viewProduct(productId) {
         <div style="background:var(--bg-card); border-radius:24px; max-width:500px; width:100%; max-height:90vh; overflow-y:auto; padding:24px; position:relative; animation:fadeInScale 0.3s ease;">
             <button onclick="closeModal()" style="position:absolute; top:12px; right:16px; background:none; border:none; font-size:24px; cursor:pointer; color:var(--text-secondary);">✕</button>
             <div style="border-radius:16px; overflow:hidden; background:#f3f4f6; margin-bottom:16px;">
-                ${imageUrl ? `<img src="${imageUrl}" alt="${product.name}" style="width:100%; height:auto; max-height:300px; object-fit:cover;">` : '<div style="padding:60px; text-align:center; font-size:48px;">📷</div>'}
+                ${imageUrl ? `<img src="${imageUrl}" alt="${product.name}" style="width:100%; height:auto; max-height:300px; object-fit:cover;" loading="lazy" decoding="async">` : '<div style="padding:60px; text-align:center; font-size:48px;">📷</div>'}
             </div>
             <h2 style="font-family:'Cormorant Garamond', serif; font-size:24px; margin:0 0 4px; color:var(--text-primary);">${product.name}</h2>
             <p style="color:var(--text-secondary); margin:0 0 4px; font-size:14px;">${product.categoryName || 'Uncategorized'}</p>
@@ -776,12 +853,16 @@ function renderCartSidebarContent() {
     
     cart.forEach(item => {
         const itemTotal = item.price * item.quantity;
-        const imageUrl = item.images && item.images.length > 0 ? item.images[0] : '';
+        // Use optimized small image for cart
+        let imageUrl = item.images && item.images.length > 0 ? item.images[0] : '';
+        if (imageUrl && imageUrl.includes('cloudinary.com')) {
+            imageUrl = optimizeCloudinaryImageCart(imageUrl);
+        }
         const itemDeliveryFee = item.deliveryFee || settings.deliveryFee || 100;
         cartHtml += `
             <div style="display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--border-color);">
                 <div style="width:60px; height:60px; border-radius:8px; overflow:hidden; background:#f3f4f6; flex-shrink:0;">
-                    ${imageUrl ? `<img src="${imageUrl}" style="width:100%; height:100%; object-fit:cover;">` : '📷'}
+                    ${imageUrl ? `<img src="${imageUrl}" style="width:100%; height:100%; object-fit:cover;" loading="lazy" decoding="async">` : '📷'}
                 </div>
                 <div style="flex:1; min-width:0;">
                     <p style="margin:0; font-weight:600; font-size:14px; color:var(--text-primary);">${item.name}</p>
