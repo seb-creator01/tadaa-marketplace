@@ -479,7 +479,7 @@ function renderProducts() {
 }
 
 // ============================================
-// UPDATE PRODUCT QUANTITY
+// UPDATE PRODUCT QUANTITY - FIXED (removed renderProducts)
 // ============================================
 function updateProductQuantity(productId, change) {
     const product = products.find(p => p.id === productId);
@@ -509,7 +509,7 @@ function updateProductQuantity(productId, change) {
     saveCart();
     updateCartCount();
     renderCartSidebarContent();
-    renderProducts();
+    // REMOVED: renderProducts(); - Causes blinking on iOS
 }
 
 // ============================================
@@ -618,7 +618,7 @@ function changeModalQty(productId, change) {
 }
 
 // ============================================
-// ADD TO CART FROM MODAL - FIXED
+// ADD TO CART FROM MODAL - FIXED (removed renderProducts)
 // ============================================
 function addModalToCart(productId) {
     const display = document.getElementById(`modal-qty-display-${productId}`);
@@ -648,7 +648,7 @@ function addModalToCart(productId) {
     
     // THEN UPDATE UI
     renderCartSidebarContent();
-    renderProducts();
+    // REMOVED: renderProducts(); - Causes blinking on iOS
     showToast(product.name);
 }
 
@@ -709,7 +709,7 @@ function showToast(productName) {
 }
 
 // ============================================
-// CART FUNCTIONS
+// CART FUNCTIONS - FIXED (removed renderProducts)
 // ============================================
 function addToCart(productId) {
     const product = products.find(p => p.id === productId);
@@ -724,7 +724,7 @@ function addToCart(productId) {
     saveCart();
     updateCartCount();
     renderCartSidebarContent();
-    renderProducts();
+    // REMOVED: renderProducts(); - Causes blinking on iOS
     showToast(product.name);
 }
 
@@ -733,7 +733,7 @@ function removeFromCart(productId) {
     saveCart();
     updateCartCount();
     renderCartSidebarContent();
-    renderProducts();
+    // REMOVED: renderProducts(); - Causes blinking on iOS
 }
 
 function updateQuantity(productId, change) {
@@ -748,7 +748,7 @@ function updateQuantity(productId, change) {
     saveCart();
     updateCartCount();
     renderCartSidebarContent();
-    renderProducts();
+    // REMOVED: renderProducts(); - Causes blinking on iOS
 }
 
 function clearCart() {
@@ -758,7 +758,7 @@ function clearCart() {
         saveCart();
         updateCartCount();
         renderCartSidebarContent();
-        renderProducts();
+        // REMOVED: renderProducts(); - Causes blinking on iOS
     }
 }
 
