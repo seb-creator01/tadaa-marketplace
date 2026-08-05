@@ -1,5 +1,6 @@
 // ============================================
 // TADAA! - CUSTOMER WEBSITE (COMPLETE)
+// PREMIUM UI/UX ENHANCED VERSION
 // ============================================
 
 // ===== Firebase Config =====
@@ -25,19 +26,37 @@ function hideSplashScreen() {
     const splash = document.getElementById('splashScreen');
     if (splash) {
         splash.classList.add('hidden');
-        // Remove from DOM after animation completes
         setTimeout(function() {
             splash.style.display = 'none';
         }, 800);
     }
 }
 
-// Show splash screen if it exists (it's already visible by default)
-// This function is called when data is fully loaded
 function showContent() {
-    // Hide splash screen with smooth transition
     hideSplashScreen();
 }
+
+// ============================================
+// SVG ICONS
+// ============================================
+const Icons = {
+    search: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+    cart: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>`,
+    shop: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>`,
+    category: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>`,
+    close: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+    plus: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+    minus: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+    trash: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`,
+    truck: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>`,
+    check: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+    star: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#FFD400" stroke="#FFD400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+    emptyCart: `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>`,
+    arrowRight: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`,
+    whatsapp: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>`,
+    moon: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
+    sun: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`
+};
 
 // ============================================
 // DOM ELEMENTS
@@ -61,21 +80,10 @@ let searchTerm = '';
 // ============================================
 function optimizeCloudinaryImage(url) {
     if (!url) return url;
-    
-    // Check if it's a Cloudinary URL
-    if (url.includes('cloudinary.com')) {
-        // Check if URL already has transformations
-        if (url.includes('/upload/')) {
-            // Split the URL to add transformations
-            const parts = url.split('/upload/');
-            if (parts.length === 2) {
-                // Add optimization parameters:
-                // w_400 = width 400px (good for product thumbnails)
-                // c_fill = crop to fill
-                // q_auto = auto quality (optimizes file size)
-                // f_auto = auto format (serves WebP to supported browsers)
-                return `${parts[0]}/upload/w_400,h_400,c_fill,q_auto,f_auto/${parts[1]}`;
-            }
+    if (url.includes('cloudinary.com') && url.includes('/upload/')) {
+        const parts = url.split('/upload/');
+        if (parts.length === 2) {
+            return `${parts[0]}/upload/w_400,h_400,c_fill,q_auto,f_auto/${parts[1]}`;
         }
     }
     return url;
@@ -83,14 +91,10 @@ function optimizeCloudinaryImage(url) {
 
 function optimizeCloudinaryImageLarge(url) {
     if (!url) return url;
-    
-    // For modal/product detail view - larger size
-    if (url.includes('cloudinary.com')) {
-        if (url.includes('/upload/')) {
-            const parts = url.split('/upload/');
-            if (parts.length === 2) {
-                return `${parts[0]}/upload/w_600,h_600,c_fill,q_auto,f_auto/${parts[1]}`;
-            }
+    if (url.includes('cloudinary.com') && url.includes('/upload/')) {
+        const parts = url.split('/upload/');
+        if (parts.length === 2) {
+            return `${parts[0]}/upload/w_600,h_600,c_fill,q_auto,f_auto/${parts[1]}`;
         }
     }
     return url;
@@ -98,14 +102,10 @@ function optimizeCloudinaryImageLarge(url) {
 
 function optimizeCloudinaryImageCart(url) {
     if (!url) return url;
-    
-    // For cart items - small size
-    if (url.includes('cloudinary.com')) {
-        if (url.includes('/upload/')) {
-            const parts = url.split('/upload/');
-            if (parts.length === 2) {
-                return `${parts[0]}/upload/w_100,h_100,c_fill,q_auto,f_auto/${parts[1]}`;
-            }
+    if (url.includes('cloudinary.com') && url.includes('/upload/')) {
+        const parts = url.split('/upload/');
+        if (parts.length === 2) {
+            return `${parts[0]}/upload/w_100,h_100,c_fill,q_auto,f_auto/${parts[1]}`;
         }
     }
     return url;
@@ -130,11 +130,11 @@ function toggleTheme() {
     if (currentTheme === 'dark') {
         html.removeAttribute('data-theme');
         localStorage.setItem('theme', 'light');
-        if (themeToggle) themeToggle.textContent = '🌙';
+        if (themeToggle) themeToggle.innerHTML = Icons.moon;
     } else {
         html.setAttribute('data-theme', 'dark');
         localStorage.setItem('theme', 'dark');
-        if (themeToggle) themeToggle.textContent = '☀️';
+        if (themeToggle) themeToggle.innerHTML = Icons.sun;
     }
 }
 
@@ -144,10 +144,10 @@ function loadTheme() {
     
     if (savedTheme === 'dark') {
         document.documentElement.setAttribute('data-theme', 'dark');
-        if (themeToggle) themeToggle.textContent = '☀️';
+        if (themeToggle) themeToggle.innerHTML = Icons.sun;
     } else {
         document.documentElement.removeAttribute('data-theme');
-        if (themeToggle) themeToggle.textContent = '🌙';
+        if (themeToggle) themeToggle.innerHTML = Icons.moon;
     }
 }
 
@@ -183,7 +183,7 @@ function showMaintenancePage() {
     if (!appContainer) return;
     appContainer.innerHTML = `
         <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, #000 0%, #1a1a1a 100%); padding:20px;">
-            <div style="max-width:500px; width:100%; background:var(--bg-card); border-radius:24px; padding:48px 40px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+            <div class="card card-glass" style="max-width:500px; width:100%; padding:48px 40px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
                 <div style="font-size:64px; margin-bottom:16px;">🔧</div>
                 <h1 style="font-family:'Cormorant Garamond', serif; font-size:32px; color:var(--text-primary); margin:0 0 8px;">Store Under Maintenance</h1>
                 <p style="color:var(--text-secondary); font-size:18px; margin:0 0 8px;">We're currently updating our store.</p>
@@ -199,7 +199,6 @@ function showMaintenancePage() {
             </div>
         </div>
     `;
-    // Hide splash even on maintenance page
     showContent();
 }
 
@@ -232,15 +231,12 @@ async function loadData() {
             products.push({ id: doc.id, ...doc.data() });
         });
         
-        // ===== OPTIMIZE CLOUDINARY IMAGES =====
         optimizeProductImages();
         
         console.log('✅ Data loaded - Categories:', categories.length, 'Products:', products.length);
         
         renderWebsite();
         updateCartCount();
-        
-        // ===== HIDE SPLASH SCREEN - DATA IS READY =====
         showContent();
         
     } catch (error) {
@@ -250,11 +246,10 @@ async function loadData() {
                 <div style="text-align:center; padding:60px 20px;">
                     <h2 style="color:var(--text-primary);">😅 Oops! Something went wrong</h2>
                     <p style="color:var(--text-secondary);">Please refresh the page and try again.</p>
-                    <button onclick="location.reload()" style="background:#FFD700; border:none; padding:12px 24px; border-radius:50px; margin-top:20px; cursor:pointer; font-weight:600;">Refresh</button>
+                    <button onclick="location.reload()" class="btn btn-primary" style="margin-top:20px;">Refresh</button>
                 </div>
             `;
         }
-        // Hide splash even on error so user can see the error message
         showContent();
     }
 }
@@ -278,23 +273,23 @@ function renderWebsite() {
 function renderHeader() {
     if (!mainHeader) return;
     mainHeader.innerHTML = `
-        <nav style="background:#000; color:#fff; padding:16px 20px; position:sticky; top:0; z-index:100;">
+        <nav style="background:#000; color:#fff; padding:16px 20px; position:sticky; top:0; z-index:100; border-bottom:1px solid rgba(255,255,255,0.05);">
             <div style="max-width:1200px; margin:0 auto; display:flex; justify-content:space-between; align-items:center;">
                 <div style="display:flex; align-items:center; gap:12px;">
-                    <span style="font-family:'Cormorant Garamond', serif; font-size:24px; font-weight:700; color:#FFD700; cursor:pointer;" onclick="location.reload()">Tadaa<span style="color:#fff;">!</span></span>
+                    <span class="tadaa-title" style="font-size:24px; font-weight:700; color:#FFD400; cursor:pointer;" onclick="location.reload()">Tadaa<span style="color:#fff;">!</span></span>
                 </div>
-                <div style="display:flex; align-items:center; gap:12px;">
-                    <button onclick="toggleSearch()" style="background:none; border:none; color:#fff; font-size:20px; cursor:pointer;">🔍</button>
-                    <button onclick="toggleTheme()" id="themeToggle" style="background:none; border:none; color:#fff; font-size:22px; cursor:pointer; padding:4px 8px; border-radius:50%;">🌙</button>
-                    <button onclick="toggleCartSidebar()" style="background:none; border:none; color:#fff; font-size:20px; cursor:pointer; position:relative;">
-                        🛒
-                        <span id="cartCount" style="position:absolute; top:-8px; right:-12px; background:#FFD700; color:#000; font-size:10px; padding:2px 6px; border-radius:50%; font-weight:700; display:none;">0</span>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <button onclick="toggleSearch()" style="background:rgba(255,255,255,0.08); border:none; color:#fff; width:40px; height:40px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">${Icons.search}</button>
+                    <button onclick="toggleTheme()" id="themeToggle" style="background:rgba(255,255,255,0.08); border:none; color:#fff; width:40px; height:40px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">${Icons.moon}</button>
+                    <button onclick="toggleCartSidebar()" style="background:rgba(255,255,255,0.08); border:none; color:#fff; width:40px; height:40px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; position:relative; transition:all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+                        ${Icons.cart}
+                        <span id="cartCount" style="position:absolute; top:-2px; right:-2px; background:#FFD400; color:#000; font-size:10px; padding:2px 6px; border-radius:50%; font-weight:700; display:none; min-width:18px; text-align:center;">0</span>
                     </button>
                 </div>
             </div>
             <div id="searchBar" style="display:none; margin-top:12px;">
                 <input type="text" id="searchInput" placeholder="Search products..." 
-                       style="width:100%; padding:12px 16px; border-radius:12px; border:2px solid #FFD700; font-size:16px; background:#1a1a1a; color:#fff;">
+                       style="width:100%; padding:14px 18px; border-radius:14px; border:2px solid #FFD400; font-size:16px; background:#1a1a1a; color:#fff; outline:none; transition:all 0.3s ease;">
             </div>
         </nav>
     `;
@@ -315,19 +310,27 @@ function renderHero() {
     const heroSection = document.getElementById('hero-section');
     if (!heroSection) return;
     heroSection.innerHTML = `
-        <div style="background:linear-gradient(135deg, #000 0%, #1a1a1a 100%); padding:60px 20px; text-align:center; position:relative; overflow:hidden; border-radius:0 0 40px 40px;">
-            <div style="position:absolute; top:-100px; right:-100px; width:300px; height:300px; background:rgba(255,215,0,0.05); border-radius:50%;"></div>
-            <div style="position:absolute; bottom:-100px; left:-100px; width:300px; height:300px; background:rgba(255,215,0,0.05); border-radius:50%;"></div>
+        <div style="background:linear-gradient(135deg, #000 0%, #0d0d0d 50%, #1a1a1a 100%); padding:60px 20px 80px; text-align:center; position:relative; overflow:hidden; border-radius:0 0 40px 40px;">
+            <div style="position:absolute; top:-150px; right:-100px; width:400px; height:400px; background:radial-gradient(circle, rgba(255,212,0,0.08) 0%, transparent 70%); border-radius:50%; animation:floatSlow 6s ease-in-out infinite;"></div>
+            <div style="position:absolute; bottom:-100px; left:-100px; width:300px; height:300px; background:radial-gradient(circle, rgba(255,212,0,0.05) 0%, transparent 70%); border-radius:50%; animation:float 4s ease-in-out infinite;"></div>
+            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:500px; height:500px; background:radial-gradient(circle, rgba(255,212,0,0.02) 0%, transparent 70%); border-radius:50%;"></div>
             <div class="animate-fade-up" style="max-width:800px; margin:0 auto; position:relative; z-index:1;">
-                <h1 style="font-family:'Cormorant Garamond', serif; font-size:48px; color:#FFD700; margin:0;">
-                    Welcome to <span style="color:#FFD700;">Tadaa</span><span style="color:#fff;">!</span>
+                <div style="display:inline-block; background:rgba(255,212,0,0.10); padding:6px 16px; border-radius:50px; border:1px solid rgba(255,212,0,0.15); margin-bottom:16px;">
+                    <span style="color:#FFD400; font-size:12px; font-weight:600; letter-spacing:2px; text-transform:uppercase;">Premium Marketplace</span>
+                </div>
+                <h1 style="font-family:'Cormorant Garamond', serif; font-size:52px; font-weight:700; color:#FFD400; margin:0; line-height:1.1;">
+                    Welcome to <span style="color:#FFD400;">Tadaa</span><span style="color:#fff;">!</span>
                 </h1>
-                <p style="font-size:20px; color:#9CA3AF; margin:16px 0 32px; font-family:'Cormorant Garamond', serif;">
+                <p style="font-size:20px; color:#9CA3AF; margin:16px 0 32px; font-family:'Inter', sans-serif; font-weight:400; max-width:600px; margin-left:auto; margin-right:auto;">
                     ${settings.announcementBanner || 'Your premium online marketplace'}
                 </p>
                 <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
-                    <button onclick="scrollToProducts()" class="btn btn-primary" style="background:#FFD700; color:#000; border:none; padding:14px 32px; border-radius:50px; font-size:16px; font-weight:600; cursor:pointer;">🛍️ Shop Now</button>
-                    <button onclick="scrollToCategories()" class="btn btn-outline" style="background:transparent; color:#FFD700; border:2px solid #FFD700; padding:14px 32px; border-radius:50px; font-size:16px; font-weight:600; cursor:pointer;">Browse Categories</button>
+                    <button onclick="scrollToProducts()" class="btn btn-primary" style="background:linear-gradient(135deg, #FFD400 0%, #E6BF00 100%); color:#000; border:none; padding:14px 36px; border-radius:50px; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 4px 24px rgba(255,212,0,0.3); transition:all 0.3s ease; display:flex; align-items:center; gap:8px;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 40px rgba(255,212,0,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 24px rgba(255,212,0,0.3)'">
+                        ${Icons.shop} Shop Now ${Icons.arrowRight}
+                    </button>
+                    <button onclick="scrollToCategories()" class="btn btn-outline" style="background:transparent; color:#FFD400; border:2px solid #FFD400; padding:14px 32px; border-radius:50px; font-size:16px; font-weight:600; cursor:pointer; transition:all 0.3s ease; display:flex; align-items:center; gap:8px;" onmouseover="this.style.background='rgba(255,212,0,0.10)'; this.style.transform='translateY(-3px)'" onmouseout="this.style.background='transparent'; this.style.transform='translateY(0)'">
+                        ${Icons.category} Browse Categories
+                    </button>
                 </div>
             </div>
         </div>
@@ -342,7 +345,7 @@ function renderAnnouncement() {
     if (!announcementDiv) return;
     if (settings.announcementBanner) {
         announcementDiv.innerHTML = `
-            <div style="background:#FFD700; padding:12px 20px; text-align:center; color:#000; font-weight:600; border-radius:12px; margin:16px 20px;">
+            <div style="background:linear-gradient(135deg, #FFD400 0%, #E6BF00 100%); padding:12px 20px; text-align:center; color:#000; font-weight:600; border-radius:12px; margin:16px 20px; box-shadow:0 4px 20px rgba(255,212,0,0.2);">
                 📢 ${settings.announcementBanner}
             </div>
         `;
@@ -363,16 +366,20 @@ function renderCategories() {
     }
     let html = `
         <div style="max-width:1200px; margin:0 auto; padding:0 20px;">
-            <h2 style="font-family:'Cormorant Garamond', serif; font-size:28px; color:var(--text-primary); margin-bottom:20px;">📂 Categories</h2>
-            <div style="display:flex; gap:12px; overflow-x:auto; padding-bottom:12px; scrollbar-width:none;">
-                <button onclick="filterByCategory('all')" class="category-btn" style="padding:10px 20px; border-radius:50px; border:2px solid #FFD700; background:${currentCategory === 'all' ? '#FFD700' : 'transparent'}; color:${currentCategory === 'all' ? '#000' : 'var(--text-primary)'}; cursor:pointer; white-space:nowrap; font-weight:600; transition:all 0.3s ease; flex-shrink:0;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:8px;">
+                <h2 style="font-family:'Cormorant Garamond', serif; font-size:26px; color:var(--text-primary); margin:0; display:flex; align-items:center; gap:10px;">
+                    ${Icons.category} Categories
+                </h2>
+            </div>
+            <div style="display:flex; gap:10px; overflow-x:auto; padding-bottom:12px; scrollbar-width:none; -ms-overflow-style:none;">
+                <button onclick="filterByCategory('all')" class="category-btn ${currentCategory === 'all' ? 'active' : ''}" style="padding:10px 22px; border-radius:50px; border:2px solid ${currentCategory === 'all' ? '#FFD400' : 'var(--border-color)'}; background:${currentCategory === 'all' ? '#FFD400' : 'transparent'}; color:${currentCategory === 'all' ? '#000' : 'var(--text-secondary)'}; cursor:pointer; white-space:nowrap; font-weight:600; transition:all 0.3s ease; flex-shrink:0; font-family:'Inter', sans-serif; font-size:13px;">
                     All
                 </button>
     `;
     categories.forEach(cat => {
         const isActive = currentCategory === cat.id;
         html += `
-            <button onclick="filterByCategory('${cat.id}')" class="category-btn" style="padding:10px 20px; border-radius:50px; border:2px solid ${isActive ? '#FFD700' : 'var(--border-color)'}; background:${isActive ? '#FFD700' : 'transparent'}; color:${isActive ? '#000' : 'var(--text-primary)'}; cursor:pointer; white-space:nowrap; font-weight:${isActive ? '700' : '400'}; transition:all 0.3s ease; flex-shrink:0;">
+            <button onclick="filterByCategory('${cat.id}')" class="category-btn ${isActive ? 'active' : ''}" style="padding:10px 22px; border-radius:50px; border:2px solid ${isActive ? '#FFD400' : 'var(--border-color)'}; background:${isActive ? '#FFD400' : 'transparent'}; color:${isActive ? '#000' : 'var(--text-secondary)'}; cursor:pointer; white-space:nowrap; font-weight:${isActive ? '700' : '500'}; transition:all 0.3s ease; flex-shrink:0; font-family:'Inter', sans-serif; font-size:13px;">
                 ${cat.icon || ''} ${cat.name}
             </button>
         `;
@@ -401,10 +408,11 @@ function renderProducts() {
     
     if (filteredProducts.length === 0) {
         productsDiv.innerHTML = `
-            <div style="max-width:1200px; margin:0 auto; padding:40px 20px; text-align:center; color:var(--text-secondary);">
-                <p style="font-size:48px; margin-bottom:16px;">🛍️</p>
-                <p style="font-size:20px;">No products found</p>
-                <button onclick="filterByCategory('all'); searchTerm=''; document.getElementById('searchInput').value=''; filterProducts();" style="background:#FFD700; border:none; padding:10px 24px; border-radius:50px; margin-top:16px; cursor:pointer; font-weight:600;">Show All Products</button>
+            <div style="max-width:1200px; margin:0 auto; padding:60px 20px; text-align:center; color:var(--text-secondary);">
+                <div style="font-size:56px; margin-bottom:16px;">${Icons.emptyCart}</div>
+                <p style="font-size:20px; font-weight:600; color:var(--text-primary);">No products found</p>
+                <p style="color:var(--text-muted); margin-top:4px;">Try adjusting your search or filter</p>
+                <button onclick="filterByCategory('all'); searchTerm=''; document.getElementById('searchInput').value=''; filterProducts();" class="btn btn-primary" style="margin-top:16px; background:linear-gradient(135deg, #FFD400 0%, #E6BF00 100%); color:#000; border:none; padding:12px 28px; border-radius:50px; font-weight:600; cursor:pointer;">Show All Products</button>
             </div>
         `;
         return;
@@ -413,17 +421,16 @@ function renderProducts() {
     let html = `
         <div style="max-width:1200px; margin:0 auto; padding:0 12px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:8px;">
-                <h2 style="font-family:'Cormorant Garamond', serif; font-size:22px; color:var(--text-primary); margin:0;">🛍️ Products</h2>
-                <span style="color:var(--text-secondary); font-size:13px;">${filteredProducts.length} products</span>
+                <h2 style="font-family:'Cormorant Garamond', serif; font-size:24px; color:var(--text-primary); margin:0; display:flex; align-items:center; gap:10px;">
+                    ${Icons.shop} Products
+                </h2>
+                <span style="color:var(--text-secondary); font-size:13px; font-weight:500;">${filteredProducts.length} products</span>
             </div>
             <div class="stagger-children" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;">
     `;
     
     filteredProducts.forEach((product, index) => {
-        // Use optimized Cloudinary image
         let imageUrl = product.images && product.images.length > 0 ? product.images[0] : '';
-        // If it's a Cloudinary URL, it's already optimized by optimizeProductImages()
-        // But also apply optimization directly in case it wasn't
         if (imageUrl && imageUrl.includes('cloudinary.com')) {
             imageUrl = optimizeCloudinaryImage(imageUrl);
         }
@@ -437,15 +444,15 @@ function renderProducts() {
         const deliveryDisplay = productDeliveryFee > 0 ? `Delivery: ₦${productDeliveryFee}/item` : 'Free Delivery';
         
         html += `
-            <div class="product-card" style="background:var(--bg-card); border-radius:12px; overflow:hidden; box-shadow:var(--shadow-sm); border:1px solid var(--border-color); cursor:pointer; transition:all 0.3s cubic-bezier(0.4,0,0.2,1);" onclick="viewProduct('${product.id}')" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-lg)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-sm)'">
-                <div style="position:relative; padding-bottom:100%; background:#f3f4f6;">
-                    ${imageUrl ? `<img src="${imageUrl}" alt="${product.name}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; transition:transform 0.5s ease;" loading="lazy" decoding="async">` : '<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:32px;">📷</div>'}
-                    ${discount > 0 ? `<div style="position:absolute; top:6px; right:6px; background:#EF4444; color:#fff; padding:2px 8px; border-radius:50px; font-size:10px; font-weight:700;">${discount}% OFF</div>` : ''}
-                    ${!inStock ? `<div style="position:absolute; bottom:6px; left:6px; right:6px; background:rgba(0,0,0,0.7); color:#fff; text-align:center; padding:3px; border-radius:6px; font-size:10px;">Out of Stock</div>` : ''}
-                    ${qty > 0 ? `<div style="position:absolute; top:6px; left:6px; background:#10B981; color:#fff; padding:2px 8px; border-radius:50px; font-size:9px; font-weight:700;">${qty} in Cart</div>` : ''}
+            <div class="product-card" onclick="viewProduct('${product.id}')" style="background:var(--bg-card); border-radius:16px; overflow:hidden; box-shadow:var(--shadow-sm); border:1px solid var(--border-color); cursor:pointer; transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);">
+                <div class="image-wrapper" style="position:relative; padding-bottom:100%; background:var(--bg-input); overflow:hidden;">
+                    ${imageUrl ? `<img src="${imageUrl}" alt="${product.name}" loading="lazy" decoding="async" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; transition:transform 0.6s cubic-bezier(0.34,1.56,0.64,1);">` : `<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:32px; color:var(--text-muted);">📷</div>`}
+                    ${discount > 0 ? `<div style="position:absolute; top:8px; right:8px; background:#EF4444; color:#fff; padding:3px 10px; border-radius:50px; font-size:10px; font-weight:700;">-${discount}%</div>` : ''}
+                    ${!inStock ? `<div style="position:absolute; bottom:8px; left:8px; right:8px; background:rgba(0,0,0,0.75); backdrop-filter:blur(8px); color:#fff; text-align:center; padding:4px; border-radius:8px; font-size:11px; font-weight:600;">Out of Stock</div>` : ''}
+                    ${qty > 0 ? `<div style="position:absolute; top:8px; left:8px; background:#10B981; color:#fff; padding:2px 10px; border-radius:50px; font-size:9px; font-weight:700;">${qty} in Cart</div>` : ''}
                 </div>
                 
-                <div style="padding:10px;">
+                <div style="padding:12px;">
                     <h3 style="font-size:13px; font-weight:600; margin:0 0 2px; color:var(--text-primary); line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${product.name}</h3>
                     <p style="font-size:11px; color:var(--text-muted); margin:0 0 4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.3;">${product.description || ''}</p>
                     
@@ -454,17 +461,17 @@ function renderProducts() {
                         ${discount > 0 ? `<span style="font-size:10px; color:var(--text-muted); text-decoration:line-through;">₦${product.price.toLocaleString()}</span>` : ''}
                     </div>
                     
-                    <div style="font-size:9px; color:var(--text-secondary); margin-bottom:4px;">
-                        🚚 ${deliveryDisplay}
+                    <div style="font-size:9px; color:var(--text-secondary); margin-bottom:4px; display:flex; align-items:center; gap:4px;">
+                        ${Icons.truck} ${deliveryDisplay}
                     </div>
                     
                     ${inStock ? `
                     <div style="font-size:10px; color:var(--text-secondary); margin-top:4px; margin-bottom:2px; font-weight:600;">Qty</div>
                     <div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
-                        <button onclick="event.stopPropagation(); updateProductQuantity('${product.id}', -1)" style="background:var(--bg-input); border:1px solid var(--border-color); padding:4px 10px; border-radius:6px; cursor:pointer; font-size:14px; font-weight:700; color:var(--text-primary); transition:all 0.2s; ${qty === 0 ? 'opacity:0.4; cursor:not-allowed;' : ''}" ${qty === 0 ? 'disabled' : ''}>−</button>
+                        <button onclick="event.stopPropagation(); updateProductQuantity('${product.id}', -1)" style="background:var(--bg-input); border:1px solid var(--border-color); width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:14px; font-weight:700; color:var(--text-primary); transition:all 0.2s; display:flex; align-items:center; justify-content:center; ${qty === 0 ? 'opacity:0.4; cursor:not-allowed;' : ''}" ${qty === 0 ? 'disabled' : ''}>${Icons.minus}</button>
                         <span style="min-width:24px; text-align:center; font-size:14px; font-weight:600; color:var(--text-primary);">${qty}</span>
-                        <button onclick="event.stopPropagation(); updateProductQuantity('${product.id}', 1)" style="background:var(--bg-input); border:1px solid var(--border-color); padding:4px 10px; border-radius:6px; cursor:pointer; font-size:14px; font-weight:700; color:var(--text-primary); transition:all 0.2s;">+</button>
-                        <button onclick="event.stopPropagation(); addToCart('${product.id}')" style="flex:1; background:#FFD700; color:#000; border:none; padding:4px 8px; border-radius:6px; font-weight:600; font-size:11px; cursor:pointer; transition:background 0.2s; min-width:50px;" onmouseover="this.style.background='#E6C200'" onmouseout="this.style.background='#FFD700'">
+                        <button onclick="event.stopPropagation(); updateProductQuantity('${product.id}', 1)" style="background:var(--bg-input); border:1px solid var(--border-color); width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:14px; font-weight:700; color:var(--text-primary); transition:all 0.2s; display:flex; align-items:center; justify-content:center;">${Icons.plus}</button>
+                        <button onclick="event.stopPropagation(); addToCart('${product.id}')" style="flex:1; background:linear-gradient(135deg, #FFD400 0%, #E6BF00 100%); color:#000; border:none; padding:4px 8px; border-radius:8px; font-weight:600; font-size:11px; cursor:pointer; transition:all 0.2s; min-width:50px;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
                             ${qty > 0 ? '🔄 Update' : 'Add +'}
                         </button>
                     </div>
@@ -479,7 +486,7 @@ function renderProducts() {
 }
 
 // ============================================
-// UPDATE PRODUCT QUANTITY - FIXED (removed renderProducts)
+// UPDATE PRODUCT QUANTITY
 // ============================================
 function updateProductQuantity(productId, change) {
     const product = products.find(p => p.id === productId);
@@ -509,7 +516,6 @@ function updateProductQuantity(productId, change) {
     saveCart();
     updateCartCount();
     renderCartSidebarContent();
-    // REMOVED: renderProducts(); - Causes blinking on iOS
 }
 
 // ============================================
@@ -540,12 +546,11 @@ function toggleSearch() {
 // VIEW PRODUCT
 // ============================================
 function viewProduct(productId) {
-    // Close any existing modal first
     closeModal();
     
     const product = products.find(p => p.id === productId);
     if (!product) return;
-    // Use larger optimized image for modal
+    
     let imageUrl = product.images && product.images.length > 0 ? product.images[0] : '';
     if (imageUrl && imageUrl.includes('cloudinary.com')) {
         imageUrl = optimizeCloudinaryImageLarge(imageUrl);
@@ -558,7 +563,7 @@ function viewProduct(productId) {
     
     const modal = document.createElement('div');
     modal.id = 'productModal';
-    modal.style.cssText = `position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px;`;
+    modal.style.cssText = `position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px; animation:fadeIn 0.3s ease;`;
     modal.onclick = function(e) {
         if (e.target === modal) {
             closeModal();
@@ -566,36 +571,36 @@ function viewProduct(productId) {
     };
     
     modal.innerHTML = `
-        <div style="background:var(--bg-card); border-radius:24px; max-width:500px; width:100%; max-height:90vh; overflow-y:auto; padding:24px; position:relative; animation:fadeInScale 0.3s ease;">
-            <button onclick="closeModal()" style="position:absolute; top:12px; right:16px; background:none; border:none; font-size:24px; cursor:pointer; color:var(--text-secondary);">✕</button>
-            <div style="border-radius:16px; overflow:hidden; background:#f3f4f6; margin-bottom:16px;">
-                ${imageUrl ? `<img src="${imageUrl}" alt="${product.name}" style="width:100%; height:auto; max-height:300px; object-fit:cover;" loading="lazy" decoding="async">` : '<div style="padding:60px; text-align:center; font-size:48px;">📷</div>'}
+        <div style="background:var(--bg-card); border-radius:24px; max-width:500px; width:100%; max-height:90vh; overflow-y:auto; padding:28px; position:relative; animation:fadeInScale 0.4s cubic-bezier(0.34,1.56,0.64,1); box-shadow:var(--shadow-xl);">
+            <button onclick="closeModal()" style="position:absolute; top:16px; right:20px; background:var(--bg-input); border:none; width:36px; height:36px; border-radius:50%; cursor:pointer; color:var(--text-secondary); display:flex; align-items:center; justify-content:center; transition:all 0.3s ease;" onmouseover="this.style.background='var(--border-color)'" onmouseout="this.style.background='var(--bg-input)'">${Icons.close}</button>
+            <div style="border-radius:16px; overflow:hidden; background:var(--bg-input); margin-bottom:16px;">
+                ${imageUrl ? `<img src="${imageUrl}" alt="${product.name}" style="width:100%; height:auto; max-height:300px; object-fit:cover;">` : '<div style="padding:60px; text-align:center; font-size:48px; color:var(--text-muted);">📷</div>'}
             </div>
             <h2 style="font-family:'Cormorant Garamond', serif; font-size:24px; margin:0 0 4px; color:var(--text-primary);">${product.name}</h2>
             <p style="color:var(--text-secondary); margin:0 0 4px; font-size:14px;">${product.categoryName || 'Uncategorized'}</p>
-            <p style="color:var(--text-muted); margin:0 0 12px; font-size:14px; line-height:1.4;">${product.description || 'No description available.'}</p>
-            <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+            <p style="color:var(--text-muted); margin:0 0 12px; font-size:14px; line-height:1.5;">${product.description || 'No description available.'}</p>
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; flex-wrap:wrap;">
                 <span style="font-size:28px; font-weight:700; color:var(--text-primary);">₦${Math.round(discountedPrice).toLocaleString()}</span>
                 ${discount > 0 ? `<span style="font-size:16px; color:var(--text-muted); text-decoration:line-through;">₦${product.price.toLocaleString()}</span>` : ''}
                 ${discount > 0 ? `<span style="background:#EF4444; color:#fff; padding:2px 12px; border-radius:50px; font-size:12px; font-weight:700;">${discount}% OFF</span>` : ''}
             </div>
-            <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
-                <span style="color:var(--text-secondary); font-size:14px;">Stock: ${inStock ? `✅ ${product.stockCount || 0} available` : '❌ Out of Stock'}</span>
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; flex-wrap:wrap;">
+                <span style="color:var(--text-secondary); font-size:14px;">${inStock ? `✅ ${product.stockCount || 0} available` : '❌ Out of Stock'}</span>
             </div>
-            <div style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">
-                🚚 Delivery: ₦${productDeliveryFee}/item
+            <div style="font-size:13px; color:var(--text-secondary); margin-bottom:12px; display:flex; align-items:center; gap:4px;">
+                ${Icons.truck} Delivery: ₦${productDeliveryFee}/item
             </div>
             ${inStock ? `
             <div style="margin:16px 0;">
                 <div style="font-size:14px; font-weight:600; margin-bottom:8px; color:var(--text-primary);">Quantity</div>
                 <div style="display:flex; align-items:center; gap:12px;">
-                    <button onclick="changeModalQty('${product.id}', -1)" style="background:var(--bg-input); border:2px solid var(--border-color); padding:8px 18px; border-radius:8px; cursor:pointer; font-size:22px; font-weight:700; color:var(--text-primary); transition:all 0.2s;">−</button>
+                    <button onclick="changeModalQty('${product.id}', -1)" style="background:var(--bg-input); border:2px solid var(--border-color); width:40px; height:40px; border-radius:50%; cursor:pointer; font-size:20px; font-weight:700; color:var(--text-primary); transition:all 0.2s; display:flex; align-items:center; justify-content:center;" onmouseover="this.style.background='var(--border-color)'" onmouseout="this.style.background='var(--bg-input)'">${Icons.minus}</button>
                     <span id="modal-qty-display-${product.id}" style="min-width:40px; text-align:center; font-size:22px; font-weight:700; color:var(--text-primary);">1</span>
-                    <button onclick="changeModalQty('${product.id}', 1)" style="background:var(--bg-input); border:2px solid var(--border-color); padding:8px 18px; border-radius:8px; cursor:pointer; font-size:22px; font-weight:700; color:var(--text-primary); transition:all 0.2s;">+</button>
+                    <button onclick="changeModalQty('${product.id}', 1)" style="background:var(--bg-input); border:2px solid var(--border-color); width:40px; height:40px; border-radius:50%; cursor:pointer; font-size:20px; font-weight:700; color:var(--text-primary); transition:all 0.2s; display:flex; align-items:center; justify-content:center;" onmouseover="this.style.background='var(--border-color)'" onmouseout="this.style.background='var(--bg-input)'">${Icons.plus}</button>
                 </div>
             </div>
-            <button onclick="addModalToCart('${product.id}')" style="width:100%; background:#FFD700; color:#000; border:none; padding:14px; border-radius:12px; font-size:18px; font-weight:600; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#E6C200'" onmouseout="this.style.background='#FFD700'">🛒 Add to Cart</button>
-            ` : `<button style="width:100%; background:#9CA3AF; color:#fff; border:none; padding:14px; border-radius:12px; font-size:18px; font-weight:600; cursor:not-allowed;">Out of Stock</button>`}
+            <button onclick="addModalToCart('${product.id}')" class="btn btn-primary" style="width:100%; background:linear-gradient(135deg, #FFD400 0%, #E6BF00 100%); color:#000; border:none; padding:14px; border-radius:14px; font-size:18px; font-weight:700; cursor:pointer; transition:all 0.3s ease; box-shadow:0 4px 24px rgba(255,212,0,0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 40px rgba(255,212,0,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 24px rgba(255,212,0,0.3)'">${Icons.cart} Add to Cart</button>
+            ` : `<button style="width:100%; background:#9CA3AF; color:#fff; border:none; padding:14px; border-radius:14px; font-size:18px; font-weight:600; cursor:not-allowed;">Out of Stock</button>`}
         </div>
     `;
     
@@ -618,7 +623,7 @@ function changeModalQty(productId, change) {
 }
 
 // ============================================
-// ADD TO CART FROM MODAL - FIXED (removed renderProducts)
+// ADD TO CART FROM MODAL
 // ============================================
 function addModalToCart(productId) {
     const display = document.getElementById(`modal-qty-display-${productId}`);
@@ -642,33 +647,22 @@ function addModalToCart(productId) {
     
     saveCart();
     updateCartCount();
-    
-    // CLOSE MODAL FIRST - THIS IS THE FIX
     closeModal();
-    
-    // THEN UPDATE UI
     renderCartSidebarContent();
-    // REMOVED: renderProducts(); - Causes blinking on iOS
     showToast(product.name);
 }
 
 // ============================================
-// CLOSE MODAL - COMPLETE CLEANUP
+// CLOSE MODAL
 // ============================================
 function closeModal() {
     const modal = document.getElementById('productModal');
     if (modal) {
         modal.remove();
     }
-    
-    // Remove any leftover overlays
     document.querySelectorAll('.modal-overlay, .modal-backdrop').forEach(el => el.remove());
-    
-    // Restore body scroll
     document.body.style.overflow = '';
     document.body.style.position = '';
-    
-    // Reset any inline styles
     const app = document.getElementById('app');
     if (app) {
         app.style.filter = '';
@@ -688,20 +682,20 @@ function showToast(productName) {
     const toast = document.createElement('div');
     toast.className = 'toast-notification';
     toast.style.cssText = `
-        position:fixed; bottom:20px; right:20px; background:var(--toast-bg); color:var(--toast-text); padding:16px 20px; border-radius:16px; box-shadow:0 8px 32px var(--shadow-lg); z-index:2000; max-width:380px; width:100%; border-left:4px solid #FFD700;
+        position:fixed; bottom:20px; right:20px; background:var(--toast-bg); color:var(--toast-text); padding:16px 20px; border-radius:16px; box-shadow:0 8px 40px var(--shadow-xl); z-index:2000; max-width:380px; width:100%; border-left:4px solid #FFD400; animation:slideInRight 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
     `;
     toast.innerHTML = `
         <div style="display:flex; align-items:center; gap:12px;">
-            <span style="font-size:24px;">🛒</span>
+            <div style="background:#FFD400; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#000;">${Icons.check}</div>
             <div style="flex:1;">
-                <p style="margin:0; font-weight:600;">Added to Cart!</p>
+                <p style="margin:0; font-weight:700; color:var(--text-primary);">Added to Cart!</p>
                 <p style="margin:0; font-size:14px; color:var(--text-secondary);">${productName}</p>
             </div>
-            <button onclick="this.closest('.toast-notification').remove()" style="background:none; border:none; font-size:20px; cursor:pointer; color:var(--text-muted);">✕</button>
+            <button onclick="this.closest('.toast-notification').remove()" style="background:var(--bg-input); border:none; width:32px; height:32px; border-radius:50%; cursor:pointer; color:var(--text-muted); display:flex; align-items:center; justify-content:center; transition:all 0.3s ease;" onmouseover="this.style.background='var(--border-color)'" onmouseout="this.style.background='var(--bg-input)'">${Icons.close}</button>
         </div>
         <div style="display:flex; gap:8px; margin-top:12px;">
-            <button onclick="this.closest('.toast-notification').remove(); toggleCartSidebar();" style="flex:1; background:#FFD700; color:#000; border:none; padding:8px; border-radius:8px; font-weight:600; cursor:pointer;">🛒 View Cart</button>
-            <button onclick="this.closest('.toast-notification').remove();" style="flex:1; background:var(--bg-input); color:var(--text-primary); border:1px solid var(--border-color); padding:8px; border-radius:8px; font-weight:600; cursor:pointer;">🛍️ Continue Shopping</button>
+            <button onclick="this.closest('.toast-notification').remove(); toggleCartSidebar();" class="btn btn-primary" style="flex:1; background:linear-gradient(135deg, #FFD400 0%, #E6BF00 100%); color:#000; border:none; padding:8px; border-radius:8px; font-weight:600; cursor:pointer; font-size:13px;">View Cart</button>
+            <button onclick="this.closest('.toast-notification').remove();" style="flex:1; background:var(--bg-input); color:var(--text-primary); border:1px solid var(--border-color); padding:8px; border-radius:8px; font-weight:600; cursor:pointer; font-size:13px;">Continue</button>
         </div>
     `;
     document.body.appendChild(toast);
@@ -709,7 +703,7 @@ function showToast(productName) {
 }
 
 // ============================================
-// CART FUNCTIONS - FIXED (removed renderProducts)
+// CART FUNCTIONS
 // ============================================
 function addToCart(productId) {
     const product = products.find(p => p.id === productId);
@@ -724,7 +718,6 @@ function addToCart(productId) {
     saveCart();
     updateCartCount();
     renderCartSidebarContent();
-    // REMOVED: renderProducts(); - Causes blinking on iOS
     showToast(product.name);
 }
 
@@ -733,7 +726,6 @@ function removeFromCart(productId) {
     saveCart();
     updateCartCount();
     renderCartSidebarContent();
-    // REMOVED: renderProducts(); - Causes blinking on iOS
 }
 
 function updateQuantity(productId, change) {
@@ -748,7 +740,6 @@ function updateQuantity(productId, change) {
     saveCart();
     updateCartCount();
     renderCartSidebarContent();
-    // REMOVED: renderProducts(); - Causes blinking on iOS
 }
 
 function clearCart() {
@@ -758,7 +749,6 @@ function clearCart() {
         saveCart();
         updateCartCount();
         renderCartSidebarContent();
-        // REMOVED: renderProducts(); - Causes blinking on iOS
     }
 }
 
@@ -772,14 +762,14 @@ function updateCartCount() {
 }
 
 // ============================================
-// RENDER CART SIDEBAR CONTENT - FIXED
+// RENDER CART SIDEBAR CONTENT
 // ============================================
 function renderCartSidebarContent() {
     let sidebar = document.getElementById('cartSidebar');
     if (!sidebar) {
         sidebar = document.createElement('div');
         sidebar.id = 'cartSidebar';
-        sidebar.style.cssText = `position:fixed; top:0; right:-400px; width:380px; height:100%; height:100vh; height:100dvh; min-height:-webkit-fill-available; background:var(--bg-card); z-index:1500; transition:right 0.4s cubic-bezier(0.4,0,0.2,1); box-shadow:-4px 0 24px var(--shadow-color); display:flex; flex-direction:column;`;
+        sidebar.style.cssText = `position:fixed; top:0; right:-400px; width:380px; height:100%; height:100vh; height:100dvh; min-height:-webkit-fill-available; background:var(--bg-card); z-index:1500; transition:right 0.5s cubic-bezier(0.34,1.56,0.64,1); box-shadow:-8px 0 40px var(--shadow-lg); display:flex; flex-direction:column;`;
         document.body.appendChild(sidebar);
         
         const overlay = document.createElement('div');
@@ -794,36 +784,31 @@ function renderCartSidebarContent() {
     if (cart.length === 0) {
         sidebar.innerHTML = `
             <div style="padding:20px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
-                <h3 style="margin:0; font-family:'Cormorant Garamond', serif; color:var(--text-primary);">🛒 Your Cart</h3>
-                <button onclick="closeCartSidebar()" style="background:none; border:none; font-size:24px; cursor:pointer; color:var(--text-secondary);">✕</button>
+                <h3 style="margin:0; font-family:'Cormorant Garamond', serif; color:var(--text-primary); font-size:22px;">${Icons.cart} Your Cart</h3>
+                <button onclick="closeCartSidebar()" style="background:var(--bg-input); border:none; width:36px; height:36px; border-radius:50%; cursor:pointer; color:var(--text-secondary); display:flex; align-items:center; justify-content:center; transition:all 0.3s ease;" onmouseover="this.style.background='var(--border-color)'" onmouseout="this.style.background='var(--bg-input)'">${Icons.close}</button>
             </div>
             <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px; color:var(--text-secondary); text-align:center;">
-                <p style="font-size:48px; margin:0 0 16px;">🛒</p>
-                <p style="font-size:18px; margin:0;">Your cart is empty</p>
-                <button onclick="closeCartSidebar()" style="background:#FFD700; color:#000; border:none; padding:12px 24px; border-radius:50px; margin-top:16px; cursor:pointer; font-weight:600;">Continue Shopping</button>
+                <div style="font-size:64px; color:var(--text-muted); margin-bottom:16px;">${Icons.emptyCart}</div>
+                <p style="font-size:18px; font-weight:600; color:var(--text-primary); margin:0;">Your cart is empty</p>
+                <p style="color:var(--text-muted); margin-top:4px;">Start shopping to add items</p>
+                <button onclick="closeCartSidebar()" class="btn btn-primary" style="background:linear-gradient(135deg, #FFD400 0%, #E6BF00 100%); color:#000; border:none; padding:12px 24px; border-radius:50px; margin-top:16px; cursor:pointer; font-weight:600;">Continue Shopping</button>
             </div>
         `;
         return;
     }
     
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    
-    // ===== MINIMUM ORDER VALUE =====
-    const minOrderValue = 30000; // ₦30,000
+    const minOrderValue = 30000;
     const movMet = subtotal >= minOrderValue;
     
-    // ===== DELIVERY CALCULATION WITH CAP =====
     let totalDelivery = 0;
     cart.forEach(item => {
         const productDeliveryFee = item.deliveryFee || settings.deliveryFee || 100;
         totalDelivery += productDeliveryFee * item.quantity;
     });
     
-    // ===== DELIVERY FEE CAP (₦10,000) =====
     const deliveryCap = 10000;
     const cappedDelivery = Math.min(totalDelivery, deliveryCap);
-    const wasCapped = totalDelivery > deliveryCap;
-    
     const freeThreshold = settings.freeDeliveryThreshold || 5000;
     const freeDeliveryEnabled = settings.freeDeliveryEnabled === true;
     const isFreeDelivery = freeDeliveryEnabled && freeThreshold > 0 && subtotal >= freeThreshold;
@@ -832,7 +817,6 @@ function renderCartSidebarContent() {
     const remainingForFree = freeThreshold - subtotal;
     const remainingForMOV = minOrderValue - subtotal;
     
-    // Build delivery display text - REMOVED "(capped from X)" message
     let deliveryDisplayText = '';
     if (isFreeDelivery) {
         deliveryDisplayText = '🎉 FREE';
@@ -842,10 +826,10 @@ function renderCartSidebarContent() {
     
     let cartHtml = `
         <div style="padding:20px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
-            <h3 style="margin:0; font-family:'Cormorant Garamond', serif; color:var(--text-primary);">🛒 Your Cart</h3>
-            <div style="display:flex; align-items:center; gap:12px;">
-                <button onclick="clearCart()" style="background:none; border:none; color:#EF4444; font-size:14px; cursor:pointer; text-decoration:underline;">Clear</button>
-                <button onclick="closeCartSidebar()" style="background:none; border:none; font-size:24px; cursor:pointer; color:var(--text-secondary);">✕</button>
+            <h3 style="margin:0; font-family:'Cormorant Garamond', serif; color:var(--text-primary); font-size:22px;">${Icons.cart} Your Cart</h3>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <button onclick="clearCart()" style="background:var(--bg-input); border:none; padding:6px 12px; border-radius:8px; color:#EF4444; font-size:12px; cursor:pointer; font-weight:600; transition:all 0.3s ease;" onmouseover="this.style.background='rgba(239,68,68,0.1)'" onmouseout="this.style.background='var(--bg-input)'">Clear</button>
+                <button onclick="closeCartSidebar()" style="background:var(--bg-input); border:none; width:36px; height:36px; border-radius:50%; cursor:pointer; color:var(--text-secondary); display:flex; align-items:center; justify-content:center; transition:all 0.3s ease;" onmouseover="this.style.background='var(--border-color)'" onmouseout="this.style.background='var(--bg-input)'">${Icons.close}</button>
             </div>
         </div>
         <div style="flex:1; overflow-y:auto; padding:16px 20px;">
@@ -853,27 +837,26 @@ function renderCartSidebarContent() {
     
     cart.forEach(item => {
         const itemTotal = item.price * item.quantity;
-        // Use optimized small image for cart
         let imageUrl = item.images && item.images.length > 0 ? item.images[0] : '';
         if (imageUrl && imageUrl.includes('cloudinary.com')) {
             imageUrl = optimizeCloudinaryImageCart(imageUrl);
         }
         const itemDeliveryFee = item.deliveryFee || settings.deliveryFee || 100;
         cartHtml += `
-            <div style="display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--border-color);">
-                <div style="width:60px; height:60px; border-radius:8px; overflow:hidden; background:#f3f4f6; flex-shrink:0;">
+            <div class="order-item" style="display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--border-color); align-items:center;">
+                <div style="width:56px; height:56px; border-radius:8px; overflow:hidden; background:var(--bg-input); flex-shrink:0;">
                     ${imageUrl ? `<img src="${imageUrl}" style="width:100%; height:100%; object-fit:cover;" loading="lazy" decoding="async">` : '📷'}
                 </div>
-                <div style="flex:1; min-width:0;">
-                    <p style="margin:0; font-weight:600; font-size:14px; color:var(--text-primary);">${item.name}</p>
-                    <p style="margin:4px 0 0; font-size:14px; font-weight:700; color:var(--text-primary);">₦${item.price.toLocaleString()}</p>
-                    <p style="margin:2px 0 0; font-size:11px; color:var(--text-secondary);">Delivery: ₦${itemDeliveryFee}/item</p>
-                    <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
-                        <button onclick="updateQuantity('${item.id}', -1)" style="background:var(--bg-input); border:1px solid var(--border-color); width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:16px; color:var(--text-primary);">−</button>
+                <div class="info" style="flex:1; min-width:0;">
+                    <p class="item-name" style="margin:0; font-weight:600; font-size:14px; color:var(--text-primary);">${item.name}</p>
+                    <p style="margin:2px 0 0; font-size:14px; font-weight:700; color:var(--text-primary);">₦${item.price.toLocaleString()}</p>
+                    <p style="margin:2px 0 0; font-size:11px; color:var(--text-secondary); display:flex; align-items:center; gap:4px;">${Icons.truck} ₦${itemDeliveryFee}/item</p>
+                    <div style="display:flex; align-items:center; gap:6px; margin-top:4px;">
+                        <button onclick="updateQuantity('${item.id}', -1)" style="background:var(--bg-input); border:1px solid var(--border-color); width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:16px; color:var(--text-primary); display:flex; align-items:center; justify-content:center; transition:all 0.2s;" onmouseover="this.style.background='var(--border-color)'" onmouseout="this.style.background='var(--bg-input)'">${Icons.minus}</button>
                         <span style="font-weight:600; min-width:24px; text-align:center; color:var(--text-primary);">${item.quantity}</span>
-                        <button onclick="updateQuantity('${item.id}', 1)" style="background:var(--bg-input); border:1px solid var(--border-color); width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:16px; color:var(--text-primary);">+</button>
-                        <span style="margin-left:auto; font-weight:600; color:var(--text-primary);">₦${itemTotal.toLocaleString()}</span>
-                        <button onclick="removeFromCart('${item.id}')" style="background:none; border:none; color:#EF4444; cursor:pointer; font-size:18px; margin-left:4px;">✕</button>
+                        <button onclick="updateQuantity('${item.id}', 1)" style="background:var(--bg-input); border:1px solid var(--border-color); width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:16px; color:var(--text-primary); display:flex; align-items:center; justify-content:center; transition:all 0.2s;" onmouseover="this.style.background='var(--border-color)'" onmouseout="this.style.background='var(--bg-input)'">${Icons.plus}</button>
+                        <span style="margin-left:auto; font-weight:700; color:var(--text-primary); font-size:14px;">₦${itemTotal.toLocaleString()}</span>
+                        <button onclick="removeFromCart('${item.id}')" style="background:none; border:none; color:#EF4444; cursor:pointer; font-size:16px; padding:4px; transition:all 0.2s; display:flex; align-items:center; justify-content:center;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">${Icons.trash}</button>
                     </div>
                 </div>
             </div>
@@ -882,41 +865,38 @@ function renderCartSidebarContent() {
     
     cartHtml += `
         </div>
-        <div style="padding:16px 20px; padding-bottom:calc(16px + env(safe-area-inset-bottom, 0px)); padding-bottom:calc(16px + constant(safe-area-inset-bottom, 0px)); border-top:2px solid var(--border-color); flex-shrink:0; background:var(--bg-input); border-radius:0 0 16px 16px;">
-            <!-- Minimum Order Value Display -->
+        <div style="padding:16px 20px; padding-bottom:calc(16px + env(safe-area-inset-bottom, 0px)); border-top:2px solid var(--border-color); flex-shrink:0; background:var(--bg-input); border-radius:0 0 16px 16px;">
             <div style="padding:8px 0; margin-bottom:8px; border-bottom:1px solid var(--border-color);">
                 <div style="display:flex; justify-content:space-between; font-size:14px;">
                     <span style="color:var(--text-secondary);">Minimum Order:</span>
                     <span style="font-weight:600; color:${movMet ? '#10B981' : '#EF4444'};">₦${minOrderValue.toLocaleString()}</span>
                 </div>
-                ${!movMet ? `<div style="background:#FEF3C7; color:#92400E; padding:6px 12px; border-radius:6px; margin-top:4px; font-size:12px; text-align:center;">
-                    Add ₦${remainingForMOV.toLocaleString()} more to meet minimum order
-                </div>` : ''}
+                ${!movMet ? `<div style="background:#FEF3C7; color:#92400E; padding:6px 12px; border-radius:8px; margin-top:4px; font-size:12px; text-align:center; font-weight:500;">Add ₦${remainingForMOV.toLocaleString()} more to meet minimum order</div>` : ''}
             </div>
             
-            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
                 <span style="color:var(--text-secondary);">Subtotal</span>
                 <span style="font-weight:600; color:var(--text-primary);">₦${subtotal.toLocaleString()}</span>
             </div>
-            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
                 <span style="color:var(--text-secondary);">Delivery</span>
                 <span style="font-weight:600; color:var(--text-primary);">${deliveryDisplayText}</span>
             </div>
             ${isFreeDelivery ? `<div style="background:#D1FAE5; color:#065F46; padding:8px 12px; border-radius:8px; margin-bottom:8px; text-align:center; font-size:14px; font-weight:600;">🎉 You qualify for FREE delivery!</div>` : ''}
-            ${!isFreeDelivery && freeDeliveryEnabled && remainingForFree > 0 ? `<div style="background:#FEF3C7; color:#92400E; padding:8px 12px; border-radius:8px; margin-bottom:8px; text-align:center; font-size:13px;">Add ₦${remainingForFree.toLocaleString()} more for FREE delivery</div>` : ''}
-            <div style="display:flex; justify-content:space-between; font-size:18px; font-weight:700; border-top:2px solid var(--border-color); padding-top:12px; margin-top:8px;">
+            ${!isFreeDelivery && freeDeliveryEnabled && remainingForFree > 0 ? `<div style="background:#FEF3C7; color:#92400E; padding:8px 12px; border-radius:8px; margin-bottom:8px; text-align:center; font-size:13px; font-weight:500;">Add ₦${remainingForFree.toLocaleString()} more for FREE delivery</div>` : ''}
+            
+            <div style="display:flex; justify-content:space-between; font-size:20px; font-weight:700; border-top:2px solid var(--border-color); padding-top:12px; margin-top:6px;">
                 <span style="color:var(--text-secondary);">Total</span>
-                <span style="color:#FFD700; font-size:22px;">₦${total.toLocaleString()}</span>
+                <span style="color:#FFD400; font-size:24px;">₦${total.toLocaleString()}</span>
             </div>
             
-            <!-- FIXED: Checkout button - entire button now works -->
             <button 
                 onclick="event.stopPropagation(); closeCartSidebar(); checkout();" 
-                style="width:100%; background:#FFD700; color:#000; border:none; padding:14px; border-radius:12px; font-size:18px; font-weight:700; cursor:pointer; margin-top:12px; transition:background 0.2s; ${!movMet ? 'opacity:0.5; cursor:not-allowed;' : ''}" 
-                onmouseover="if(!this.disabled){this.style.background='#E6C200'}" 
-                onmouseout="if(!this.disabled){this.style.background='#FFD700'}" 
+                style="width:100%; background:linear-gradient(135deg, #FFD400 0%, #E6BF00 100%); color:#000; border:none; padding:14px; border-radius:14px; font-size:18px; font-weight:700; cursor:pointer; margin-top:12px; transition:all 0.3s ease; box-shadow:0 4px 24px rgba(255,212,0,0.3); ${!movMet ? 'opacity:0.5; cursor:not-allowed;' : ''}" 
+                onmouseover="if(!this.disabled){this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 40px rgba(255,212,0,0.4)'}" 
+                onmouseout="if(!this.disabled){this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 24px rgba(255,212,0,0.3)'}" 
                 ${!movMet ? 'disabled' : ''}>
-                ${!movMet ? `🛒 Add ₦${remainingForMOV.toLocaleString()} more` : '🛒 Proceed to Checkout →'}
+                ${!movMet ? `🛒 Add ₦${remainingForMOV.toLocaleString()} more` : 'Proceed to Checkout →'}
             </button>
         </div>
     `;
@@ -924,7 +904,7 @@ function renderCartSidebarContent() {
 }
 
 // ============================================
-// TOGGLE CART SIDEBAR - FIXED with cart-open class
+// TOGGLE CART SIDEBAR
 // ============================================
 function toggleCartSidebar() {
     const sidebar = document.getElementById('cartSidebar');
@@ -937,14 +917,10 @@ function toggleCartSidebar() {
         renderCartSidebarContent();
         sidebar.style.right = '0px';
         if (overlay) overlay.style.display = 'block';
-        // Add class to body when cart opens
         document.body.classList.add('cart-open');
     }
 }
 
-// ============================================
-// CLOSE CART SIDEBAR - FIXED with cart-open class
-// ============================================
 function closeCartSidebar() {
     const sidebar = document.getElementById('cartSidebar');
     const overlay = document.getElementById('cartOverlay');
@@ -954,19 +930,17 @@ function closeCartSidebar() {
     if (overlay) {
         overlay.style.display = 'none';
     }
-    // Remove class when cart closes
     document.body.classList.remove('cart-open');
 }
 
 // ============================================
-// CHECKOUT - PROCEED TO CHECKOUT PAGE
+// CHECKOUT
 // ============================================
 function checkout() {
     if (cart.length === 0) {
         alert('🛒 Your cart is empty!');
         return;
     }
-    
     closeCartSidebar();
     window.location.href = './checkout.html';
 }
@@ -977,29 +951,29 @@ function checkout() {
 function renderFooter() {
     if (!mainFooter) return;
     mainFooter.innerHTML = `
-        <footer style="background:#000; color:#9CA3AF; padding:40px 20px; margin-top:40px; border-radius:40px 40px 0 0;">
-            <div style="max-width:1200px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:32px;">
+        <footer style="background:#000; color:#9CA3AF; padding:48px 20px 32px; margin-top:40px; border-radius:40px 40px 0 0; border-top:1px solid rgba(255,255,255,0.05);">
+            <div style="max-width:1200px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:32px;">
                 <div>
-                    <h3 style="color:#FFD700; font-family:'Cormorant Garamond', serif; font-size:20px; margin:0 0 12px;">Tadaa!</h3>
-                    <p style="margin:0;">Your premium online marketplace</p>
+                    <h3 style="color:#FFD400; font-family:'Cormorant Garamond', serif; font-size:22px; margin:0 0 12px;">Tadaa!</h3>
+                    <p style="margin:0; font-size:14px; opacity:0.7;">Your premium online marketplace</p>
                 </div>
                 <div>
-                    <h4 style="color:#fff; margin:0 0 8px;">Contact</h4>
-                    <p style="margin:4px 0;">📞 ${settings.storePhone || '+2348012345678'}</p>
-                    <p style="margin:4px 0;">✉️ ${settings.storeEmail || 'support@tadaa.com'}</p>
-                    ${settings.storeWhatsApp ? `<p style="margin:4px 0;">💬 ${settings.storeWhatsApp}</p>` : ''}
+                    <h4 style="color:#fff; margin:0 0 8px; font-size:14px; font-weight:600;">Contact</h4>
+                    <p style="margin:4px 0; font-size:13px; opacity:0.7;">📞 ${settings.storePhone || '+2348012345678'}</p>
+                    <p style="margin:4px 0; font-size:13px; opacity:0.7;">✉️ ${settings.storeEmail || 'support@tadaa.com'}</p>
+                    ${settings.storeWhatsApp ? `<p style="margin:4px 0; font-size:13px; opacity:0.7;">💬 ${settings.storeWhatsApp}</p>` : ''}
                 </div>
                 <div>
-                    <h4 style="color:#fff; margin:0 0 8px;">Address</h4>
-                    <p style="margin:4px 0;">${settings.storeAddress || 'Lagos, Nigeria'}</p>
+                    <h4 style="color:#fff; margin:0 0 8px; font-size:14px; font-weight:600;">Address</h4>
+                    <p style="margin:4px 0; font-size:13px; opacity:0.7;">${settings.storeAddress || 'Lagos, Nigeria'}</p>
                 </div>
                 <div>
-                    <h4 style="color:#fff; margin:0 0 8px;">Hours</h4>
-                    <p style="margin:4px 0;">${settings.businessHours || 'Mon-Fri: 9am - 6pm'}</p>
+                    <h4 style="color:#fff; margin:0 0 8px; font-size:14px; font-weight:600;">Hours</h4>
+                    <p style="margin:4px 0; font-size:13px; opacity:0.7;">${settings.businessHours || 'Mon-Fri: 9am - 6pm'}</p>
                 </div>
             </div>
-            <div style="text-align:center; border-top:1px solid #1a1a1a; padding-top:20px; margin-top:20px;">
-                <p style="margin:0; font-size:14px;">© 2026 Tadaa! Marketplace. All rights reserved.</p>
+            <div style="text-align:center; border-top:1px solid rgba(255,255,255,0.06); padding-top:20px; margin-top:24px;">
+                <p style="margin:0; font-size:12px; opacity:0.5;">© 2026 Tadaa! Marketplace. All rights reserved.</p>
             </div>
         </footer>
     `;
@@ -1038,7 +1012,6 @@ function getBrowserInfo() {
     const isChrome = /chrome/i.test(ua) && !ua.includes('Samsung');
     const isIOS = /iphone|ipad|ipod/i.test(ua);
     const isAndroid = /android/i.test(ua);
-    
     return { isSamsung, isSafari, isChrome, isIOS, isAndroid };
 }
 
@@ -1046,18 +1019,12 @@ function showInstallInstructions() {
     const browser = getBrowserInfo();
     const banner = document.getElementById('installBanner');
     if (!banner) return;
-    
-    // Hide if app is already installed
     if (window.matchMedia('(display-mode: standalone)').matches) {
         banner.classList.remove('show');
         return;
     }
-    
-    // Show different messages based on browser
     if (browser.isSamsung || browser.isSafari || browser.isIOS) {
         const installBtn = document.getElementById('installBtn');
-        const cancelBtn = document.getElementById('cancelInstallBtn');
-        
         if (installBtn) {
             installBtn.textContent = '📱 Install App';
             installBtn.onclick = function() {
@@ -1065,19 +1032,19 @@ function showInstallInstructions() {
                 instructions.id = 'installInstructions';
                 instructions.style.cssText = `
                     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-                    background: rgba(0,0,0,0.8); z-index: 10000;
-                    display: flex; align-items: center; justify-content: center;
-                    padding: 20px;
+                    background: rgba(0,0,0,0.85); backdrop-filter: blur(20px);
+                    z-index: 10000; display: flex; align-items: center;
+                    justify-content: center; padding: 20px;
                 `;
                 instructions.innerHTML = `
-                    <div style="background: #fff; border-radius: 24px; max-width: 400px; width: 100%; padding: 32px; text-align: center; position: relative;">
-                        <button onclick="this.closest('#installInstructions').remove()" style="position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">✕</button>
-                        <div style="font-size: 48px; margin-bottom: 16px;">📱</div>
-                        <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 24px; color: #000; margin: 0 0 8px;">Install Tadaa!</h2>
-                        <p style="color: #666; margin-bottom: 20px; line-height: 1.5;">Get the full app experience on your device</p>
-                        <div style="text-align: left; background: #f5f5f5; padding: 16px; border-radius: 12px; margin-bottom: 20px;">
-                            <p style="font-weight: 600; margin: 0 0 8px; color: #000;">${browser.isSafari || browser.isIOS ? '📲 On iPhone/iPad:' : '📲 On Samsung Internet:'}</p>
-                            <ol style="margin: 0; padding-left: 20px; color: #333; line-height: 2;">
+                    <div style="background: #fff; border-radius: 28px; max-width: 400px; width: 100%; padding: 36px 32px; text-align: center; position: relative; box-shadow: 0 24px 80px rgba(0,0,0,0.3);">
+                        <button onclick="this.closest('#installInstructions').remove()" style="position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 24px; cursor: pointer; color: #999;">✕</button>
+                        <div style="font-size: 52px; margin-bottom: 12px;">📱</div>
+                        <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 26px; color: #000; margin: 0 0 6px;">Install Tadaa!</h2>
+                        <p style="color: #666; margin-bottom: 24px; line-height: 1.6; font-family: 'Inter', sans-serif; font-size: 15px;">Get the full app experience on your device</p>
+                        <div style="text-align: left; background: #f5f5f5; padding: 20px; border-radius: 16px; margin-bottom: 24px;">
+                            <p style="font-weight: 600; margin: 0 0 10px; color: #000; font-family: 'Inter', sans-serif; font-size: 14px;">${browser.isSafari || browser.isIOS ? '📲 On iPhone/iPad:' : '📲 On Samsung Internet:'}</p>
+                            <ol style="margin: 0; padding-left: 20px; color: #444; line-height: 2.2; font-family: 'Inter', sans-serif; font-size: 14px;">
                                 ${browser.isSafari || browser.isIOS ? `
                                     <li>Tap the <strong>Share</strong> icon <span style="font-size:18px;">⬆️</span></li>
                                     <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
@@ -1089,17 +1056,15 @@ function showInstallInstructions() {
                                 `}
                             </ol>
                         </div>
-                        <button onclick="this.closest('#installInstructions').remove()" style="background: #FFD700; color: #000; border: none; padding: 12px 32px; border-radius: 12px; font-weight: 600; font-size: 16px; cursor: pointer;">Got it!</button>
+                        <button onclick="this.closest('#installInstructions').remove()" style="background: linear-gradient(135deg, #FFD400 0%, #E6BF00 100%); color: #000; border: none; padding: 14px 40px; border-radius: 14px; font-weight: 600; font-size: 16px; cursor: pointer; font-family: 'Inter', sans-serif; box-shadow: 0 4px 20px rgba(255, 212, 0, 0.3);">Got it!</button>
                     </div>
                 `;
                 document.body.appendChild(instructions);
             };
         }
-        
         banner.classList.add('show');
         return true;
     }
-    
     return false;
 }
 
@@ -1110,30 +1075,16 @@ function findOrdersByPhone() {
     const input = document.getElementById('trackPhoneInput');
     const error = document.getElementById('trackError');
     const phone = input?.value?.trim();
-    
     if (!phone) {
-        if (error) {
-            error.textContent = 'Please enter your phone number';
-            error.style.display = 'block';
-        }
+        if (error) { error.textContent = 'Please enter your phone number'; error.style.display = 'block'; }
         return;
     }
-    
-    // Basic validation - Nigerian phone number format
     const phoneClean = phone.replace(/\s/g, '');
     if (!phoneClean.match(/^0[789][01]\d{8}$|^\+234[789][01]\d{8}$/)) {
-        if (error) {
-            error.textContent = 'Please enter a valid phone number (e.g., 08012345678)';
-            error.style.display = 'block';
-        }
+        if (error) { error.textContent = 'Please enter a valid phone number (e.g., 08012345678)'; error.style.display = 'block'; }
         return;
     }
-    
-    if (error) {
-        error.style.display = 'none';
-    }
-    
-    // Redirect to tracking page with phone number
+    if (error) { error.style.display = 'none'; }
     window.location.href = `./tracking.html?phone=${encodeURIComponent(phone)}`;
 }
 
@@ -1141,29 +1092,15 @@ function trackByOrderId() {
     const input = document.getElementById('trackOrderInput');
     const error = document.getElementById('trackError');
     const orderId = input?.value?.trim();
-    
     if (!orderId) {
-        if (error) {
-            error.textContent = 'Please enter your Order ID';
-            error.style.display = 'block';
-        }
+        if (error) { error.textContent = 'Please enter your Order ID'; error.style.display = 'block'; }
         return;
     }
-    
-    // Basic validation - should start with TAD-
     if (!orderId.startsWith('TAD-')) {
-        if (error) {
-            error.textContent = 'Please enter a valid Order ID (e.g., TAD-20260716-123456)';
-            error.style.display = 'block';
-        }
+        if (error) { error.textContent = 'Please enter a valid Order ID (e.g., TAD-20260716-123456)'; error.style.display = 'block'; }
         return;
     }
-    
-    if (error) {
-        error.style.display = 'none';
-    }
-    
-    // Redirect to tracking page with order ID
+    if (error) { error.style.display = 'none'; }
     window.location.href = `./tracking.html?order=${orderId}`;
 }
 
@@ -1175,4 +1112,4 @@ document.addEventListener('DOMContentLoaded', () => {
     loadData();
 });
 
-console.log('✅ Tadaa! Website with modal fix ready!');
+console.log('✅ Tadaa! Website with premium UI ready!');
