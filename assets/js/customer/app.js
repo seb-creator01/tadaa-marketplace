@@ -447,7 +447,7 @@ function renderProducts() {
                     ${imageUrl ? `<img src="${imageUrl}" alt="${product.name}" loading="lazy" decoding="async" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; transition:transform 0.6s cubic-bezier(0.34,1.56,0.64,1);">` : `<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:32px; color:var(--text-muted);">📷</div>`}
                     ${discount > 0 ? `<div style="position:absolute; top:8px; right:8px; background:#EF4444; color:#fff; padding:3px 10px; border-radius:50px; font-size:10px; font-weight:700;">-${discount}%</div>` : ''}
                     ${!inStock ? `<div style="position:absolute; bottom:8px; left:8px; right:8px; background:rgba(0,0,0,0.75); backdrop-filter:blur(8px); color:#fff; text-align:center; padding:4px; border-radius:8px; font-size:11px; font-weight:600;">Out of Stock</div>` : ''}
-                    ${qty > 0 ? `<div class="in-cart-badge" style="position:absolute; top:8px; left:8px; background:#10B981; color:#fff; padding:2px 10px; border-radius:50px; font-size:9px; font-weight:700;">${qty} in Cart</div>` : `<div class="in-cart-badge" style="display:none; position:absolute; top:8px; left:8px; background:#10B981; color:#fff; padding:2px 10px; border-radius:50px; font-size:9px; font-weight:700;">${qty} in Cart</div>`}
+                    <div class="in-cart-badge" style="position:absolute; top:8px; left:8px; background:#10B981; color:#fff; padding:2px 10px; border-radius:50px; font-size:9px; font-weight:700; ${qty > 0 ? 'display:block;' : 'display:none;'}">${qty} in Cart</div>
                 </div>
                 
                 <div style="padding:12px;">
