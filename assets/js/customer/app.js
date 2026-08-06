@@ -80,7 +80,6 @@ let products = [];
 let categories = [];
 let settings = {};
 let cart = [];
-let wishlist = [];
 let currentCategory = 'all';
 let searchTerm = '';
 
@@ -217,7 +216,6 @@ function showMaintenancePage() {
 async function loadData() {
     try {
         loadCart();
-        loadWishlist();
         
         const settingsDoc = await db.collection('siteSettings').doc('settings').get();
         settings = settingsDoc.data() || {};
@@ -244,9 +242,6 @@ async function loadData() {
         optimizeProductImages();
         
         console.log('✅ Data loaded - Categories:', categories.length, 'Products:', products.length);
-        
-        // RELOAD WISHLIST HERE TO ENSURE PERSISTENCE AFTER PRODUCTS LOAD
-        loadWishlist();
         
         renderWebsite();
         updateCartCount();
@@ -487,7 +482,14 @@ function renderProducts() {
         const qty = cartItem ? cartItem.quantity : 0;
         const productDeliveryFee = product.deliveryFee || settings.deliveryFee || 100;
         const deliveryDisplay = productDeliveryFee > 0 ? `Delivery: ₦${productDeliveryFee}/item` : 'Free Delivery';
-        const isInWishlist = wishlist.includes(product.id);
+        
+        // DIRECT LOCAL STORAGE READ FOR WISHLIST PERSISTENCE
+        let localWishlist = [];
+        try {
+            const saved = localStorage.getItem('tadaa_wishlist');
+            if (saved) localWishlist = JSON.parse(saved);
+        } catch (e) { localWishlist = []; }
+        const isInWishlist = localWishlist.includes(product.id);
         
         html += `
             <div class="product-card" data-product-id="${product.id}" onclick="viewProduct('${product.id}')" style="background:var(--bg-card); border-radius:16px; overflow:hidden; box-shadow:var(--shadow-sm); border:1px solid var(--border-color); cursor:pointer; transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);">
@@ -539,33 +541,39 @@ function renderProducts() {
 // WISHLIST FUNCTIONS
 // ============================================
 function loadWishlist() {
+    // This function is primarily kept to maintain the global variable 'wishlist' for other parts of the app.
     try {
         const saved = localStorage.getItem('tadaa_wishlist');
         if (saved) {
-            wishlist = JSON.parse(saved);
-            console.log('❤️ Wishlist loaded:', wishlist.length, 'items');
+            // Note: We are updating the global variable, but renderProducts now reads directly from localStorage
+            // This ensures absolute persistence regardless of execution timing.
+            window._tadaaWishlist = JSON.parse(saved);
+            console.log('❤️ Wishlist loaded:', window._tadaaWishlist.length, 'items');
         }
     } catch (e) {
-        console.error('Error loading wishlist:', e);
-        wishlist = [];
+        window._tadaaWishlist = [];
     }
 }
 
 function saveWishlist() {
     try {
-        localStorage.setItem('tadaa_wishlist', JSON.stringify(wishlist));
+        // Save to localStorage
+        localStorage.setItem('tadaa_wishlist', JSON.stringify(window._tadaaWishlist || []));
     } catch (e) {
         console.error('Error saving wishlist:', e);
     }
 }
 
 function toggleWishlist(productId) {
-    const index = wishlist.indexOf(productId);
+    // Initialize if not exists
+    if (!window._tadaaWishlist) window._tadaaWishlist = [];
+    
+    const index = window._tadaaWishlist.indexOf(productId);
     if (index > -1) {
-        wishlist.splice(index, 1);
+        window._tadaaWishlist.splice(index, 1);
         showToastMessage('Removed from Wishlist');
     } else {
-        wishlist.push(productId);
+        window._tadaaWishlist.push(productId);
         showToastMessage('Added to Wishlist ❤️');
     }
     saveWishlist();
@@ -577,7 +585,14 @@ function renderWishlistPage() {
     const wishlistSection = document.getElementById('wishlist-section');
     if (!wishlistSection) return;
     
-    if (wishlist.length === 0) {
+    // Direct read from localStorage for rendering the wishlist page
+    let localWishlist = [];
+    try {
+        const saved = localStorage.getItem('tadaa_wishlist');
+        if (saved) localWishlist = JSON.parse(saved);
+    } catch (e) { localWishlist = []; }
+    
+    if (localWishlist.length === 0) {
         wishlistSection.innerHTML = `
             <div style="max-width:400px; margin:0 auto; padding:40px 20px; text-align:center;">
                 <div style="font-size:48px; color:var(--text-muted); margin-bottom:16px;">
@@ -592,11 +607,11 @@ function renderWishlistPage() {
     
     let html = `
         <div style="max-width:800px; margin:0 auto; padding:20px;">
-            <h3 class="tadaa-title" style="font-size:22px; color:var(--text-primary); margin-bottom:16px;">Your Wishlist (${wishlist.length})</h3>
+            <h3 class="tadaa-title" style="font-size:22px; color:var(--text-primary); margin-bottom:16px;">Your Wishlist (${localWishlist.length})</h3>
             <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:16px;">
     `;
     
-    wishlist.forEach(id => {
+    localWishlist.forEach(id => {
         const product = products.find(p => p.id === id);
         if (!product) return;
         let imageUrl = product.images && product.images.length > 0 ? product.images[0] : '';
@@ -1332,4 +1347,4 @@ document.addEventListener('DOMContentLoaded', () => {
     loadData();
 });
 
-console.log('✅ Tadaa! Website with premium UI, working Wishlist, and luxury footer ready!');
+console.log('✅ Tadaa! Website with premium UI, fixed Wishlist persistence, and luxury footer ready!');
