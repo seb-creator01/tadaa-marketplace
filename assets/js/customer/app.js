@@ -82,6 +82,7 @@ let settings = {};
 let cart = [];
 let currentCategory = 'all';
 let searchTerm = '';
+let wishlist = [];
 
 // ============================================
 // OPTIMIZE CLOUDINARY IMAGES
@@ -160,7 +161,7 @@ function loadTheme() {
 }
 
 // ============================================
-// LOAD CART
+// LOAD CART & WISHLIST
 // ============================================
 function loadCart() {
     try {
@@ -180,6 +181,29 @@ function saveCart() {
         localStorage.setItem('tadaa_cart', JSON.stringify(cart));
     } catch (e) {
         console.error('Error saving cart:', e);
+    }
+}
+
+function loadWishlist() {
+    try {
+        const saved = localStorage.getItem('tadaa_wishlist');
+        if (saved) {
+            wishlist = JSON.parse(saved);
+            console.log('❤️ Wishlist loaded:', wishlist.length, 'items');
+        } else {
+            wishlist = [];
+        }
+    } catch (e) {
+        console.error('Error loading wishlist:', e);
+        wishlist = [];
+    }
+}
+
+function saveWishlist() {
+    try {
+        localStorage.setItem('tadaa_wishlist', JSON.stringify(wishlist));
+    } catch (e) {
+        console.error('Error saving wishlist:', e);
     }
 }
 
@@ -216,6 +240,7 @@ function showMaintenancePage() {
 async function loadData() {
     try {
         loadCart();
+        loadWishlist();
         
         const settingsDoc = await db.collection('siteSettings').doc('settings').get();
         settings = settingsDoc.data() || {};
@@ -242,6 +267,10 @@ async function loadData() {
         optimizeProductImages();
         
         console.log('✅ Data loaded - Categories:', categories.length, 'Products:', products.length);
+        
+        // ===== LOAD WISHLIST AGAIN AFTER PRODUCTS ARE 100% READY =====
+        // This guarantees that when the wishlist page renders, it has the full product list to find the items.
+        loadWishlist();
         
         renderWebsite();
         updateCartCount();
@@ -273,6 +302,8 @@ function renderWebsite() {
     renderProducts();
     renderFooter();
     renderCartSidebarContent();
+    // Ensure the wishlist page renders correctly after everything else
+    renderWishlistPage();
 }
 
 // ============================================
@@ -482,14 +513,7 @@ function renderProducts() {
         const qty = cartItem ? cartItem.quantity : 0;
         const productDeliveryFee = product.deliveryFee || settings.deliveryFee || 100;
         const deliveryDisplay = productDeliveryFee > 0 ? `Delivery: ₦${productDeliveryFee}/item` : 'Free Delivery';
-        
-        // DIRECT LOCAL STORAGE READ FOR WISHLIST PERSISTENCE
-        let localWishlist = [];
-        try {
-            const saved = localStorage.getItem('tadaa_wishlist');
-            if (saved) localWishlist = JSON.parse(saved);
-        } catch (e) { localWishlist = []; }
-        const isInWishlist = localWishlist.includes(product.id);
+        const isInWishlist = wishlist.includes(product.id);
         
         html += `
             <div class="product-card" data-product-id="${product.id}" onclick="viewProduct('${product.id}')" style="background:var(--bg-card); border-radius:16px; overflow:hidden; box-shadow:var(--shadow-sm); border:1px solid var(--border-color); cursor:pointer; transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);">
@@ -540,59 +564,25 @@ function renderProducts() {
 // ============================================
 // WISHLIST FUNCTIONS
 // ============================================
-function loadWishlist() {
-    // This function is primarily kept to maintain the global variable 'wishlist' for other parts of the app.
-    try {
-        const saved = localStorage.getItem('tadaa_wishlist');
-        if (saved) {
-            // Note: We are updating the global variable, but renderProducts now reads directly from localStorage
-            // This ensures absolute persistence regardless of execution timing.
-            window._tadaaWishlist = JSON.parse(saved);
-            console.log('❤️ Wishlist loaded:', window._tadaaWishlist.length, 'items');
-        }
-    } catch (e) {
-        window._tadaaWishlist = [];
-    }
-}
-
-function saveWishlist() {
-    try {
-        // Save to localStorage
-        localStorage.setItem('tadaa_wishlist', JSON.stringify(window._tadaaWishlist || []));
-    } catch (e) {
-        console.error('Error saving wishlist:', e);
-    }
-}
-
 function toggleWishlist(productId) {
-    // Initialize if not exists
-    if (!window._tadaaWishlist) window._tadaaWishlist = [];
-    
-    const index = window._tadaaWishlist.indexOf(productId);
+    const index = wishlist.indexOf(productId);
     if (index > -1) {
-        window._tadaaWishlist.splice(index, 1);
+        wishlist.splice(index, 1);
         showToastMessage('Removed from Wishlist');
     } else {
-        window._tadaaWishlist.push(productId);
+        wishlist.push(productId);
         showToastMessage('Added to Wishlist ❤️');
     }
     saveWishlist();
-    renderProducts(); // Re-render to update the heart icon instantly
-    renderWishlistPage(); // Update the wishlist tab view
+    renderProducts();
+    renderWishlistPage();
 }
 
 function renderWishlistPage() {
     const wishlistSection = document.getElementById('wishlist-section');
     if (!wishlistSection) return;
     
-    // Direct read from localStorage for rendering the wishlist page
-    let localWishlist = [];
-    try {
-        const saved = localStorage.getItem('tadaa_wishlist');
-        if (saved) localWishlist = JSON.parse(saved);
-    } catch (e) { localWishlist = []; }
-    
-    if (localWishlist.length === 0) {
+    if (wishlist.length === 0) {
         wishlistSection.innerHTML = `
             <div style="max-width:400px; margin:0 auto; padding:40px 20px; text-align:center;">
                 <div style="font-size:48px; color:var(--text-muted); margin-bottom:16px;">
@@ -607,11 +597,11 @@ function renderWishlistPage() {
     
     let html = `
         <div style="max-width:800px; margin:0 auto; padding:20px;">
-            <h3 class="tadaa-title" style="font-size:22px; color:var(--text-primary); margin-bottom:16px;">Your Wishlist (${localWishlist.length})</h3>
+            <h3 class="tadaa-title" style="font-size:22px; color:var(--text-primary); margin-bottom:16px;">Your Wishlist (${wishlist.length})</h3>
             <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:16px;">
     `;
     
-    localWishlist.forEach(id => {
+    wishlist.forEach(id => {
         const product = products.find(p => p.id === id);
         if (!product) return;
         let imageUrl = product.images && product.images.length > 0 ? product.images[0] : '';
@@ -1342,35 +1332,9 @@ function trackByOrderId() {
 // ============================================
 // INITIALIZE
 // ============================================
-function finalInitialize() {
+document.addEventListener('DOMContentLoaded', () => {
     loadTheme();
     loadData();
-}
-
-// Use multiple event listeners to guarantee it runs and syncs perfectly
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', finalInitialize);
-} else {
-    // If DOM is already loaded, run immediately
-    finalInitialize();
-}
-
-// CRITICAL FIX: Force a re-render of wishlist hearts 1 second after everything loads 
-// to ensure the hearts show up even if there is a race condition.
-window.addEventListener('load', function() {
-    setTimeout(() => {
-        // Re-read local storage directly and force update
-        try {
-            const saved = localStorage.getItem('tadaa_wishlist');
-            if (saved) {
-                window._tadaaWishlist = JSON.parse(saved);
-                console.log('🔄 Wishlist forcefully synced after load:', window._tadaaWishlist.length, 'items');
-                // Re-render the products to show the hearts
-                renderProducts();
-                renderWishlistPage();
-            }
-        } catch (e) { /* ignore */ }
-    }, 1000); // 1 second delay
 });
 
 console.log('✅ Tadaa! Website with premium UI, bulletproof Wishlist sync, and luxury footer ready!');
