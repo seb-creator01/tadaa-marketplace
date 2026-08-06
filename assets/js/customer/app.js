@@ -53,7 +53,14 @@ const Icons = {
     emptyCart: `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>`,
     arrowRight: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`,
     moon: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
-    sun: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`
+    sun: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`,
+    box: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`,
+    quality: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`,
+    fast: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 18 8.5 8 1 8"/><polyline points="17 18 17 11 9.5 11"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>`,
+    priceTag: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`,
+    shield: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+    phone: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`,
+    mail: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>`
 };
 
 // ============================================
@@ -183,7 +190,7 @@ function showMaintenancePage() {
         <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, #000 0%, #1a1a1a 100%); padding:20px;">
             <div class="card card-glass" style="max-width:500px; width:100%; padding:48px 40px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
                 <div style="font-size:64px; margin-bottom:16px;">🔧</div>
-                <h1 style="font-family:'Cormorant Garamond', serif; font-size:32px; color:var(--text-primary); margin:0 0 8px;">Store Under Maintenance</h1>
+                <h1 class="tadaa-title" style="font-size:32px; color:var(--text-primary); margin:0 0 8px;">Store Under Maintenance</h1>
                 <p style="color:var(--text-secondary); font-size:18px; margin:0 0 8px;">We're currently updating our store.</p>
                 <p style="color:var(--text-muted); font-size:14px; margin:0 0 24px;">Please check back soon!</p>
                 <div style="background:var(--bg-input); border-radius:12px; padding:16px; text-align:left;">
@@ -308,15 +315,16 @@ function renderHero() {
     const heroSection = document.getElementById('hero-section');
     if (!heroSection) return;
     heroSection.innerHTML = `
-        <div style="background:linear-gradient(135deg, #000 0%, #0d0d0d 50%, #1a1a1a 100%); padding:60px 20px 80px; text-align:center; position:relative; overflow:hidden; border-radius:0 0 40px 40px;">
+        <div style="background:linear-gradient(135deg, #000 0%, #0d0d0d 50%, #1a1a1a 100%); padding:60px 20px 40px; text-align:center; position:relative; overflow:hidden; border-radius:0 0 40px 40px;">
             <div style="position:absolute; top:-150px; right:-100px; width:400px; height:400px; background:radial-gradient(circle, rgba(255,212,0,0.08) 0%, transparent 70%); border-radius:50%; animation:floatSlow 6s ease-in-out infinite;"></div>
             <div style="position:absolute; bottom:-100px; left:-100px; width:300px; height:300px; background:radial-gradient(circle, rgba(255,212,0,0.05) 0%, transparent 70%); border-radius:50%; animation:float 4s ease-in-out infinite;"></div>
             <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:500px; height:500px; background:radial-gradient(circle, rgba(255,212,0,0.02) 0%, transparent 70%); border-radius:50%;"></div>
+            
             <div class="animate-fade-up" style="max-width:800px; margin:0 auto; position:relative; z-index:1;">
                 <div style="display:inline-block; background:rgba(255,212,0,0.10); padding:6px 16px; border-radius:50px; border:1px solid rgba(255,212,0,0.15); margin-bottom:16px;">
                     <span style="color:#FFD400; font-size:12px; font-weight:600; letter-spacing:2px; text-transform:uppercase;">Premium Marketplace</span>
                 </div>
-                <h1 style="font-family:'Cormorant Garamond', serif; font-size:52px; font-weight:700; color:#FFD400; margin:0; line-height:1.1;">
+                <h1 class="tadaa-title" style="font-size:52px; font-weight:700; color:#FFD400; margin:0; line-height:1.1;">
                     Welcome to <span style="color:#FFD400;">Tadaa</span><span style="color:#fff;">!</span>
                 </h1>
                 <p style="font-size:20px; color:#9CA3AF; margin:16px 0 32px; font-family:'Inter', sans-serif; font-weight:400; max-width:600px; margin-left:auto; margin-right:auto;">
@@ -329,6 +337,28 @@ function renderHero() {
                     <button onclick="scrollToCategories()" class="btn btn-outline" style="background:transparent; color:#FFD400; border:2px solid #FFD400; padding:14px 32px; border-radius:50px; font-size:16px; font-weight:600; cursor:pointer; transition:all 0.3s ease; display:flex; align-items:center; gap:8px;" onmouseover="this.style.background='rgba(255,212,0,0.10)'; this.style.transform='translateY(-3px)'" onmouseout="this.style.background='transparent'; this.style.transform='translateY(0)'">
                         ${Icons.category} Browse Categories
                     </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- PREMIUM TRUST BADGES (Added for Luxury Look) -->
+        <div style="max-width:1200px; margin:-20px auto 0; padding:0 20px; position:relative; z-index:2;">
+            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; background:var(--bg-card); border-radius:20px; padding:20px; box-shadow:var(--shadow-lg); border:1px solid var(--border-color);">
+                <div class="flex flex-col items-center text-center" style="gap:4px;">
+                    <div style="background:rgba(255,212,0,0.1); width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#FFD400;">${Icons.quality}</div>
+                    <span style="font-weight:600; font-size:13px; color:var(--text-primary);">Quality Products</span>
+                </div>
+                <div class="flex flex-col items-center text-center" style="gap:4px;">
+                    <div style="background:rgba(255,212,0,0.1); width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#FFD400;">${Icons.fast}</div>
+                    <span style="font-weight:600; font-size:13px; color:var(--text-primary);">Fast & Safe Delivery</span>
+                </div>
+                <div class="flex flex-col items-center text-center" style="gap:4px;">
+                    <div style="background:rgba(255,212,0,0.1); width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#FFD400;">${Icons.priceTag}</div>
+                    <span style="font-weight:600; font-size:13px; color:var(--text-primary);">Best Price Guaranteed</span>
+                </div>
+                <div class="flex flex-col items-center text-center" style="gap:4px;">
+                    <div style="background:rgba(255,212,0,0.1); width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#FFD400;">${Icons.shield}</div>
+                    <span style="font-weight:600; font-size:13px; color:var(--text-primary);">Secure Checkout</span>
                 </div>
             </div>
         </div>
@@ -365,7 +395,7 @@ function renderCategories() {
     let html = `
         <div style="max-width:1200px; margin:0 auto; padding:0 20px;">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:8px;">
-                <h2 style="font-family:'Cormorant Garamond', serif; font-size:26px; color:var(--text-primary); margin:0; display:flex; align-items:center; gap:10px;">
+                <h2 class="section-title" style="font-size:26px; color:var(--text-primary); margin:0; display:flex; align-items:center; gap:10px;">
                     ${Icons.category} Categories
                 </h2>
             </div>
@@ -419,12 +449,12 @@ function renderProducts() {
     let html = `
         <div style="max-width:1200px; margin:0 auto; padding:0 12px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:8px;">
-                <h2 style="font-family:'Cormorant Garamond', serif; font-size:24px; color:var(--text-primary); margin:0; display:flex; align-items:center; gap:10px;">
+                <h2 class="section-title" style="font-size:24px; color:var(--text-primary); margin:0; display:flex; align-items:center; gap:10px;">
                     ${Icons.shop} Products
                 </h2>
                 <span style="color:var(--text-secondary); font-size:13px; font-weight:500;">${filteredProducts.length} products</span>
             </div>
-            <div class="stagger-children" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;">
+            <div class="stagger-children" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:16px;">
     `;
     
     filteredProducts.forEach((product, index) => {
@@ -444,33 +474,32 @@ function renderProducts() {
         html += `
             <div class="product-card" data-product-id="${product.id}" onclick="viewProduct('${product.id}')" style="background:var(--bg-card); border-radius:16px; overflow:hidden; box-shadow:var(--shadow-sm); border:1px solid var(--border-color); cursor:pointer; transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);">
                 <div class="image-wrapper" style="position:relative; padding-bottom:100%; background:var(--bg-input); overflow:hidden;">
-                    ${imageUrl ? `<img src="${imageUrl}" alt="${product.name}" loading="lazy" decoding="async" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; transition:transform 0.6s cubic-bezier(0.34,1.56,0.64,1);">` : `<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:32px; color:var(--text-muted);">📷</div>`}
-                    ${discount > 0 ? `<div style="position:absolute; top:8px; right:8px; background:#EF4444; color:#fff; padding:3px 10px; border-radius:50px; font-size:10px; font-weight:700;">-${discount}%</div>` : ''}
+                    ${imageUrl ? `<img src="${imageUrl}" alt="${product.name}" loading="lazy" decoding="async" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; transition:transform 0.6s cubic-bezier(0.34,1.56,0.64,1);">` : `<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:32px; color:var(--text-muted);">${Icons.box}</div>`}
+                    ${discount > 0 ? `<div style="position:absolute; top:12px; right:12px; background:#EF4444; color:#fff; padding:3px 10px; border-radius:50px; font-size:10px; font-weight:700;">-${discount}%</div>` : ''}
                     ${!inStock ? `<div style="position:absolute; bottom:8px; left:8px; right:8px; background:rgba(0,0,0,0.75); backdrop-filter:blur(8px); color:#fff; text-align:center; padding:4px; border-radius:8px; font-size:11px; font-weight:600;">Out of Stock</div>` : ''}
-                    <div class="in-cart-badge" style="position:absolute; top:8px; left:8px; background:#10B981; color:#fff; padding:2px 10px; border-radius:50px; font-size:9px; font-weight:700; ${qty > 0 ? 'display:block;' : 'display:none;'}">${qty} in Cart</div>
+                    <div class="in-cart-badge" style="position:absolute; top:12px; left:12px; background:#10B981; color:#fff; padding:2px 10px; border-radius:50px; font-size:9px; font-weight:700; ${qty > 0 ? 'display:block;' : 'display:none;'}">${qty} in Cart</div>
                 </div>
                 
-                <div style="padding:12px;">
-                    <h3 style="font-size:13px; font-weight:600; margin:0 0 2px; color:var(--text-primary); line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${product.name}</h3>
-                    <p style="font-size:11px; color:var(--text-muted); margin:0 0 4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.3;">${product.description || ''}</p>
+                <div style="padding:16px;">
+                    <h3 style="font-size:15px; font-weight:600; margin:0 0 4px; color:var(--text-primary); line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${product.name}</h3>
+                    <p style="font-size:12px; color:var(--text-muted); margin:0 0 6px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.4;">${product.description || ''}</p>
                     
-                    <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
-                        <span style="font-size:16px; font-weight:700; color:var(--text-primary);">₦${Math.round(discountedPrice).toLocaleString()}</span>
-                        ${discount > 0 ? `<span style="font-size:10px; color:var(--text-muted); text-decoration:line-through;">₦${product.price.toLocaleString()}</span>` : ''}
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                        <span style="font-size:18px; font-weight:700; color:var(--text-primary);">₦${Math.round(discountedPrice).toLocaleString()}</span>
+                        ${discount > 0 ? `<span style="font-size:12px; color:var(--text-muted); text-decoration:line-through;">₦${product.price.toLocaleString()}</span>` : ''}
                     </div>
                     
-                    <div style="font-size:9px; color:var(--text-secondary); margin-bottom:4px; display:flex; align-items:center; gap:4px;">
+                    <div style="font-size:11px; color:var(--text-secondary); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
                         ${Icons.truck} ${deliveryDisplay}
                     </div>
                     
                     ${inStock ? `
-                    <div style="font-size:10px; color:var(--text-secondary); margin-top:4px; margin-bottom:2px; font-weight:600;">Qty</div>
-                    <div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
-                        <button class="qty-minus" onclick="event.stopPropagation(); updateProductQuantity('${product.id}', -1)" style="background:var(--bg-input); border:1px solid var(--border-color); width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:14px; font-weight:700; color:var(--text-primary); transition:all 0.2s; display:flex; align-items:center; justify-content:center; ${qty === 0 ? 'opacity:0.4; cursor:not-allowed;' : ''}" ${qty === 0 ? 'disabled' : ''}>${Icons.minus}</button>
-                        <span class="qty-display" style="min-width:24px; text-align:center; font-size:14px; font-weight:600; color:var(--text-primary);">${qty}</span>
-                        <button class="qty-plus" onclick="event.stopPropagation(); updateProductQuantity('${product.id}', 1)" style="background:var(--bg-input); border:1px solid var(--border-color); width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:14px; font-weight:700; color:var(--text-primary); transition:all 0.2s; display:flex; align-items:center; justify-content:center;">${Icons.plus}</button>
-                        <button class="qty-add-btn" onclick="event.stopPropagation(); addToCart('${product.id}')" style="flex:1; background:linear-gradient(135deg, #FFD400 0%, #E6BF00 100%); color:#000; border:none; padding:4px 8px; border-radius:8px; font-weight:600; font-size:11px; cursor:pointer; transition:all 0.2s; min-width:50px;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
-                            ${qty > 0 ? '🔄 Update' : 'Add +'}
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <button class="qty-minus" onclick="event.stopPropagation(); updateProductQuantity('${product.id}', -1)" style="background:var(--bg-input); border:1px solid var(--border-color); width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:14px; font-weight:700; color:var(--text-primary); transition:all 0.2s; display:flex; align-items:center; justify-content:center; ${qty === 0 ? 'opacity:0.4; cursor:not-allowed;' : ''}" ${qty === 0 ? 'disabled' : ''}>${Icons.minus}</button>
+                        <span class="qty-display" style="min-width:28px; text-align:center; font-size:15px; font-weight:600; color:var(--text-primary);">${qty}</span>
+                        <button class="qty-plus" onclick="event.stopPropagation(); updateProductQuantity('${product.id}', 1)" style="background:var(--bg-input); border:1px solid var(--border-color); width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:14px; font-weight:700; color:var(--text-primary); transition:all 0.2s; display:flex; align-items:center; justify-content:center;">${Icons.plus}</button>
+                        <button class="qty-add-btn" onclick="event.stopPropagation(); addToCart('${product.id}')" style="flex:1; background:linear-gradient(135deg, #FFD400 0%, #E6BF00 100%); color:#000; border:none; padding:6px 12px; border-radius:8px; font-weight:600; font-size:12px; cursor:pointer; transition:all 0.2s; min-width:60px;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                            ${qty > 0 ? 'Update' : 'Add +'}
                         </button>
                     </div>
                     ` : ''}
@@ -514,7 +543,7 @@ function updateProductQuantityDisplays() {
         
         const addBtn = card.querySelector('.qty-add-btn');
         if (addBtn) {
-            addBtn.textContent = qty > 0 ? '🔄 Update' : 'Add +';
+            addBtn.textContent = qty > 0 ? 'Update' : 'Add +';
         }
         
         const inCartBadge = card.querySelector('.in-cart-badge');
@@ -619,9 +648,9 @@ function viewProduct(productId) {
         <div style="background:var(--bg-card); border-radius:24px; max-width:500px; width:100%; max-height:90vh; overflow-y:auto; padding:28px; position:relative; animation:fadeInScale 0.4s cubic-bezier(0.34,1.56,0.64,1); box-shadow:var(--shadow-xl);">
             <button onclick="closeModal()" style="position:absolute; top:16px; right:20px; background:var(--bg-input); border:none; width:36px; height:36px; border-radius:50%; cursor:pointer; color:var(--text-secondary); display:flex; align-items:center; justify-content:center; transition:all 0.3s ease;" onmouseover="this.style.background='var(--border-color)'" onmouseout="this.style.background='var(--bg-input)'">${Icons.close}</button>
             <div style="border-radius:16px; overflow:hidden; background:var(--bg-input); margin-bottom:16px;">
-                ${imageUrl ? `<img src="${imageUrl}" alt="${product.name}" style="width:100%; height:auto; max-height:300px; object-fit:cover;">` : '<div style="padding:60px; text-align:center; font-size:48px; color:var(--text-muted);">📷</div>'}
+                ${imageUrl ? `<img src="${imageUrl}" alt="${product.name}" style="width:100%; height:auto; max-height:300px; object-fit:cover;">` : `<div style="padding:60px; text-align:center; font-size:48px; color:var(--text-muted);">${Icons.box}</div>`}
             </div>
-            <h2 style="font-family:'Cormorant Garamond', serif; font-size:24px; margin:0 0 4px; color:var(--text-primary);">${product.name}</h2>
+            <h2 class="tadaa-title" style="font-size:24px; margin:0 0 4px; color:var(--text-primary);">${product.name}</h2>
             <p style="color:var(--text-secondary); margin:0 0 4px; font-size:14px;">${product.categoryName || 'Uncategorized'}</p>
             <p style="color:var(--text-muted); margin:0 0 12px; font-size:14px; line-height:1.5;">${product.description || 'No description available.'}</p>
             <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; flex-wrap:wrap;">
@@ -630,9 +659,9 @@ function viewProduct(productId) {
                 ${discount > 0 ? `<span style="background:#EF4444; color:#fff; padding:2px 12px; border-radius:50px; font-size:12px; font-weight:700;">${discount}% OFF</span>` : ''}
             </div>
             <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; flex-wrap:wrap;">
-                <span style="color:var(--text-secondary); font-size:14px;">${inStock ? `✅ ${product.stockCount || 0} available` : '❌ Out of Stock'}</span>
+                <span style="color:var(--text-secondary); font-size:14px;">${inStock ? `${Icons.check} ${product.stockCount || 0} available` : 'Out of Stock'}</span>
             </div>
-            <div style="font-size:13px; color:var(--text-secondary); margin-bottom:12px; display:flex; align-items:center; gap:4px;">
+            <div style="font-size:13px; color:var(--text-secondary); margin-bottom:12px; display:flex; align-items:center; gap:6px;">
                 ${Icons.truck} Delivery: ₦${productDeliveryFee}/item
             </div>
             ${inStock ? `
@@ -834,7 +863,7 @@ function renderCartSidebarContent() {
     if (cart.length === 0) {
         sidebar.innerHTML = `
             <div style="padding:20px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
-                <h3 style="margin:0; font-family:'Cormorant Garamond', serif; color:var(--text-primary); font-size:22px;">${Icons.cart} Your Cart</h3>
+                <h3 class="tadaa-title" style="margin:0; color:var(--text-primary); font-size:22px;">${Icons.cart} Your Cart</h3>
                 <button onclick="closeCartSidebar()" style="background:var(--bg-input); border:none; width:36px; height:36px; border-radius:50%; cursor:pointer; color:var(--text-secondary); display:flex; align-items:center; justify-content:center; transition:all 0.3s ease;" onmouseover="this.style.background='var(--border-color)'" onmouseout="this.style.background='var(--bg-input)'">${Icons.close}</button>
             </div>
             <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px; color:var(--text-secondary); text-align:center;">
@@ -876,7 +905,7 @@ function renderCartSidebarContent() {
     
     let cartHtml = `
         <div style="padding:20px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
-            <h3 style="margin:0; font-family:'Cormorant Garamond', serif; color:var(--text-primary); font-size:22px;">${Icons.cart} Your Cart</h3>
+            <h3 class="tadaa-title" style="margin:0; color:var(--text-primary); font-size:22px;">${Icons.cart} Your Cart</h3>
             <div style="display:flex; align-items:center; gap:8px;">
                 <button onclick="clearCart()" style="background:var(--bg-input); border:none; padding:6px 12px; border-radius:8px; color:#EF4444; font-size:12px; cursor:pointer; font-weight:600; transition:all 0.3s ease;" onmouseover="this.style.background='rgba(239,68,68,0.1)'" onmouseout="this.style.background='var(--bg-input)'">Clear</button>
                 <button onclick="closeCartSidebar()" style="background:var(--bg-input); border:none; width:36px; height:36px; border-radius:50%; cursor:pointer; color:var(--text-secondary); display:flex; align-items:center; justify-content:center; transition:all 0.3s ease;" onmouseover="this.style.background='var(--border-color)'" onmouseout="this.style.background='var(--bg-input)'">${Icons.close}</button>
@@ -895,7 +924,7 @@ function renderCartSidebarContent() {
         cartHtml += `
             <div class="order-item" style="display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--border-color); align-items:center;">
                 <div style="width:56px; height:56px; border-radius:8px; overflow:hidden; background:var(--bg-input); flex-shrink:0;">
-                    ${imageUrl ? `<img src="${imageUrl}" style="width:100%; height:100%; object-fit:cover;" loading="lazy" decoding="async">` : '📷'}
+                    ${imageUrl ? `<img src="${imageUrl}" style="width:100%; height:100%; object-fit:cover;" loading="lazy" decoding="async">` : Icons.box}
                 </div>
                 <div class="info" style="flex:1; min-width:0;">
                     <p class="item-name" style="margin:0; font-weight:600; font-size:14px; color:var(--text-primary);">${item.name}</p>
@@ -1004,13 +1033,13 @@ function renderFooter() {
         <footer style="background:#000; color:#9CA3AF; padding:48px 20px 32px; margin-top:40px; border-radius:40px 40px 0 0; border-top:1px solid rgba(255,255,255,0.05);">
             <div style="max-width:1200px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:32px;">
                 <div>
-                    <h3 style="color:#FFD400; font-family:'Cormorant Garamond', serif; font-size:22px; margin:0 0 12px;">Tadaa!</h3>
+                    <h3 class="tadaa-title" style="color:#FFD400; font-size:22px; margin:0 0 12px;">Tadaa!</h3>
                     <p style="margin:0; font-size:14px; opacity:0.7;">Your premium online marketplace</p>
                 </div>
                 <div>
                     <h4 style="color:#fff; margin:0 0 8px; font-size:14px; font-weight:600;">Contact</h4>
-                    <p style="margin:4px 0; font-size:13px; opacity:0.7;">📞 ${settings.storePhone || '+2348012345678'}</p>
-                    <p style="margin:4px 0; font-size:13px; opacity:0.7;">✉️ ${settings.storeEmail || 'support@tadaa.com'}</p>
+                    <p style="margin:4px 0; font-size:13px; opacity:0.7; display:flex; align-items:center; gap:6px;">${Icons.phone} ${settings.storePhone || '+2348012345678'}</p>
+                    <p style="margin:4px 0; font-size:13px; opacity:0.7; display:flex; align-items:center; gap:6px;">${Icons.mail} ${settings.storeEmail || 'support@tadaa.com'}</p>
                     ${settings.storeWhatsApp ? `<p style="margin:4px 0; font-size:13px; opacity:0.7;">💬 ${settings.storeWhatsApp}</p>` : ''}
                 </div>
                 <div>
@@ -1076,7 +1105,7 @@ function showInstallInstructions() {
     if (browser.isSamsung || browser.isSafari || browser.isIOS) {
         const installBtn = document.getElementById('installBtn');
         if (installBtn) {
-            installBtn.textContent = '📱 Install App';
+            installBtn.textContent = 'Install App';
             installBtn.onclick = function() {
                 const instructions = document.createElement('div');
                 instructions.id = 'installInstructions';
@@ -1090,7 +1119,7 @@ function showInstallInstructions() {
                     <div style="background: #fff; border-radius: 28px; max-width: 400px; width: 100%; padding: 36px 32px; text-align: center; position: relative; box-shadow: 0 24px 80px rgba(0,0,0,0.3);">
                         <button onclick="this.closest('#installInstructions').remove()" style="position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 24px; cursor: pointer; color: #999;">✕</button>
                         <div style="font-size: 52px; margin-bottom: 12px;">📱</div>
-                        <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 26px; color: #000; margin: 0 0 6px;">Install Tadaa!</h2>
+                        <h2 class="tadaa-title" style="font-size: 26px; color: #000; margin: 0 0 6px;">Install Tadaa!</h2>
                         <p style="color: #666; margin-bottom: 24px; line-height: 1.6; font-family: 'Inter', sans-serif; font-size: 15px;">Get the full app experience on your device</p>
                         <div style="text-align: left; background: #f5f5f5; padding: 20px; border-radius: 16px; margin-bottom: 24px;">
                             <p style="font-weight: 600; margin: 0 0 10px; color: #000; font-family: 'Inter', sans-serif; font-size: 14px;">${browser.isSafari || browser.isIOS ? '📲 On iPhone/iPad:' : '📲 On Samsung Internet:'}</p>
