@@ -245,6 +245,9 @@ async function loadData() {
         
         console.log('✅ Data loaded - Categories:', categories.length, 'Products:', products.length);
         
+        // RELOAD WISHLIST HERE TO ENSURE PERSISTENCE AFTER PRODUCTS LOAD
+        loadWishlist();
+        
         renderWebsite();
         updateCartCount();
         showContent();
