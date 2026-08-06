@@ -60,7 +60,10 @@ const Icons = {
     priceTag: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`,
     shield: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
     phone: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`,
-    mail: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>`
+    mail: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>`,
+    heart: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
+    heartFilled: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#EF4444" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
+    shoppingBag: `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 24 24" fill="none" stroke="#FFD400" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.3"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>`
 };
 
 // ============================================
@@ -77,6 +80,7 @@ let products = [];
 let categories = [];
 let settings = {};
 let cart = [];
+let wishlist = [];
 let currentCategory = 'all';
 let searchTerm = '';
 
@@ -213,6 +217,7 @@ function showMaintenancePage() {
 async function loadData() {
     try {
         loadCart();
+        loadWishlist();
         
         const settingsDoc = await db.collection('siteSettings').doc('settings').get();
         settings = settingsDoc.data() || {};
@@ -309,28 +314,37 @@ function renderHeader() {
 }
 
 // ============================================
-// RENDER HERO
+// RENDER HERO (Upgraded with Tagline & Illustration)
 // ============================================
 function renderHero() {
     const heroSection = document.getElementById('hero-section');
     if (!heroSection) return;
     heroSection.innerHTML = `
         <div style="background:linear-gradient(135deg, #000 0%, #0d0d0d 50%, #1a1a1a 100%); padding:60px 20px 40px; text-align:center; position:relative; overflow:hidden; border-radius:0 0 40px 40px;">
+            <!-- Background Effects -->
             <div style="position:absolute; top:-150px; right:-100px; width:400px; height:400px; background:radial-gradient(circle, rgba(255,212,0,0.08) 0%, transparent 70%); border-radius:50%; animation:floatSlow 6s ease-in-out infinite;"></div>
             <div style="position:absolute; bottom:-100px; left:-100px; width:300px; height:300px; background:radial-gradient(circle, rgba(255,212,0,0.05) 0%, transparent 70%); border-radius:50%; animation:float 4s ease-in-out infinite;"></div>
             <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:500px; height:500px; background:radial-gradient(circle, rgba(255,212,0,0.02) 0%, transparent 70%); border-radius:50%;"></div>
+            
+            <!-- Floating Shopping Illustration -->
+            <div style="position:absolute; right:5%; bottom:10%; transform:rotate(-10deg); animation:float 5s ease-in-out infinite; opacity:0.7; pointer-events:none; z-index:0;">
+                ${Icons.shoppingBag}
+            </div>
             
             <div class="animate-fade-up" style="max-width:800px; margin:0 auto; position:relative; z-index:1;">
                 <div style="display:inline-block; background:rgba(255,212,0,0.10); padding:6px 16px; border-radius:50px; border:1px solid rgba(255,212,0,0.15); margin-bottom:16px;">
                     <span style="color:#FFD400; font-size:12px; font-weight:600; letter-spacing:2px; text-transform:uppercase;">Premium Marketplace</span>
                 </div>
-                <h1 class="tadaa-title" style="font-size:52px; font-weight:700; color:#FFD400; margin:0; line-height:1.1;">
+                <h1 class="tadaa-title" style="font-size:52px; font-weight:700; color:#FFD400; margin:0; line-height:1.1; animation:fadeInUp 0.8s ease forwards;">
                     Welcome to <span style="color:#FFD400;">Tadaa</span><span style="color:#fff;">!</span>
                 </h1>
-                <p style="font-size:20px; color:#9CA3AF; margin:16px 0 32px; font-family:'Inter', sans-serif; font-weight:400; max-width:600px; margin-left:auto; margin-right:auto;">
-                    ${settings.announcementBanner || 'Your premium online marketplace'}
+                
+                <!-- New Premium Tagline -->
+                <p style="font-size:18px; color:rgba(255,255,255,0.7); margin:12px 0 24px; font-family:'Inter', sans-serif; font-weight:400; animation:fadeInUp 0.8s ease 0.3s forwards; opacity:0;">
+                    Everything you need, delivered to your doorstep.
                 </p>
-                <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+                
+                <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; animation:fadeInUp 0.8s ease 0.6s forwards; opacity:0;">
                     <button onclick="scrollToProducts()" class="btn btn-primary" style="background:linear-gradient(135deg, #FFD400 0%, #E6BF00 100%); color:#000; border:none; padding:14px 36px; border-radius:50px; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 4px 24px rgba(255,212,0,0.3); transition:all 0.3s ease; display:flex; align-items:center; gap:8px;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 40px rgba(255,212,0,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 24px rgba(255,212,0,0.3)'">
                         ${Icons.shop} Shop Now ${Icons.arrowRight}
                     </button>
@@ -341,9 +355,9 @@ function renderHero() {
             </div>
         </div>
         
-        <!-- PREMIUM TRUST BADGES (Added for Luxury Look) -->
+        <!-- PREMIUM TRUST BADGES -->
         <div style="max-width:1200px; margin:-20px auto 0; padding:0 20px; position:relative; z-index:2;">
-            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; background:var(--bg-card); border-radius:20px; padding:20px; box-shadow:var(--shadow-lg); border:1px solid var(--border-color);">
+            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; background:var(--bg-card); border-radius:20px; padding:20px; box-shadow:var(--shadow-lg); border:1px solid var(--border-color); animation:fadeInUp 0.8s ease 0.8s forwards; opacity:0;">
                 <div class="flex flex-col items-center text-center" style="gap:4px;">
                     <div style="background:rgba(255,212,0,0.1); width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#FFD400;">${Icons.quality}</div>
                     <span style="font-weight:600; font-size:13px; color:var(--text-primary);">Quality Products</span>
@@ -417,7 +431,7 @@ function renderCategories() {
 }
 
 // ============================================
-// RENDER PRODUCTS
+// RENDER PRODUCTS (Fixed Images & Wishlist Support)
 // ============================================
 function renderProducts() {
     const productsDiv = document.getElementById('products-section');
@@ -470,6 +484,7 @@ function renderProducts() {
         const qty = cartItem ? cartItem.quantity : 0;
         const productDeliveryFee = product.deliveryFee || settings.deliveryFee || 100;
         const deliveryDisplay = productDeliveryFee > 0 ? `Delivery: ₦${productDeliveryFee}/item` : 'Free Delivery';
+        const isInWishlist = wishlist.includes(product.id);
         
         html += `
             <div class="product-card" data-product-id="${product.id}" onclick="viewProduct('${product.id}')" style="background:var(--bg-card); border-radius:16px; overflow:hidden; box-shadow:var(--shadow-sm); border:1px solid var(--border-color); cursor:pointer; transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);">
@@ -478,6 +493,11 @@ function renderProducts() {
                     ${discount > 0 ? `<div style="position:absolute; top:12px; right:12px; background:#EF4444; color:#fff; padding:3px 10px; border-radius:50px; font-size:10px; font-weight:700;">-${discount}%</div>` : ''}
                     ${!inStock ? `<div style="position:absolute; bottom:8px; left:8px; right:8px; background:rgba(0,0,0,0.75); backdrop-filter:blur(8px); color:#fff; text-align:center; padding:4px; border-radius:8px; font-size:11px; font-weight:600;">Out of Stock</div>` : ''}
                     <div class="in-cart-badge" style="position:absolute; top:12px; left:12px; background:#10B981; color:#fff; padding:2px 10px; border-radius:50px; font-size:9px; font-weight:700; ${qty > 0 ? 'display:block;' : 'display:none;'}">${qty} in Cart</div>
+                    
+                    <!-- Wishlist Heart Button -->
+                    <button onclick="event.stopPropagation(); toggleWishlist('${product.id}')" style="position:absolute; bottom:12px; right:12px; background:rgba(255,255,255,0.9); border:none; width:36px; height:36px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 12px rgba(0,0,0,0.1); transition:all 0.2s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                        ${isInWishlist ? Icons.heartFilled : Icons.heart}
+                    </button>
                 </div>
                 
                 <div style="padding:16px;">
@@ -510,6 +530,93 @@ function renderProducts() {
     
     html += `</div></div>`;
     productsDiv.innerHTML = html;
+}
+
+// ============================================
+// WISHLIST FUNCTIONS
+// ============================================
+function loadWishlist() {
+    try {
+        const saved = localStorage.getItem('tadaa_wishlist');
+        if (saved) {
+            wishlist = JSON.parse(saved);
+            console.log('❤️ Wishlist loaded:', wishlist.length, 'items');
+        }
+    } catch (e) {
+        console.error('Error loading wishlist:', e);
+        wishlist = [];
+    }
+}
+
+function saveWishlist() {
+    try {
+        localStorage.setItem('tadaa_wishlist', JSON.stringify(wishlist));
+    } catch (e) {
+        console.error('Error saving wishlist:', e);
+    }
+}
+
+function toggleWishlist(productId) {
+    const index = wishlist.indexOf(productId);
+    if (index > -1) {
+        wishlist.splice(index, 1);
+        showToastMessage('Removed from Wishlist');
+    } else {
+        wishlist.push(productId);
+        showToastMessage('Added to Wishlist ❤️');
+    }
+    saveWishlist();
+    renderProducts(); // Re-render to update the heart icon instantly
+    renderWishlistPage(); // Update the wishlist tab view
+}
+
+function renderWishlistPage() {
+    const wishlistSection = document.getElementById('wishlist-section');
+    if (!wishlistSection) return;
+    
+    if (wishlist.length === 0) {
+        wishlistSection.innerHTML = `
+            <div style="max-width:400px; margin:0 auto; padding:40px 20px; text-align:center;">
+                <div style="font-size:48px; color:var(--text-muted); margin-bottom:16px;">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                </div>
+                <h3 class="tadaa-title" style="font-size:22px; color:var(--text-primary); margin-bottom:8px;">Your Wishlist</h3>
+                <p style="color:var(--text-muted);">Save your favorite items here for later.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = `
+        <div style="max-width:800px; margin:0 auto; padding:20px;">
+            <h3 class="tadaa-title" style="font-size:22px; color:var(--text-primary); margin-bottom:16px;">Your Wishlist (${wishlist.length})</h3>
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:16px;">
+    `;
+    
+    wishlist.forEach(id => {
+        const product = products.find(p => p.id === id);
+        if (!product) return;
+        let imageUrl = product.images && product.images.length > 0 ? product.images[0] : '';
+        if (imageUrl && imageUrl.includes('cloudinary.com')) {
+            imageUrl = optimizeCloudinaryImage(imageUrl);
+        }
+        
+        html += `
+            <div class="product-card" onclick="viewProduct('${product.id}')" style="background:var(--bg-card); border-radius:16px; overflow:hidden; box-shadow:var(--shadow-sm); border:1px solid var(--border-color); cursor:pointer;">
+                <div class="image-wrapper" style="position:relative; padding-bottom:100%; background:var(--bg-input);">
+                    ${imageUrl ? `<img src="${imageUrl}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover;">` : `<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:32px; color:var(--text-muted);">${Icons.box}</div>`}
+                    <button onclick="event.stopPropagation(); toggleWishlist('${product.id}')" style="position:absolute; top:12px; right:12px; background:#fff; border:none; width:32px; height:32px; border-radius:50%; cursor:pointer; box-shadow:0 2px 12px rgba(0,0,0,0.1); display:flex; align-items:center; justify-content:center;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">${Icons.heartFilled}</button>
+                </div>
+                <div style="padding:12px;">
+                    <h3 style="font-size:14px; font-weight:600; margin:0; color:var(--text-primary); line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${product.name}</h3>
+                    <p style="font-size:16px; font-weight:700; color:var(--text-primary); margin-top:4px;">₦${product.price.toLocaleString()}</p>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += `</div></div>`;
+    wishlistSection.innerHTML = html;
 }
 
 // ============================================
@@ -777,6 +884,25 @@ function showToast(productName) {
     setTimeout(() => { if (toast.parentNode) toast.remove(); }, 5000);
 }
 
+// Helper for Wishlist Toast
+function showToastMessage(message) {
+    const existingToast = document.querySelector('.toast-notification');
+    if (existingToast) existingToast.remove();
+    
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.style.cssText = `
+        position:fixed; bottom:20px; right:20px; background:var(--toast-bg); color:var(--toast-text); padding:12px 20px; border-radius:16px; box-shadow:0 8px 40px var(--shadow-xl); z-index:2000; max-width:280px; width:100%; border-left:4px solid #FFD400; animation:slideInRight 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
+    `;
+    toast.innerHTML = `
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:14px; font-weight:500; color:var(--text-primary);">${message}</span>
+        </div>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => { if (toast.parentNode) toast.remove(); }, 2500);
+}
+
 // ============================================
 // CART FUNCTIONS
 // ============================================
@@ -1025,7 +1151,7 @@ function checkout() {
 }
 
 // ============================================
-// RENDER FOOTER (PREMIUM UPGRADE)
+// RENDER FOOTER (PREMIUM UPGRADE WITH EMAIL & ADDRESS)
 // ============================================
 function renderFooter() {
     if (!mainFooter) return;
@@ -1046,7 +1172,7 @@ function renderFooter() {
                     <a href="#" onclick="switchTab('wishlist')" style="color:rgba(255,255,255,0.5); font-size:13px; transition:color 0.2s; text-decoration:none;" onmouseover="this.style.color='#FFD400'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">Wishlist</a>
                 </div>
                 
-                <!-- Contact Column -->
+                <!-- Contact Column (With Email, Address & Hours) -->
                 <div style="display:flex; flex-direction:column; gap:6px;">
                     <h4 style="color:#fff; margin:0 0 4px; font-size:15px; font-weight:600;">Contact</h4>
                     <p style="margin:2px 0; font-size:13px; opacity:0.5; display:flex; align-items:center; gap:8px;">
@@ -1056,6 +1182,7 @@ function renderFooter() {
                         ${Icons.mail} ${settings.storeEmail || 'support@tadaa.com'}
                     </p>
                     ${settings.storeAddress ? `<p style="margin:2px 0; font-size:13px; opacity:0.5;">${settings.storeAddress}</p>` : ''}
+                    <p style="margin:2px 0; font-size:13px; opacity:0.5;">${settings.businessHours || 'Mon-Fri: 9am - 6pm'}</p>
                 </div>
             </div>
             
@@ -1089,6 +1216,8 @@ window.addModalToCart = addModalToCart;
 window.closeModal = closeModal;
 window.closeCartSidebar = closeCartSidebar;
 window.toggleTheme = toggleTheme;
+window.toggleWishlist = toggleWishlist;
+window.renderWishlistPage = renderWishlistPage;
 
 // ============================================
 // DETECT BROWSER & SHOW INSTALL INSTRUCTIONS
@@ -1200,4 +1329,4 @@ document.addEventListener('DOMContentLoaded', () => {
     loadData();
 });
 
-console.log('✅ Tadaa! Website with premium UI, sticky nav, and luxury footer ready!');
+console.log('✅ Tadaa! Website with premium UI, working Wishlist, and luxury footer ready!');
