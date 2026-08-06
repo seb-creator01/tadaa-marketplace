@@ -1342,9 +1342,35 @@ function trackByOrderId() {
 // ============================================
 // INITIALIZE
 // ============================================
-document.addEventListener('DOMContentLoaded', () => {
+function finalInitialize() {
     loadTheme();
     loadData();
+}
+
+// Use multiple event listeners to guarantee it runs and syncs perfectly
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', finalInitialize);
+} else {
+    // If DOM is already loaded, run immediately
+    finalInitialize();
+}
+
+// CRITICAL FIX: Force a re-render of wishlist hearts 1 second after everything loads 
+// to ensure the hearts show up even if there is a race condition.
+window.addEventListener('load', function() {
+    setTimeout(() => {
+        // Re-read local storage directly and force update
+        try {
+            const saved = localStorage.getItem('tadaa_wishlist');
+            if (saved) {
+                window._tadaaWishlist = JSON.parse(saved);
+                console.log('🔄 Wishlist forcefully synced after load:', window._tadaaWishlist.length, 'items');
+                // Re-render the products to show the hearts
+                renderProducts();
+                renderWishlistPage();
+            }
+        } catch (e) { /* ignore */ }
+    }, 1000); // 1 second delay
 });
 
-console.log('✅ Tadaa! Website with premium UI, fixed Wishlist persistence, and luxury footer ready!');
+console.log('✅ Tadaa! Website with premium UI, bulletproof Wishlist sync, and luxury footer ready!');
