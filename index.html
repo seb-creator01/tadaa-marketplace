@@ -36,11 +36,11 @@
            PREMIUM OVERRIDES & ENHANCEMENTS
            ============================================ */
         
-        /* ---- Install Banner ---- */
+        /* ---- Install Banner (Premium Redesign) ---- */
         #installBanner {
             display: none;
-            background: linear-gradient(135deg, #FFD700 0%, #F5A623 100%);
-            padding: 14px 24px;
+            background: #0a0a0a;
+            padding: 16px 24px;
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
@@ -48,11 +48,33 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 4px 24px rgba(255, 215, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 215, 0, 0.15);
         }
         #installBanner.show {
             display: flex !important;
             animation: slideDown 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        #installBanner .banner-icon svg {
+            width: 32px;
+            height: 32px;
+            stroke: #FFD700;
+            fill: none;
+            stroke-width: 1.5;
+        }
+        #installBanner .banner-text {
+            display: flex;
+            flex-direction: column;
+        }
+        #installBanner .banner-text strong {
+            color: #fff;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 18px;
+            letter-spacing: 0.5px;
+        }
+        #installBanner .banner-text span {
+            color: rgba(255,255,255,0.5);
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
         }
         #installBanner button {
             border: none;
@@ -62,28 +84,28 @@
             font-size: 14px;
             font-weight: 600;
             font-family: 'Inter', -apple-system, sans-serif;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
         }
         .btn-install {
-            background: #000;
-            color: #FFD700;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            background: #FFD700;
+            color: #000;
+            box-shadow: 0 4px 16px rgba(255, 215, 0, 0.2);
         }
         .btn-install:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 6px 24px rgba(255, 215, 0, 0.3);
         }
         .btn-cancel {
-            background: rgba(255, 255, 255, 0.3);
-            color: #000;
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(0, 0, 0, 0.1) !important;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
         }
         .btn-cancel:hover {
-            background: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
         }
         @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-30px) scale(0.95); }
+            from { opacity: 0; transform: translateY(-30px) scale(0.98); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
         
@@ -94,7 +116,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: #000000;
+            background: #0a0a0a;
             z-index: 99999;
             display: flex;
             align-items: center;
@@ -109,82 +131,102 @@
         .splash-container {
             text-align: center;
             padding: 20px;
-            animation: splashPulse 2.5s ease-in-out infinite;
+            animation: splashPulse 3s ease-in-out infinite;
         }
         .splash-brand {
             font-family: 'Cormorant Garamond', Georgia, serif;
-            font-size: 64px;
+            font-size: 72px;
             font-weight: 700;
             color: #FFD700;
-            letter-spacing: 4px;
+            letter-spacing: 2px;
             display: block;
-            text-shadow: 0 0 60px rgba(255, 215, 0, 0.15);
+            text-shadow: 0 0 80px rgba(255, 215, 0, 0.1);
         }
         .splash-exclamation { color: #FFFFFF; }
         .splash-loader {
             width: 200px;
-            height: 3px;
-            background: rgba(255, 215, 0, 0.15);
+            height: 2px;
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 10px;
-            margin: 28px auto 18px;
+            margin: 32px auto 20px;
             overflow: hidden;
             position: relative;
         }
         .splash-loader-bar {
-            width: 40%;
+            width: 50%;
             height: 100%;
-            background: linear-gradient(90deg, #FFD700, #F5A623);
+            background: #FFD700;
             border-radius: 10px;
-            animation: splashLoader 1.4s ease-in-out infinite;
+            animation: splashLoader 1.2s ease-in-out infinite;
             position: absolute;
             top: 0;
-            left: 0;
+            left: -50%;
         }
         .splash-subtitle {
             font-family: 'Inter', -apple-system, sans-serif;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 400;
-            color: rgba(255, 255, 255, 0.4);
-            letter-spacing: 6px;
+            color: rgba(255, 255, 255, 0.3);
+            letter-spacing: 8px;
             text-transform: uppercase;
             margin: 0;
         }
+        @keyframes splashLoader {
+            0% { left: -50%; }
+            100% { left: 100%; }
+        }
+        @keyframes splashPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
         
-        /* ---- Track Order Section ---- */
+        /* ---- Track Order Section (Premium Refinement) ---- */
         .track-section {
             background: var(--bg-card);
-            border-radius: 20px;
-            margin: 24px auto;
+            border-radius: 24px;
+            margin: 32px auto 0;
             max-width: 1200px;
-            padding: 40px 24px;
+            padding: 48px 32px;
             border: 1px solid var(--border-color);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.04);
             transition: box-shadow 0.3s ease;
         }
         .track-section:hover {
-            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 16px 56px rgba(0, 0, 0, 0.08);
         }
         .track-section .track-container {
             max-width: 560px;
             margin: 0 auto;
             text-align: center;
         }
-        .track-section .track-icon {
-            font-size: 44px;
-            margin-bottom: 12px;
-            display: block;
+        .track-section .track-icon-wrap {
+            background: rgba(255, 215, 0, 0.08);
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        .track-section .track-icon-wrap svg {
+            width: 28px;
+            height: 28px;
+            stroke: #FFD700;
+            fill: none;
+            stroke-width: 2;
         }
         .track-section .track-title {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 30px;
+            font-size: 32px;
             font-weight: 700;
             color: var(--text-primary);
-            margin: 0 0 6px;
+            margin: 0 0 8px;
         }
         .track-section .track-subtitle {
             color: var(--text-secondary);
-            margin-bottom: 24px;
-            font-size: 16px;
+            margin-bottom: 28px;
+            font-size: 15px;
             font-weight: 400;
         }
         .track-section .track-input-group {
@@ -197,10 +239,10 @@
             flex: 1;
             min-width: 200px;
             max-width: 360px;
-            padding: 14px 20px;
-            border: 2px solid var(--border-color);
+            padding: 16px 20px;
+            border: 1px solid var(--border-color);
             border-radius: 14px;
-            font-size: 16px;
+            font-size: 15px;
             background: var(--bg-input);
             color: var(--text-primary);
             outline: none;
@@ -209,49 +251,70 @@
         }
         .track-section .track-input:focus {
             border-color: #FFD700;
-            box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.15);
+            box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.1);
         }
         .track-section .track-btn {
             background: linear-gradient(135deg, #FFD700 0%, #F5A623 100%);
             color: #000;
             border: none;
-            padding: 14px 36px;
+            padding: 16px 32px;
             border-radius: 14px;
-            font-weight: 700;
-            font-size: 16px;
+            font-weight: 600;
+            font-size: 15px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 16px rgba(255, 215, 0, 0.3);
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+            box-shadow: 0 4px 16px rgba(255, 215, 0, 0.25);
             font-family: 'Inter', -apple-system, sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         .track-section .track-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 28px rgba(255, 215, 0, 0.4);
+            box-shadow: 0 8px 28px rgba(255, 215, 0, 0.35);
         }
         .track-section .track-btn:active {
             transform: scale(0.97);
         }
+        .track-section .track-btn svg {
+            width: 18px;
+            height: 18px;
+            stroke: #000;
+            fill: none;
+            stroke-width: 2.5;
+        }
         .track-section .track-btn-outline {
             background: transparent;
             color: var(--text-primary);
-            border: 2px solid var(--border-color);
-            padding: 14px 36px;
+            border: 1px solid var(--border-color);
+            padding: 16px 32px;
             border-radius: 14px;
-            font-weight: 600;
-            font-size: 16px;
+            font-weight: 500;
+            font-size: 15px;
             cursor: pointer;
             transition: all 0.3s ease;
             font-family: 'Inter', -apple-system, sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .track-section .track-btn-outline svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
         }
         .track-section .track-btn-outline:hover {
-            background: var(--border-color);
+            background: var(--bg-input);
+            border-color: var(--text-primary);
             transform: translateY(-2px);
         }
         .track-section .track-divider {
             display: flex;
             align-items: center;
             gap: 16px;
-            margin: 20px 0;
+            margin: 24px 0;
         }
         .track-section .track-divider-line {
             flex: 1;
@@ -260,20 +323,23 @@
         }
         .track-section .track-divider-text {
             color: var(--text-muted);
-            font-size: 13px;
-            font-weight: 500;
+            font-size: 12px;
+            font-weight: 600;
             letter-spacing: 1px;
             text-transform: uppercase;
         }
         .track-section .track-error {
             color: #EF4444;
-            margin-top: 12px;
+            margin-top: 16px;
             display: none;
             font-size: 14px;
             font-weight: 500;
+            background: rgba(239, 68, 68, 0.05);
+            padding: 10px 16px;
+            border-radius: 8px;
         }
         
-        /* ---- WhatsApp Floating Button ---- */
+        /* ---- WhatsApp Floating Button (Refined) ---- */
         .whatsapp-float {
             position: fixed;
             bottom: 24px;
@@ -296,47 +362,49 @@
             justify-content: center;
             background: linear-gradient(135deg, #25D366 0%, #1da851 100%);
             color: #fff;
-            width: 60px;
-            height: 60px;
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
-            box-shadow: 0 6px 28px rgba(37, 211, 102, 0.4);
+            box-shadow: 0 8px 32px rgba(37, 211, 102, 0.3);
             text-decoration: none;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
             animation: whatsappPulse 2.5s ease-in-out infinite;
+            position: relative;
         }
         .whatsapp-float .whatsapp-btn:hover {
-            transform: scale(1.1) translateY(-4px);
-            box-shadow: 0 10px 40px rgba(37, 211, 102, 0.5);
+            transform: scale(1.08);
+            box-shadow: 0 12px 40px rgba(37, 211, 102, 0.4);
         }
         .whatsapp-float .whatsapp-tooltip {
-            background: rgba(0, 0, 0, 0.85);
+            background: #0a0a0a;
             backdrop-filter: blur(12px);
             color: #fff;
             padding: 8px 16px;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 13px;
             font-family: 'Inter', -apple-system, sans-serif;
             font-weight: 500;
             opacity: 0;
-            transform: translateX(12px) scale(0.95);
+            transform: translateY(8px) scale(0.95);
             transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
             pointer-events: none;
             white-space: nowrap;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255,255,255,0.05);
         }
         .whatsapp-float:hover .whatsapp-tooltip {
             opacity: 1;
-            transform: translateX(0) scale(1);
+            transform: translateY(0) scale(1);
         }
         .whatsapp-float .whatsapp-badge {
             position: absolute;
-            top: -4px;
-            right: -4px;
+            top: -2px;
+            right: -2px;
             background: #EF4444;
             color: #fff;
             font-size: 10px;
             font-weight: 700;
-            padding: 2px 7px;
+            padding: 3px 8px;
             border-radius: 50px;
             font-family: 'Inter', -apple-system, sans-serif;
             box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
@@ -344,26 +412,27 @@
         
         /* ---- Responsive Enhancements ---- */
         @media (max-width: 768px) {
-            .splash-brand { font-size: 44px; }
+            .splash-brand { font-size: 52px; }
             .splash-loader { width: 160px; }
-            .splash-subtitle { font-size: 11px; letter-spacing: 4px; }
-            .track-section { padding: 28px 16px; margin: 16px auto; }
-            .track-section .track-title { font-size: 24px; }
+            .splash-subtitle { font-size: 10px; letter-spacing: 5px; }
+            .track-section { padding: 32px 20px; margin: 20px auto; border-radius: 20px; }
+            .track-section .track-title { font-size: 26px; }
         }
         @media (max-width: 480px) {
-            .splash-brand { font-size: 34px; letter-spacing: 2px; }
+            .splash-brand { font-size: 40px; letter-spacing: 1px; }
             .splash-loader { width: 140px; }
-            .splash-subtitle { font-size: 10px; letter-spacing: 3px; }
-            .track-section { padding: 20px 12px; border-radius: 16px; }
-            .track-section .track-title { font-size: 20px; }
-            .track-section .track-input { min-width: 100%; max-width: 100%; }
+            .track-section { padding: 24px 16px; border-radius: 16px; }
+            .track-section .track-title { font-size: 22px; }
+            .track-section .track-input { min-width: 100%; max-width: 100%; padding: 14px 16px; }
             .track-section .track-btn { width: 100%; justify-content: center; }
             .track-section .track-btn-outline { width: 100%; justify-content: center; }
             .whatsapp-float { bottom: 16px; right: 16px; }
-            .whatsapp-float .whatsapp-btn { width: 54px; height: 54px; }
-            .whatsapp-float .whatsapp-btn svg { width: 28px; height: 28px; }
+            .whatsapp-float .whatsapp-btn { width: 48px; height: 48px; }
+            .whatsapp-float .whatsapp-btn svg { width: 24px; height: 24px; }
             #installBanner { padding: 12px 16px; }
             #installBanner button { padding: 8px 16px; font-size: 12px; }
+            #installBanner .banner-text strong { font-size: 15px; }
+            #installBanner .banner-text span { font-size: 11px; }
         }
         
         /* ---- Scrollbar Styling ---- */
@@ -405,17 +474,25 @@
     </div>
     
     <div id="app">
-        <!-- Install Banner -->
+        <!-- Install Banner (Premium Upgrade) -->
         <div id="installBanner">
-            <div style="display:flex; align-items:center; gap:12px;">
-                <span style="font-size:24px;">📲</span>
-                <div>
-                    <span style="font-weight:700; font-size:15px; color:#000;">Install Tadaa! App</span>
-                    <span style="font-size:12px; color:#333; display:block; opacity:0.8;" id="installSubtext">Get the full app experience</span>
+            <div style="display:flex; align-items:center; gap:14px;">
+                <div class="banner-icon">
+                    <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                        <polyline points="10 9 9 9 8 9" />
+                    </svg>
+                </div>
+                <div class="banner-text">
+                    <strong>Install Tadaa! App</strong>
+                    <span id="installSubtext">Get the full app experience</span>
                 </div>
             </div>
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                <button class="btn-install" id="installBtn">📲 Install</button>
+                <button class="btn-install" id="installBtn">Install</button>
                 <button class="btn-cancel" id="cancelInstallBtn">Not Now</button>
             </div>
         </div>
@@ -423,17 +500,29 @@
         <header id="main-header"></header>
         <section id="hero-section"></section>
 
-        <!-- ===== TRACK YOUR ORDER SECTION ===== -->
+        <!-- ===== TRACK YOUR ORDER SECTION (Premium Upgrade) ===== -->
         <section class="track-section" id="trackOrderSection">
             <div class="track-container">
-                <span class="track-icon">📦</span>
+                <div class="track-icon-wrap">
+                    <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                        <line x1="12" y1="22.08" x2="12" y2="12" />
+                    </svg>
+                </div>
                 <h2 class="track-title">Track Your Order</h2>
                 <p class="track-subtitle">Enter your phone number to see all your orders</p>
                 
                 <!-- Phone Number Input -->
                 <div class="track-input-group">
                     <input type="tel" class="track-input" id="trackPhoneInput" placeholder="e.g., 08012345678">
-                    <button class="track-btn" onclick="findOrdersByPhone()">🔍 Find My Orders</button>
+                    <button class="track-btn" onclick="findOrdersByPhone()">
+                        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        </svg>
+                        Find My Orders
+                    </button>
                 </div>
                 
                 <!-- Or Divider -->
@@ -446,7 +535,15 @@
                 <!-- Order ID Input (Alternative) -->
                 <div class="track-input-group">
                     <input type="text" class="track-input" id="trackOrderInput" placeholder="Order ID (e.g., TAD-20260716-123456)">
-                    <button class="track-btn-outline" onclick="trackByOrderId()">Track by Order ID</button>
+                    <button class="track-btn-outline" onclick="trackByOrderId()">
+                        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                            <line x1="16" y1="2" x2="16" y2="6" />
+                            <line x1="8" y1="2" x2="8" y2="6" />
+                            <line x1="3" y1="10" x2="21" y2="10" />
+                        </svg>
+                        Track by Order ID
+                    </button>
                 </div>
                 
                 <div class="track-error" id="trackError"></div>
@@ -454,23 +551,22 @@
         </section>
 
         <section id="announcement-section"></section>
-        <section id="categories-section" style="padding: 30px 0;"></section>
-        <section id="products-section" style="padding: 20px 0 40px;"></section>
+        <section id="categories-section" style="padding: 40px 0 20px;"></section>
+        <section id="products-section" style="padding: 10px 0 40px;"></section>
         <footer id="main-footer"></footer>
     </div>
 
-    <!-- ===== WHATSAPP FLOATING BUTTON ===== -->
+    <!-- ===== WHATSAPP FLOATING BUTTON (Premium Upgrade) ===== -->
     <div class="whatsapp-float" id="whatsappFloat">
-        <div class="whatsapp-tooltip">Chat with us on WhatsApp 💬</div>
+        <div class="whatsapp-tooltip">Chat with us on WhatsApp</div>
         <a href="https://wa.me/message/MBORV2SM3LTLD1" 
            target="_blank" 
            rel="noopener noreferrer"
            class="whatsapp-btn"
            aria-label="Chat on WhatsApp">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32" fill="#FFFFFF">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
             </svg>
-            <span class="whatsapp-badge">💬</span>
         </a>
     </div>
     
@@ -554,37 +650,41 @@
             instructions.id = 'installInstructions';
             instructions.style.cssText = `
                 position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-                background: rgba(0,0,0,0.85);
-                backdrop-filter: blur(20px);
-                -webkit-backdrop-filter: blur(20px);
+                background: rgba(10,10,10,0.92);
+                backdrop-filter: blur(24px);
+                -webkit-backdrop-filter: blur(24px);
                 z-index: 10000;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 padding: 20px;
-                animation: fadeIn 0.3s ease;
+                animation: fadeIn 0.4s cubic-bezier(0.22, 1, 0.36, 1);
             `;
             instructions.innerHTML = `
-                <div style="background: #fff; border-radius: 28px; max-width: 400px; width: 100%; padding: 36px 32px; text-align: center; position: relative; box-shadow: 0 24px 80px rgba(0,0,0,0.3);">
-                    <button onclick="this.closest('#installInstructions').remove()" style="position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 24px; cursor: pointer; color: #999; transition: color 0.3s;" onmouseover="this.style.color='#000'" onmouseout="this.style.color='#999'">✕</button>
-                    <div style="font-size: 52px; margin-bottom: 12px;">📱</div>
-                    <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 26px; color: #000; margin: 0 0 6px;">Install Tadaa!</h2>
-                    <p style="color: #666; margin-bottom: 24px; line-height: 1.6; font-family: 'Inter', sans-serif; font-size: 15px;">Get the full app experience on your device</p>
-                    <div style="text-align: left; background: #f5f5f5; padding: 20px; border-radius: 16px; margin-bottom: 24px;">
-                        <p style="font-weight: 600; margin: 0 0 10px; color: #000; font-family: 'Inter', sans-serif; font-size: 14px;">${browser.isSafari || browser.isIOS ? '📲 On iPhone/iPad:' : '📲 On Samsung Internet:'}</p>
-                        <ol style="margin: 0; padding-left: 20px; color: #444; line-height: 2.2; font-family: 'Inter', sans-serif; font-size: 14px;">
+                <div style="background: #161616; border-radius: 28px; max-width: 400px; width: 100%; padding: 40px 32px; text-align: center; position: relative; border: 1px solid rgba(255,255,255,0.05);">
+                    <button onclick="this.closest('#installInstructions').remove()" style="position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.05); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; color: #999; transition: all 0.3s; display:flex; align-items:center; justify-content:center;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+                        <svg width="16" height="16" viewBox="0 0 24 24" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                    <div style="display:inline-flex; background:rgba(255,215,0,0.1); padding:12px; border-radius:16px; margin-bottom:16px;">
+                        <svg width="32" height="32" viewBox="0 0 24 24" stroke="#FFD700" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>
+                    </div>
+                    <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 28px; color: #fff; margin: 0 0 8px;">Install Tadaa!</h2>
+                    <p style="color: rgba(255,255,255,0.6); margin-bottom: 28px; line-height: 1.6; font-family: 'Inter', sans-serif; font-size: 15px;">Get the full app experience on your device</p>
+                    <div style="text-align: left; background: rgba(255,255,255,0.03); padding: 20px; border-radius: 16px; margin-bottom: 28px; border: 1px solid rgba(255,255,255,0.05);">
+                        <p style="font-weight: 600; margin: 0 0 12px; color: #FFD700; font-family: 'Inter', sans-serif; font-size: 13px; letter-spacing: 0.5px;">${browser.isSafari || browser.isIOS ? '📱 On iPhone/iPad:' : '📱 On Samsung Internet:'}</p>
+                        <ol style="margin: 0; padding-left: 20px; color: rgba(255,255,255,0.7); line-height: 2.2; font-family: 'Inter', sans-serif; font-size: 14px;">
                             ${browser.isSafari || browser.isIOS ? `
-                                <li>Tap the <strong>Share</strong> icon <span style="font-size:18px;">⬆️</span></li>
-                                <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
-                                <li>Tap <strong>"Add"</strong> in the top right</li>
+                                <li>Tap the <strong style="color:#fff;">Share</strong> icon <span style="display:inline-block; margin:0 4px; transform:translateY(2px);">⬆️</span></li>
+                                <li>Scroll down and tap <strong style="color:#fff;">"Add to Home Screen"</strong></li>
+                                <li>Tap <strong style="color:#fff;">"Add"</strong> in the top right</li>
                             ` : `
-                                <li>Tap the <strong>☰</strong> menu icon</li>
-                                <li>Select <strong>"Add to Home Screen"</strong></li>
-                                <li>Tap <strong>"Add"</strong> to install</li>
+                                <li>Tap the <strong style="color:#fff;">☰</strong> menu icon</li>
+                                <li>Select <strong style="color:#fff;">"Add to Home Screen"</strong></li>
+                                <li>Tap <strong style="color:#fff;">"Add"</strong> to install</li>
                             `}
                         </ol>
                     </div>
-                    <button onclick="this.closest('#installInstructions').remove()" style="background: linear-gradient(135deg, #FFD700 0%, #F5A623 100%); color: #000; border: none; padding: 14px 40px; border-radius: 14px; font-weight: 600; font-size: 16px; cursor: pointer; font-family: 'Inter', sans-serif; box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 32px rgba(255,215,0,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px rgba(255,215,0,0.3)'">Got it!</button>
+                    <button onclick="this.closest('#installInstructions').remove()" style="background: #FFD700; color: #000; border: none; padding: 14px 40px; border-radius: 14px; font-weight: 600; font-size: 16px; cursor: pointer; font-family: 'Inter', sans-serif; box-shadow: 0 4px 20px rgba(255, 215, 0, 0.2); transition: all 0.3s; width:100%;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 32px rgba(255,215,0,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px rgba(255,215,0,0.2)'">Got it</button>
                 </div>
             `;
             document.body.appendChild(instructions);
@@ -606,7 +706,7 @@
             if (browser.isChrome && browser.isAndroid) {
                 if (deferredPrompt) {
                     banner.classList.add('show');
-                    if (installBtn) installBtn.textContent = '📲 Install';
+                    if (installBtn) installBtn.textContent = 'Install';
                     if (installSubtext) installSubtext.textContent = 'Get the full app experience';
                 }
                 return;
@@ -615,7 +715,7 @@
             // For Samsung Internet and iPhone - show instructions
             if (browser.isSamsung || browser.isSafari || browser.isIOS) {
                 banner.classList.add('show');
-                if (installBtn) installBtn.textContent = '📱 Install App';
+                if (installBtn) installBtn.textContent = 'Install App';
                 if (installSubtext) installSubtext.textContent = 'Add to your home screen';
                 return;
             }
