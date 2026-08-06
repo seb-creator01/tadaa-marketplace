@@ -1025,34 +1025,43 @@ function checkout() {
 }
 
 // ============================================
-// RENDER FOOTER
+// RENDER FOOTER (PREMIUM UPGRADE)
 // ============================================
 function renderFooter() {
     if (!mainFooter) return;
     mainFooter.innerHTML = `
-        <footer style="background:#000; color:#9CA3AF; padding:48px 20px 32px; margin-top:40px; border-radius:40px 40px 0 0; border-top:1px solid rgba(255,255,255,0.05);">
-            <div style="max-width:1200px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:32px;">
-                <div>
-                    <h3 class="tadaa-title" style="color:#FFD400; font-size:22px; margin:0 0 12px;">Tadaa!</h3>
-                    <p style="margin:0; font-size:14px; opacity:0.7;">Your premium online marketplace</p>
+        <footer style="background:#000; color:#9CA3AF; padding:48px 20px 24px; margin-top:40px; border-radius:32px 32px 0 0; border-top:1px solid rgba(255,255,255,0.06);">
+            <div style="max-width:1200px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:32px;">
+                <!-- Brand Column -->
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <h3 class="tadaa-title" style="color:#FFD400; font-size:24px; margin:0;">Tadaa!</h3>
+                    <p style="margin:0; font-size:14px; opacity:0.6; line-height:1.5;">Your premium online marketplace. Quality products, fast delivery.</p>
                 </div>
-                <div>
-                    <h4 style="color:#fff; margin:0 0 8px; font-size:14px; font-weight:600;">Contact</h4>
-                    <p style="margin:4px 0; font-size:13px; opacity:0.7; display:flex; align-items:center; gap:6px;">${Icons.phone} ${settings.storePhone || '+2348012345678'}</p>
-                    <p style="margin:4px 0; font-size:13px; opacity:0.7; display:flex; align-items:center; gap:6px;">${Icons.mail} ${settings.storeEmail || 'support@tadaa.com'}</p>
-                    ${settings.storeWhatsApp ? `<p style="margin:4px 0; font-size:13px; opacity:0.7;">💬 ${settings.storeWhatsApp}</p>` : ''}
+                
+                <!-- Quick Links -->
+                <div style="display:flex; flex-direction:column; gap:6px;">
+                    <h4 style="color:#fff; margin:0 0 4px; font-size:15px; font-weight:600;">Quick Links</h4>
+                    <a href="#" onclick="switchTab('home')" style="color:rgba(255,255,255,0.5); font-size:13px; transition:color 0.2s; text-decoration:none;" onmouseover="this.style.color='#FFD400'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">Shop</a>
+                    <a href="#" onclick="switchTab('track')" style="color:rgba(255,255,255,0.5); font-size:13px; transition:color 0.2s; text-decoration:none;" onmouseover="this.style.color='#FFD400'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">Track Order</a>
+                    <a href="#" onclick="switchTab('wishlist')" style="color:rgba(255,255,255,0.5); font-size:13px; transition:color 0.2s; text-decoration:none;" onmouseover="this.style.color='#FFD400'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">Wishlist</a>
                 </div>
-                <div>
-                    <h4 style="color:#fff; margin:0 0 8px; font-size:14px; font-weight:600;">Address</h4>
-                    <p style="margin:4px 0; font-size:13px; opacity:0.7;">${settings.storeAddress || 'Lagos, Nigeria'}</p>
-                </div>
-                <div>
-                    <h4 style="color:#fff; margin:0 0 8px; font-size:14px; font-weight:600;">Hours</h4>
-                    <p style="margin:4px 0; font-size:13px; opacity:0.7;">${settings.businessHours || 'Mon-Fri: 9am - 6pm'}</p>
+                
+                <!-- Contact Column -->
+                <div style="display:flex; flex-direction:column; gap:6px;">
+                    <h4 style="color:#fff; margin:0 0 4px; font-size:15px; font-weight:600;">Contact</h4>
+                    <p style="margin:2px 0; font-size:13px; opacity:0.5; display:flex; align-items:center; gap:8px;">
+                        ${Icons.phone} ${settings.storePhone || '+234 801 234 5678'}
+                    </p>
+                    <p style="margin:2px 0; font-size:13px; opacity:0.5; display:flex; align-items:center; gap:8px;">
+                        ${Icons.mail} ${settings.storeEmail || 'support@tadaa.com'}
+                    </p>
+                    ${settings.storeAddress ? `<p style="margin:2px 0; font-size:13px; opacity:0.5;">${settings.storeAddress}</p>` : ''}
                 </div>
             </div>
-            <div style="text-align:center; border-top:1px solid rgba(255,255,255,0.06); padding-top:20px; margin-top:24px;">
-                <p style="margin:0; font-size:12px; opacity:0.5;">© 2026 Tadaa! Marketplace. All rights reserved.</p>
+            
+            <!-- Copyright -->
+            <div style="text-align:center; border-top:1px solid rgba(255,255,255,0.06); padding-top:20px; margin-top:28px;">
+                <p style="margin:0; font-size:12px; opacity:0.3;">&copy; 2026 Tadaa! Marketplace. All rights reserved.</p>
             </div>
         </footer>
     `;
@@ -1191,4 +1200,4 @@ document.addEventListener('DOMContentLoaded', () => {
     loadData();
 });
 
-console.log('✅ Tadaa! Website with premium UI and quantity update fix ready!');
+console.log('✅ Tadaa! Website with premium UI, sticky nav, and luxury footer ready!');
