@@ -19,17 +19,63 @@ const db = firebase.firestore();
 console.log('🛒 Tadaa! Customer Website Loaded');
 
 // ============================================
-// SPLASH SCREEN CONTROL
+// SPLASH SCREEN CONTROL WITH SHOPPER
 // ============================================
 
-function hideSplashScreen() {
-    const splash = document.getElementById('splashScreen');
-    if (splash) {
-        splash.classList.add('hidden');
-        setTimeout(function() {
-            splash.style.display = 'none';
-        }, 800);
+let splashProgress = 0;
+let splashInterval = null;
+
+function updateSplashProgress(value) {
+    const progress = document.getElementById('splashProgress');
+    const shopper = document.getElementById('shopperContainer');
+    
+    if (progress) {
+        splashProgress = Math.min(value, 100);
+        progress.style.width = splashProgress + '%';
     }
+    
+    if (shopper) {
+        // Move shopper from 0% to 98% (leaves small space at end)
+        const position = Math.min(splashProgress, 98);
+        shopper.style.left = position + '%';
+    }
+}
+
+function animateSplashProgress() {
+    let current = 0;
+    const target = 100;
+    const step = 0.8;
+    const interval = 60;
+    
+    if (splashInterval) {
+        clearInterval(splashInterval);
+    }
+    
+    splashInterval = setInterval(function() {
+        current += step;
+        if (current >= target) {
+            current = target;
+            clearInterval(splashInterval);
+            splashInterval = null;
+        }
+        updateSplashProgress(current);
+    }, interval);
+}
+
+function hideSplashScreen() {
+    // Complete the progress bar
+    updateSplashProgress(100);
+    
+    // Then hide with slight delay
+    setTimeout(function() {
+        const splash = document.getElementById('splashScreen');
+        if (splash) {
+            splash.classList.add('hidden');
+            setTimeout(function() {
+                splash.style.display = 'none';
+            }, 800);
+        }
+    }, 400);
 }
 
 function showContent() {
@@ -239,6 +285,9 @@ function showMaintenancePage() {
 // ============================================
 async function loadData() {
     try {
+        // Start the splash animation immediately
+        animateSplashProgress();
+        
         loadCart();
         loadWishlist();
         
@@ -246,6 +295,9 @@ async function loadData() {
         settings = settingsDoc.data() || {};
         window.tadaaSettings = settings;
         window.tadaaDb = db;
+        
+        // Update progress to 40%
+        updateSplashProgress(40);
         
         if (settings.maintenanceMode === true) {
             showMaintenancePage();
@@ -258,23 +310,33 @@ async function loadData() {
             categories.push({ id: doc.id, ...doc.data() });
         });
         
+        // Update progress to 60%
+        updateSplashProgress(60);
+        
         const productsSnap = await db.collection('products').orderBy('createdAt', 'desc').get();
         products = [];
         productsSnap.forEach(doc => {
             products.push({ id: doc.id, ...doc.data() });
         });
         
+        // Update progress to 80%
+        updateSplashProgress(80);
+        
         optimizeProductImages();
         
         console.log('✅ Data loaded - Categories:', categories.length, 'Products:', products.length);
         
-        // ===== LOAD WISHLIST AGAIN AFTER PRODUCTS ARE 100% READY =====
-        // This guarantees that when the wishlist page renders, it has the full product list to find the items.
         loadWishlist();
         
         renderWebsite();
         updateCartCount();
-        showContent();
+        
+        // Update progress to 100% and hide splash
+        updateSplashProgress(100);
+        
+        setTimeout(function() {
+            showContent();
+        }, 500);
         
     } catch (error) {
         console.error('❌ Error loading data:', error);
@@ -302,7 +364,6 @@ function renderWebsite() {
     renderProducts();
     renderFooter();
     renderCartSidebarContent();
-    // Ensure the wishlist page renders correctly after everything else
     renderWishlistPage();
 }
 
